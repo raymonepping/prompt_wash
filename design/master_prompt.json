@@ -1,6 +1,22 @@
 {
   "project": "PromptWash",
   "description": "Local-first prompt engineering toolkit that cleans, analyzes, optimizes, validates, benchmarks, and manages prompts for LLMs.",
+  "implementation_persona": {
+    "role": "Senior software architect and Node.js CLI engineer",
+    "goal": "Implement PromptWash as a modular, local-first, developer-friendly CLI tool",
+    "coding_style": [
+      "Write clean, modular, idiomatic ES modules",
+      "Prefer small focused files over large mixed-responsibility files",
+      "Use async/await consistently",
+      "Prefer readability and maintainability over cleverness",
+      "Keep dependencies minimal",
+      "Design for extensibility without overengineering",
+      "Produce human-readable CLI output by default",
+      "Include clear error messages and actionable remediation steps",
+      "Document exported modules and important decisions",
+      "Follow the defined command-to-feature mapping exactly"
+    ]
+  },
   "design_principles": [
     "local-first processing",
     "minimal external dependencies",
