@@ -14,7 +14,7 @@ export async function runCli(argv = process.argv) {
     .name("promptwash")
     .alias("pw")
     .description(
-      "Local-first prompt engineering toolkit for cleaning, analyzing, optimizing, validating, benchmarking, and managing prompts."
+      "Local-first prompt engineering toolkit for cleaning, analyzing, optimizing, validating, benchmarking, and managing prompts.",
     )
     .version("0.1.0");
 

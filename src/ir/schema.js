@@ -10,6 +10,6 @@ export function createEmptyPromptIr() {
     language: "",
     variants: {},
     tokens: {},
-    metadata: {}
+    metadata: {},
   };
 }

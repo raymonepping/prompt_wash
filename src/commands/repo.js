@@ -3,7 +3,9 @@ import { printInfo } from "../utils/display.js";
 export function registerRepoCommand(program) {
   const repo = program
     .command("repo")
-    .description("Manage prompt repository connection, publishing, and history");
+    .description(
+      "Manage prompt repository connection, publishing, and history",
+    );
 
   repo
     .command("connect")

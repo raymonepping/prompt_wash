@@ -9,7 +9,7 @@ export function registerRenderCommand(program) {
     .option(
       "-p, --provider <provider>",
       "Target provider: openai|claude|generic|compact",
-      "generic"
+      "generic",
     )
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (input, options) => {

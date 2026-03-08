@@ -5,25 +5,25 @@ VERSION="1.4.0"
 
 # --- Functions ---
 show_help() {
-    echo "Usage: ./scripts/setup_structure.sh [options]"
-    echo ""
-    echo "Populates the current directory with the promptwash architecture and 14-file documentation suite."
-    echo ""
-    echo "Options:"
-    echo "  --help     Show this help message"
-    echo "  --version  Show script version"
+  echo "Usage: ./scripts/setup_structure.sh [options]"
+  echo ""
+  echo "Populates the current directory with the promptwash architecture and 14-file documentation suite."
+  echo ""
+  echo "Options:"
+  echo "  --help     Show this help message"
+  echo "  --version  Show script version"
 }
 
 # --- Argument Parsing ---
 case "$1" in
-    --help)
-        show_help
-        exit 0
-        ;;
-    --version)
-        echo "promptwash-scaffolder v$VERSION"
-        exit 0
-        ;;
+--help)
+  show_help
+  exit 0
+  ;;
+--version)
+  echo "promptwash-scaffolder v$VERSION"
+  exit 0
+  ;;
 esac
 
 echo "🛠️  Expanding promptwash structure with full documentation suite..."
