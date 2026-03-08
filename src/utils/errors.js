@@ -1,0 +1,26 @@
+import { printError } from "./display.js";
+
+export class PromptWashError extends Error {
+  constructor(message, options = {}) {
+    super(message);
+    this.name = "PromptWashError";
+    this.code = options.code ?? "PROMPTWASH_ERROR";
+    this.details = options.details ?? null;
+    this.cause = options.cause;
+  }
+}
+
+export function exitWithError(error) {
+  if (error instanceof PromptWashError) {
+    printError(`${error.message} [${error.code}]`);
+
+    if (error.details) {
+      console.error(error.details);
+    }
+
+    process.exit(1);
+  }
+
+  printError(error?.message ?? "Unknown error");
+  process.exit(1);
+}

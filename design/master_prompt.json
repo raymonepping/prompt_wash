@@ -1,0 +1,304 @@
+{
+  "project": "PromptWash",
+  "description": "Local-first prompt engineering toolkit that cleans, analyzes, optimizes, validates, benchmarks, and manages prompts for LLMs.",
+  "design_principles": [
+    "local-first processing",
+    "minimal external dependencies",
+    "developer usability",
+    "reproducibility",
+    "prompt quality and safety",
+    "compatibility with OpenAI and Anthropic models",
+    "optional GitHub integration for prompt storage"
+  ],
+  "execution_model": {
+    "type": "stateless_cli",
+    "description": "Commands must not depend on previous commands. Each command derives required state internally."
+  },
+  "cli": {
+    "top_level_commands": [
+      "parse",
+      "render",
+      "check",
+      "repo",
+      "constraints",
+      "config"
+    ],
+    "command_mapping": {
+      "parse": [
+        "prompt cleaning",
+        "intent detection",
+        "Prompt IR generation",
+        "structural constraint awareness"
+      ],
+      "render": [
+        "provider-specific rendering",
+        "prompt style adapters",
+        "compact prompt variants",
+        "markdown/json output",
+        "output constraint application"
+      ],
+      "check": [
+        "prompt linting",
+        "complexity scoring",
+        "context pressure analysis",
+        "prompt diff and intent verification",
+        "benchmarking",
+        "replay diagnostics"
+      ],
+      "repo": [
+        "repository connection",
+        "publish prompts",
+        "prompt history",
+        "version diff"
+      ],
+      "constraints": [
+        "initialize constraints",
+        "view constraints",
+        "validate constraints"
+      ],
+      "config": [
+        "initialize configuration",
+        "show resolved configuration",
+        "validate configuration"
+      ]
+    }
+  },
+  "prompt_ir": {
+    "schema": {
+      "goal": "string",
+      "audience": "string",
+      "context": "string",
+      "constraints": "array",
+      "steps": "array",
+      "output_format": "string",
+      "tone": "string",
+      "language": "string",
+      "variants": "object",
+      "tokens": "object",
+      "metadata": "object"
+    },
+    "purpose": [
+      "linting",
+      "mutation",
+      "benchmarking",
+      "provider adaptation",
+      "compression",
+      "reproducibility"
+    ]
+  },
+  "pipeline": [
+    "input",
+    "normalize",
+    "clean",
+    "lint",
+    "analyze",
+    "optimize",
+    "adapt",
+    "benchmark",
+    "output"
+  ],
+  "prompt_object": {
+    "raw": "string",
+    "cleaned": "string",
+    "ir": "object",
+    "variants": {
+      "compact": "string",
+      "openai": "string",
+      "claude": "string"
+    },
+    "intent": "string",
+    "audience": "string",
+    "constraints": "array",
+    "tokens": "object",
+    "cost": "object",
+    "complexity_score": "number",
+    "semantic_drift_risk": "string",
+    "lint_warnings": "array",
+    "fingerprint": "string",
+    "language": "string",
+    "metadata": "object"
+  },
+  "features": {
+    "cleaning": {
+      "description": "Convert messy prompts into structured prompts using Ollama.",
+      "rules": [
+        "preserve technical terms",
+        "preserve version numbers",
+        "remove filler text",
+        "detect intent",
+        "do not invent missing information"
+      ],
+      "sections": [
+        "context",
+        "task",
+        "constraints",
+        "output_format"
+      ]
+    },
+    "diff_and_intent_verification": {
+      "checks": [
+        "removed constraints",
+        "lost entities",
+        "changed meaning"
+      ],
+      "output": [
+        "intent_preservation_score",
+        "semantic_drift_risk"
+      ]
+    },
+    "compression_modes": [
+      "clarity",
+      "balanced",
+      "minimal"
+    ],
+    "linting": [
+      "missing output format",
+      "ambiguous instructions",
+      "conflicting constraints",
+      "multiple tasks"
+    ],
+    "complexity_scoring": [
+      "task_count",
+      "constraint_density",
+      "ambiguity_level",
+      "structure_quality"
+    ],
+    "context_pressure": {
+      "metrics": [
+        "token_usage",
+        "model_limit",
+        "context_pressure_level"
+      ]
+    },
+    "style_adapters": [
+      "openai",
+      "claude",
+      "generic",
+      "compact"
+    ],
+    "fingerprinting": {
+      "example": "pw_93af21c"
+    }
+  },
+  "benchmarking": {
+    "description": "Compare prompt performance across models.",
+    "metrics": [
+      "token_usage",
+      "estimated_cost",
+      "response_quality",
+      "variant_performance"
+    ],
+    "providers": [
+      "openai",
+      "anthropic",
+      "ollama"
+    ],
+    "optional": true
+  },
+  "constraints": {
+    "storage": [
+      ".promptwash/constraints.json",
+      ".promptwash/constraints.md"
+    ],
+    "types": {
+      "structural": [
+        "do not invent missing information",
+        "preserve technical accuracy",
+        "no em dashes"
+      ],
+      "output": [
+        "images must be wide",
+        "images must not contain text"
+      ]
+    },
+    "application": {
+      "parse": "apply structural constraints",
+      "render": "apply output constraints"
+    }
+  },
+  "prompt_storage": {
+    "formats": [
+      "markdown",
+      "json"
+    ]
+  },
+  "prompt_repository": {
+    "type": "git",
+    "structure_example": {
+      "prompts": "vault/exec-summary.prompt.md",
+      "reports": [
+        "benchmark",
+        "lint"
+      ],
+      "config": ".promptwash/constraints.json"
+    }
+  },
+  "configuration": {
+    "project_file": ".promptwash.config.json",
+    "example": {
+      "ollama": {
+        "baseUrl": "http://localhost:11434/api",
+        "model": "llama3.2",
+        "timeoutMs": 30000
+      }
+    },
+    "resolution_order": [
+      "environment_variables",
+      "project_config",
+      "user_config",
+      "internal_defaults"
+    ]
+  },
+  "ollama": {
+    "endpoint": "http://localhost:11434/api",
+    "checks": [
+      "api_reachable",
+      "model_installed"
+    ]
+  },
+  "dependencies": {
+    "required": [
+      "Node.js",
+      "Git",
+      "Ollama"
+    ],
+    "optional": [
+      "OpenAI SDK",
+      "Anthropic SDK",
+      "GitHub CLI"
+    ]
+  },
+  "roadmap": {
+    "v1.0": [
+      "parse",
+      "render",
+      "check",
+      "repo",
+      "constraints",
+      "config"
+    ],
+    "v1.1": [
+      "benchmarking",
+      "replay",
+      "cost_analysis"
+    ],
+    "v1.2": [
+      "mutation",
+      "trace",
+      "prompt_templates",
+      "optional_ir_cache"
+    ],
+    "v2.0": [
+      "plugin_system",
+      "vscode_extension",
+      "ci_integrations"
+    ]
+  },
+  "generation_contract": [
+    "produce a working Node.js CLI",
+    "avoid speculative frameworks",
+    "keep dependencies minimal",
+    "follow modular directory structure",
+    "implement pipeline architecture"
+  ]
+}

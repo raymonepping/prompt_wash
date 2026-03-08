@@ -1,0 +1,22 @@
+{
+  "name": "promptwash",
+  "version": "0.1.0",
+  "description": "Local-first prompt engineering toolkit for cleaning, analyzing, optimizing, validating, benchmarking, and managing prompts.",
+  "type": "module",
+  "bin": {
+    "promptwash": "./bin/promptwash.js",
+    "pw": "./bin/promptwash.js"
+  },
+  "scripts": {
+    "start": "node bin/promptwash.js",
+    "dev": "node bin/promptwash.js",
+    "check": "node bin/promptwash.js --help"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0"
+  }
+}
