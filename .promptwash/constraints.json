@@ -1,0 +1,11 @@
+{
+  "structural": [
+    "do not invent missing information",
+    "preserve technical accuracy",
+    "no em dashes"
+  ],
+  "output": [
+    "images must be wide",
+    "images must not contain text"
+  ]
+}

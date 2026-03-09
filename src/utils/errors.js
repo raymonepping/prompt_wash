@@ -10,6 +10,20 @@ export class PromptWashError extends Error {
   }
 }
 
+export function createValidationError(message, details = null) {
+  return new PromptWashError(message, {
+    code: "VALIDATION_ERROR",
+    details
+  });
+}
+
+export function createFileError(message, details = null) {
+  return new PromptWashError(message, {
+    code: "FILE_ERROR",
+    details
+  });
+}
+
 export function exitWithError(error) {
   if (error instanceof PromptWashError) {
     printError(`${error.message} [${error.code}]`);

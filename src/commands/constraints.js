@@ -1,4 +1,10 @@
-import { printInfo } from "../utils/display.js";
+import { printInfo, printJson, printSuccess, printWarning } from "../utils/display.js";
+import {
+  initializeConstraints,
+  loadConstraints,
+  validateConstraintsObject,
+  CONSTRAINTS_JSON_PATH
+} from "../constraints/loader.js";
 
 export function registerConstraintsCommand(program) {
   const constraints = program
@@ -9,8 +15,8 @@ export function registerConstraintsCommand(program) {
     .command("init")
     .description("Initialize default constraints files")
     .action(async () => {
-      printInfo("constraints init scaffold is ready");
-      console.log({ command: "constraints init" });
+      const pathValue = await initializeConstraints();
+      printSuccess(`Created constraints file: ${pathValue}`);
     });
 
   constraints
@@ -18,15 +24,32 @@ export function registerConstraintsCommand(program) {
     .description("View resolved constraints")
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (options) => {
-      printInfo("constraints view scaffold is ready");
-      console.log({ command: "constraints view", options });
+      const resolved = await loadConstraints();
+
+      if (options.output === "json") {
+        printJson(resolved);
+        return;
+      }
+
+      printInfo("Resolved PromptWash constraints");
+      printJson(resolved);
     });
 
   constraints
     .command("validate")
     .description("Validate constraints files")
     .action(async () => {
-      printInfo("constraints validate scaffold is ready");
-      console.log({ command: "constraints validate" });
+      const resolved = await loadConstraints();
+      const errors = validateConstraintsObject(resolved);
+
+      if (errors.length > 0) {
+        printWarning(`Constraints validation failed for ${CONSTRAINTS_JSON_PATH}`);
+        printJson({ valid: false, errors });
+        process.exitCode = 1;
+        return;
+      }
+
+      printSuccess("Constraints are valid");
+      printJson({ valid: true, errors: [] });
     });
 }
