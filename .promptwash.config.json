@@ -1,16 +1,14 @@
 {
   "ollama": {
     "baseUrl": "http://localhost:11434/api",
-    "model": "llama3.2",
+    "model": "llama3:latest",
     "timeoutMs": 30000
   },
   "output": {
     "defaultFormat": "text"
   },
   "benchmark": {
-    "enableProviders": [
-      "ollama"
-    ],
+    "enableProviders": ["ollama"],
     "exactTokenCounting": false
   }
 }

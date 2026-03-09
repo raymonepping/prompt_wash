@@ -1,9 +1,4 @@
-import {
-  printInfo,
-  printJson,
-  printSuccess,
-  printWarning,
-} from "../utils/display.js";
+import { printInfo, printJson, printSuccess, printWarning } from "../utils/display.js";
 import { resolveInputSource } from "../utils/input.js";
 import { runPipeline } from "../pipeline/index.js";
 import { validatePromptIr } from "../ir/schema.js";
@@ -12,11 +7,10 @@ import { createValidationError } from "../utils/errors.js";
 export function registerParseCommand(program) {
   program
     .command("parse")
-    .description(
-      "Clean raw prompt input, detect intent, and generate Prompt IR",
-    )
+    .description("Clean raw prompt input, detect intent, and generate Prompt IR")
     .argument("[input]", "Prompt text or path to a file")
     .option("-f, --file", "Treat input as a file path")
+    .option("--enrich", "Use Ollama to enrich the deterministic parse", false)
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (input, options) => {
       const resolved = await resolveInputSource(input, options);
@@ -24,6 +18,7 @@ export function registerParseCommand(program) {
       const promptObject = await runPipeline(resolved.value, {
         source: resolved.kind,
         path: resolved.path,
+        enrich: options.enrich
       });
 
       const irErrors = validatePromptIr(promptObject.ir);
@@ -47,6 +42,16 @@ export function registerParseCommand(program) {
 
       if (resolved.path) {
         printInfo(`Path: ${resolved.path}`);
+      }
+
+      if (options.enrich) {
+        const enrichmentMeta = promptObject.metadata.enrichment ?? {};
+        printInfo(
+          `Enrichment: ${enrichmentMeta.ok ? "applied or evaluated" : "not applied"}`
+        );
+        if (enrichmentMeta.reason) {
+          printInfo(`Enrichment note: ${enrichmentMeta.reason}`);
+        }
       }
 
       console.log("");

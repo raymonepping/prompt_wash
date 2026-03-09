@@ -1,14 +1,7 @@
-import {
-  printInfo,
-  printJson,
-  printSuccess,
-  printWarning,
-} from "../utils/display.js";
+import { printInfo, printJson, printSuccess, printWarning } from "../utils/display.js";
 import { resolveInputSource, readFileUtf8 } from "../utils/input.js";
 import { runPipeline } from "../pipeline/index.js";
-import { adaptPrompt, scoreRenderedVariants } from "../pipeline/adapt.js";
-import { resolveConfig } from "../config/loader.js";
-import { createOllamaClient } from "../ollama/client.js";
+import { buildBenchmarkResult } from "../benchmark/providers.js";
 
 function splitSentences(text) {
   return text
@@ -21,12 +14,8 @@ function computeBaselineDiff(currentPrompt, baselinePrompt) {
   const currentSentences = new Set(splitSentences(currentPrompt.cleaned));
   const baselineSentences = new Set(splitSentences(baselinePrompt.cleaned));
 
-  const added = [...currentSentences].filter(
-    (item) => !baselineSentences.has(item),
-  );
-  const removed = [...baselineSentences].filter(
-    (item) => !currentSentences.has(item),
-  );
+  const added = [...currentSentences].filter((item) => !baselineSentences.has(item));
+  const removed = [...baselineSentences].filter((item) => !currentSentences.has(item));
 
   let intentChangeRisk = "low";
 
@@ -43,49 +32,8 @@ function computeBaselineDiff(currentPrompt, baselinePrompt) {
     removed_sentences: removed,
     intent_change_risk: intentChangeRisk,
     baseline_intent: baselinePrompt.intent,
-    current_intent: currentPrompt.intent,
+    current_intent: currentPrompt.intent
   };
-}
-
-async function buildBenchmarkResult(promptObject) {
-  const config = await resolveConfig();
-  const providers = config.benchmark?.enableProviders ?? ["ollama"];
-
-  const variants = {
-    generic: adaptPrompt(promptObject, "generic"),
-    compact: adaptPrompt(promptObject, "compact"),
-    openai: adaptPrompt(promptObject, "openai"),
-    claude: adaptPrompt(promptObject, "claude"),
-  };
-
-  const compactScore = scoreRenderedVariants(variants);
-
-  const benchmark = {
-    enabled_providers: providers,
-    variants: {
-      generic: {
-        tokens: Math.ceil(variants.generic.length / 4),
-      },
-      compact: {
-        tokens: Math.ceil(variants.compact.length / 4),
-      },
-      openai: {
-        tokens: Math.ceil(variants.openai.length / 4),
-      },
-      claude: {
-        tokens: Math.ceil(variants.claude.length / 4),
-      },
-    },
-    compact_score: compactScore,
-    provider_health: {},
-  };
-
-  if (providers.includes("ollama")) {
-    const client = createOllamaClient(config.ollama);
-    benchmark.provider_health.ollama = await client.healthCheck();
-  }
-
-  return benchmark;
 }
 
 export function registerCheckCommand(program) {
@@ -96,6 +44,7 @@ export function registerCheckCommand(program) {
     .option("-f, --file", "Treat input as a file path")
     .option("--benchmark", "Run benchmark flow if configured", false)
     .option("--baseline <path>", "Optional baseline prompt or IR file")
+    .option("--enrich", "Use Ollama to enrich the deterministic parse before checking", false)
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (input, options) => {
       const resolved = await resolveInputSource(input, options);
@@ -103,6 +52,7 @@ export function registerCheckCommand(program) {
       const promptObject = await runPipeline(resolved.value, {
         source: resolved.kind,
         path: resolved.path,
+        enrich: options.enrich
       });
 
       let baselineDiff = null;
@@ -112,6 +62,7 @@ export function registerCheckCommand(program) {
         const baselinePrompt = await runPipeline(baselineRaw, {
           source: "baseline_file",
           path: options.baseline,
+          enrich: false
         });
 
         baselineDiff = computeBaselineDiff(promptObject, baselinePrompt);
@@ -127,6 +78,7 @@ export function registerCheckCommand(program) {
         source: resolved.kind,
         path: resolved.path,
         benchmark_requested: options.benchmark,
+        enrich_requested: options.enrich,
         baseline: options.baseline ?? null,
         intent: promptObject.intent,
         complexity_score: promptObject.complexity_score,
@@ -134,17 +86,13 @@ export function registerCheckCommand(program) {
         lint_warnings: promptObject.lint_warnings,
         lint_summary: {
           total: promptObject.lint_warnings.length,
-          errors: promptObject.lint_warnings.filter(
-            (item) => item.level === "error",
-          ).length,
-          warnings: promptObject.lint_warnings.filter(
-            (item) => item.level === "warning",
-          ).length,
+          errors: promptObject.lint_warnings.filter((item) => item.level === "error").length,
+          warnings: promptObject.lint_warnings.filter((item) => item.level === "warning").length
         },
         tokens: promptObject.tokens,
         metadata: promptObject.metadata,
         baseline_diff: baselineDiff,
-        benchmark,
+        benchmark
       };
 
       if (options.output === "json") {
@@ -163,8 +111,19 @@ export function registerCheckCommand(program) {
       printInfo(`Semantic drift risk: ${promptObject.semantic_drift_risk}`);
       printInfo(`Token estimate: ${promptObject.tokens.input}`);
       printInfo(
-        `Lint summary: ${result.lint_summary.errors} errors, ${result.lint_summary.warnings} warnings`,
+        `Lint summary: ${result.lint_summary.errors} errors, ${result.lint_summary.warnings} warnings`
       );
+
+      if (options.enrich) {
+        const enrichmentMeta = promptObject.metadata.enrichment ?? {};
+        console.log("");
+        console.log("Enrichment:");
+        console.log(`- Requested: yes`);
+        console.log(`- OK: ${enrichmentMeta.ok ? "yes" : "no"}`);
+        if (enrichmentMeta.reason) {
+          console.log(`- Note: ${enrichmentMeta.reason}`);
+        }
+      }
 
       console.log("");
       console.log("Lint warnings:");
@@ -203,21 +162,19 @@ export function registerCheckCommand(program) {
       if (benchmark) {
         console.log("");
         console.log("Benchmark:");
+        console.log(`- Enabled providers: ${benchmark.enabled_providers.join(", ")}`);
         console.log(
-          `- Enabled providers: ${benchmark.enabled_providers.join(", ")}`,
-        );
-        console.log(
-          `- Compact saved ${benchmark.compact_score.saved_tokens} tokens (${benchmark.compact_score.saved_percent}%)`,
+          `- Compact saved ${benchmark.compact_score.saved_tokens} tokens (${benchmark.compact_score.saved_percent}%)`
         );
         for (const [name, data] of Object.entries(benchmark.variants)) {
           console.log(`- ${name}: ${data.tokens} tokens`);
         }
         if (benchmark.provider_health.ollama) {
           console.log(
-            `- Ollama reachable: ${benchmark.provider_health.ollama.reachable ? "yes" : "no"}`,
+            `- Ollama reachable: ${benchmark.provider_health.ollama.reachable ? "yes" : "no"}`
           );
           console.log(
-            `- Ollama configured model installed: ${benchmark.provider_health.ollama.installed_model ? "yes" : "no"}`,
+            `- Ollama configured model installed: ${benchmark.provider_health.ollama.installed_model ? "yes" : "no"}`
           );
         }
       }

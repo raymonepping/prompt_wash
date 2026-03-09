@@ -4,6 +4,39 @@ function buildUrl(baseUrl, path) {
   return `${baseUrl.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
 }
 
+function safeJsonParse(text) {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+function extractJsonObject(text) {
+  const direct = safeJsonParse(text);
+  if (direct) {
+    return direct;
+  }
+
+  const fencedMatch = text.match(/```json\s*([\s\S]*?)```/i);
+  if (fencedMatch) {
+    const parsed = safeJsonParse(fencedMatch[1].trim());
+    if (parsed) {
+      return parsed;
+    }
+  }
+
+  const objectMatch = text.match(/\{[\s\S]*\}/);
+  if (objectMatch) {
+    const parsed = safeJsonParse(objectMatch[0]);
+    if (parsed) {
+      return parsed;
+    }
+  }
+
+  return null;
+}
+
 export function createOllamaClient(config = {}) {
   const baseUrl = config.baseUrl ?? "http://localhost:11434/api";
   const model = config.model ?? "llama3.2";
@@ -19,8 +52,8 @@ export function createOllamaClient(config = {}) {
         signal: controller.signal,
         headers: {
           "content-type": "application/json",
-          ...(options.headers ?? {}),
-        },
+          ...(options.headers ?? {})
+        }
       });
 
       const text = await response.text();
@@ -32,8 +65,8 @@ export function createOllamaClient(config = {}) {
           details: {
             status: response.status,
             statusText: response.statusText,
-            body: data,
-          },
+            body: data
+          }
         });
       }
 
@@ -42,7 +75,7 @@ export function createOllamaClient(config = {}) {
       if (error.name === "AbortError") {
         throw new PromptWashError("Ollama request timed out", {
           code: "OLLAMA_TIMEOUT",
-          details: { timeoutMs, baseUrl, path },
+          details: { timeoutMs, baseUrl, path }
         });
       }
 
@@ -54,8 +87,8 @@ export function createOllamaClient(config = {}) {
         code: "OLLAMA_UNREACHABLE",
         details: {
           baseUrl,
-          message: error.message,
-        },
+          message: error.message
+        }
       });
     } finally {
       clearTimeout(timeout);
@@ -78,7 +111,7 @@ export function createOllamaClient(config = {}) {
           reachable: true,
           configured_model: model,
           installed_model: installed,
-          available_models: models.map((item) => item.name),
+          available_models: models.map((item) => item.name)
         };
       } catch (error) {
         return {
@@ -90,10 +123,39 @@ export function createOllamaClient(config = {}) {
           error: {
             code: error.code ?? "OLLAMA_ERROR",
             message: error.message,
-            details: error.details ?? null,
-          },
+            details: error.details ?? null
+          }
         };
       }
     },
+
+    async generateJson({ systemPrompt, userPrompt }) {
+      const data = await request("/generate", {
+        method: "POST",
+        body: JSON.stringify({
+          model,
+          prompt: `${systemPrompt.trim()}\n\n${userPrompt.trim()}`,
+          stream: false,
+          format: "json"
+        })
+      });
+
+      const responseText = data.response ?? "";
+      const parsed = extractJsonObject(responseText);
+
+      if (!parsed) {
+        throw new PromptWashError("Ollama returned non-JSON enrichment output", {
+          code: "OLLAMA_INVALID_JSON",
+          details: {
+            response: responseText
+          }
+        });
+      }
+
+      return {
+        raw: responseText,
+        parsed
+      };
+    }
   };
 }

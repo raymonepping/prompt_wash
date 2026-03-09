@@ -42,7 +42,7 @@ touch src/index.js
 touch src/commands/{parse,render,check,repo,constraints,config}.js
 
 # 5. Create Pipeline Stages
-touch src/pipeline/{normalize,clean,lint,analyze,adapt,index}.js
+touch src/pipeline/{normalize,clean,enrich,lint,analyze,adapt,index}.js
 
 # 6. Create Core Modules
 touch src/ir/schema.js
