@@ -14,7 +14,7 @@ export async function buildBenchmarkResult(promptObject) {
     generic: adaptPrompt(promptObject, "generic"),
     compact: adaptPrompt(promptObject, "compact"),
     openai: adaptPrompt(promptObject, "openai"),
-    claude: adaptPrompt(promptObject, "claude")
+    claude: adaptPrompt(promptObject, "claude"),
   };
 
   const compactScore = scoreRenderedVariants(variants);
@@ -23,20 +23,20 @@ export async function buildBenchmarkResult(promptObject) {
     enabled_providers: providers,
     variants: {
       generic: {
-        tokens: tokenCount(variants.generic)
+        tokens: tokenCount(variants.generic),
       },
       compact: {
-        tokens: tokenCount(variants.compact)
+        tokens: tokenCount(variants.compact),
       },
       openai: {
-        tokens: tokenCount(variants.openai)
+        tokens: tokenCount(variants.openai),
       },
       claude: {
-        tokens: tokenCount(variants.claude)
-      }
+        tokens: tokenCount(variants.claude),
+      },
     },
     compact_score: compactScore,
-    provider_health: {}
+    provider_health: {},
   };
 
   if (providers.includes("ollama")) {

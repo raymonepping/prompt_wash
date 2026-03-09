@@ -15,7 +15,7 @@ import {
   detectSteps,
   detectTone,
   computeComplexityScore,
-  classifySentences
+  classifySentences,
 } from "./analyze.js";
 import { enrichPromptObject } from "./enrich.js";
 
@@ -33,11 +33,11 @@ function buildDeterministicPromptObject(raw, cleaned, options = {}) {
   ir.tone = detectTone(cleaned);
   ir.language = detectLanguage(cleaned);
   ir.tokens = {
-    input: estimateTokens(cleaned)
+    input: estimateTokens(cleaned),
   };
   ir.metadata = {
     source: options.source ?? "unknown",
-    path: options.path ?? null
+    path: options.path ?? null,
   };
 
   const promptObject = createEmptyPromptObject();
@@ -48,14 +48,16 @@ function buildDeterministicPromptObject(raw, cleaned, options = {}) {
   promptObject.audience = ir.audience;
   promptObject.constraints = [...ir.constraints];
   promptObject.tokens = {
-    input: estimateTokens(cleaned)
+    input: estimateTokens(cleaned),
   };
   promptObject.complexity_score = computeComplexityScore({
     steps: ir.steps,
     constraints: ir.constraints,
-    outputFormat: ir.output_format
+    outputFormat: ir.output_format,
   });
-  promptObject.semantic_drift_risk = documentSignals.looks_like_document ? "medium" : "low";
+  promptObject.semantic_drift_risk = documentSignals.looks_like_document
+    ? "medium"
+    : "low";
   promptObject.fingerprint = createFingerprint(cleaned);
   promptObject.language = ir.language;
   promptObject.metadata = {
@@ -65,8 +67,8 @@ function buildDeterministicPromptObject(raw, cleaned, options = {}) {
     sentence_classification: sentenceClassification,
     enrichment: {
       used: false,
-      applied_fields: {}
-    }
+      applied_fields: {},
+    },
   };
   promptObject.lint_warnings = lintPrompt(promptObject);
 
@@ -90,8 +92,8 @@ export async function runPipeline(input, options = {}) {
         requested: true,
         ok: enrichmentResult.ok,
         reason: enrichmentResult.reason,
-        health: enrichmentResult.health
-      }
+        health: enrichmentResult.health,
+      },
     };
 
     if (enrichmentResult.ok && enrichmentResult.enrichment) {

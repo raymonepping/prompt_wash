@@ -9,7 +9,7 @@ function sanitizeEnrichment(value) {
     constraints: [],
     steps: [],
     output_format: "",
-    tone: ""
+    tone: "",
   };
 
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -63,7 +63,7 @@ export async function enrichPromptObject(promptObject) {
       ok: false,
       enrichment: null,
       reason: "Ollama is unavailable or configured model is not installed.",
-      health
+      health,
     };
   }
 
@@ -93,13 +93,13 @@ ${promptObject.cleaned}
 
   const response = await client.generateJson({
     systemPrompt,
-    userPrompt
+    userPrompt,
   });
 
   return {
     ok: true,
     enrichment: sanitizeEnrichment(response.parsed),
     reason: null,
-    health
+    health,
   };
 }

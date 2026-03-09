@@ -4,7 +4,7 @@ const FILLER_PATTERNS = [
   /\bmaybe\b/gi,
   /\bkind of\b/gi,
   /\bsort of\b/gi,
-  /\bplease\b/gi
+  /\bplease\b/gi,
 ];
 
 export async function cleanPromptInput(input) {
@@ -25,7 +25,10 @@ function isNonEmptyString(value) {
 }
 
 function isUsefulArray(value) {
-  return Array.isArray(value) && value.some((item) => typeof item === "string" && item.trim());
+  return (
+    Array.isArray(value) &&
+    value.some((item) => typeof item === "string" && item.trim())
+  );
 }
 
 export function mergeEnrichment(promptObject, enrichment = {}) {
@@ -39,11 +42,17 @@ export function mergeEnrichment(promptObject, enrichment = {}) {
     merged.ir.context = enrichment.context.trim();
   }
 
-  if (isNonEmptyString(enrichment.output_format) && !merged.ir.output_format.trim()) {
+  if (
+    isNonEmptyString(enrichment.output_format) &&
+    !merged.ir.output_format.trim()
+  ) {
     merged.ir.output_format = enrichment.output_format.trim();
   }
 
-  if (isNonEmptyString(enrichment.audience) && merged.ir.audience === "general") {
+  if (
+    isNonEmptyString(enrichment.audience) &&
+    merged.ir.audience === "general"
+  ) {
     merged.ir.audience = enrichment.audience.trim();
   }
 
@@ -51,7 +60,10 @@ export function mergeEnrichment(promptObject, enrichment = {}) {
     merged.ir.tone = enrichment.tone.trim();
   }
 
-  if (isUsefulArray(enrichment.constraints) && merged.ir.constraints.length === 0) {
+  if (
+    isUsefulArray(enrichment.constraints) &&
+    merged.ir.constraints.length === 0
+  ) {
     merged.ir.constraints = enrichment.constraints
       .map((item) => item.trim())
       .filter(Boolean);
@@ -74,20 +86,25 @@ export function mergeEnrichment(promptObject, enrichment = {}) {
       applied_fields: {
         goal: merged.ir.goal === enrichment.goal?.trim(),
         context: merged.ir.context === enrichment.context?.trim(),
-        output_format: merged.ir.output_format === enrichment.output_format?.trim(),
+        output_format:
+          merged.ir.output_format === enrichment.output_format?.trim(),
         audience: merged.ir.audience === enrichment.audience?.trim(),
         tone: merged.ir.tone === enrichment.tone?.trim(),
         constraints:
           Array.isArray(enrichment.constraints) &&
           JSON.stringify(merged.ir.constraints) ===
-            JSON.stringify(enrichment.constraints.map((item) => item.trim()).filter(Boolean)),
+            JSON.stringify(
+              enrichment.constraints.map((item) => item.trim()).filter(Boolean),
+            ),
         steps:
           Array.isArray(enrichment.steps) &&
           JSON.stringify(merged.ir.steps) ===
-            JSON.stringify(enrichment.steps.map((item) => item.trim()).filter(Boolean))
+            JSON.stringify(
+              enrichment.steps.map((item) => item.trim()).filter(Boolean),
+            ),
       },
-      raw: enrichment
-    }
+      raw: enrichment,
+    },
   };
 
   return merged;
