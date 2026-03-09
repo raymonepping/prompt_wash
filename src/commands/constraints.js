@@ -1,9 +1,14 @@
-import { printInfo, printJson, printSuccess, printWarning } from "../utils/display.js";
+import {
+  printInfo,
+  printJson,
+  printSuccess,
+  printWarning,
+} from "../utils/display.js";
 import {
   initializeConstraints,
   loadConstraints,
   validateConstraintsObject,
-  CONSTRAINTS_JSON_PATH
+  CONSTRAINTS_JSON_PATH,
 } from "../constraints/loader.js";
 
 export function registerConstraintsCommand(program) {
@@ -43,7 +48,9 @@ export function registerConstraintsCommand(program) {
       const errors = validateConstraintsObject(resolved);
 
       if (errors.length > 0) {
-        printWarning(`Constraints validation failed for ${CONSTRAINTS_JSON_PATH}`);
+        printWarning(
+          `Constraints validation failed for ${CONSTRAINTS_JSON_PATH}`,
+        );
         printJson({ valid: false, errors });
         process.exitCode = 1;
         return;

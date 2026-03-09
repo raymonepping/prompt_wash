@@ -1,10 +1,15 @@
-import { printInfo, printJson, printSuccess, printWarning } from "../utils/display.js";
+import {
+  printInfo,
+  printJson,
+  printSuccess,
+  printWarning,
+} from "../utils/display.js";
 import { PromptWashError } from "../utils/errors.js";
 import {
   getRepoDiff,
   getRepoHistory,
   getRepoStatus,
-  isGitRepository
+  isGitRepository,
 } from "../repo/manager.js";
 
 async function ensureGitRepo() {
@@ -13,7 +18,7 @@ async function ensureGitRepo() {
   if (!insideRepo) {
     throw new PromptWashError("Current directory is not a Git repository.", {
       code: "NOT_A_GIT_REPO",
-      details: "Run this command inside a Git working tree."
+      details: "Run this command inside a Git working tree.",
     });
   }
 }
@@ -21,7 +26,9 @@ async function ensureGitRepo() {
 export function registerRepoCommand(program) {
   const repo = program
     .command("repo")
-    .description("Manage prompt repository connection, publishing, and history");
+    .description(
+      "Manage prompt repository connection, publishing, and history",
+    );
 
   repo
     .command("connect")
@@ -39,8 +46,8 @@ export function registerRepoCommand(program) {
         next_steps: [
           "Validate the remote exists or can be added",
           "Store PromptWash repository metadata",
-          "Support prompt publishing workflows safely"
-        ]
+          "Support prompt publishing workflows safely",
+        ],
       };
 
       if (options.output === "json") {
@@ -68,14 +75,14 @@ export function registerRepoCommand(program) {
         safe_behavior: [
           "No files were staged",
           "No commit was created",
-          "No remote push was attempted"
+          "No remote push was attempted",
         ],
         next_steps: [
           "Validate prompt file paths",
           "Stage only selected files",
           "Create explicit commit messages",
-          "Require confirmation before push"
-        ]
+          "Require confirmation before push",
+        ],
       };
 
       if (options.output === "json") {
@@ -101,7 +108,7 @@ export function registerRepoCommand(program) {
         printJson({
           command: "repo history",
           path: pathValue ?? null,
-          history
+          history,
         });
         return;
       }
@@ -127,7 +134,7 @@ export function registerRepoCommand(program) {
       const diff = await getRepoDiff(
         pathValue ?? null,
         options.from,
-        options.to
+        options.to,
       );
 
       if (options.output === "json") {
@@ -136,7 +143,7 @@ export function registerRepoCommand(program) {
           path: pathValue ?? null,
           from: options.from,
           to: options.to,
-          diff
+          diff,
         });
         return;
       }
@@ -162,7 +169,7 @@ export function registerRepoCommand(program) {
       if (options.output === "json") {
         printJson({
           command: "repo status",
-          status
+          status,
         });
         return;
       }

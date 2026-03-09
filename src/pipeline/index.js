@@ -15,7 +15,7 @@ import {
   detectSteps,
   detectTone,
   computeComplexityScore,
-  classifySentences
+  classifySentences,
 } from "./analyze.js";
 
 export async function runPipeline(input, options = {}) {
@@ -36,11 +36,11 @@ export async function runPipeline(input, options = {}) {
   ir.tone = detectTone(cleaned);
   ir.language = detectLanguage(cleaned);
   ir.tokens = {
-    input: estimateTokens(cleaned)
+    input: estimateTokens(cleaned),
   };
   ir.metadata = {
     source: options.source ?? "unknown",
-    path: options.path ?? null
+    path: options.path ?? null,
   };
 
   const promptObject = createEmptyPromptObject();
@@ -51,21 +51,23 @@ export async function runPipeline(input, options = {}) {
   promptObject.audience = ir.audience;
   promptObject.constraints = [...ir.constraints];
   promptObject.tokens = {
-    input: estimateTokens(cleaned)
+    input: estimateTokens(cleaned),
   };
   promptObject.complexity_score = computeComplexityScore({
     steps: ir.steps,
     constraints: ir.constraints,
-    outputFormat: ir.output_format
+    outputFormat: ir.output_format,
   });
-  promptObject.semantic_drift_risk = documentSignals.looks_like_document ? "medium" : "low";
+  promptObject.semantic_drift_risk = documentSignals.looks_like_document
+    ? "medium"
+    : "low";
   promptObject.fingerprint = createFingerprint(cleaned);
   promptObject.language = ir.language;
   promptObject.metadata = {
     source: options.source ?? "unknown",
     path: options.path ?? null,
     document_signals: documentSignals,
-    sentence_classification: sentenceClassification
+    sentence_classification: sentenceClassification,
   };
   promptObject.lint_warnings = lintPrompt(promptObject);
 

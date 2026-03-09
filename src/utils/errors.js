@@ -13,14 +13,14 @@ export class PromptWashError extends Error {
 export function createValidationError(message, details = null) {
   return new PromptWashError(message, {
     code: "VALIDATION_ERROR",
-    details
+    details,
   });
 }
 
 export function createFileError(message, details = null) {
   return new PromptWashError(message, {
     code: "FILE_ERROR",
-    details
+    details,
   });
 }
 

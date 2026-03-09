@@ -10,7 +10,7 @@ export function createEmptyPromptIr() {
     language: "",
     variants: {},
     tokens: {},
-    metadata: {}
+    metadata: {},
   };
 }
 
@@ -22,13 +22,13 @@ export function createEmptyPromptObject() {
     variants: {
       compact: "",
       openai: "",
-      claude: ""
+      claude: "",
     },
     intent: "",
     audience: "",
     constraints: [],
     tokens: {
-      input: 0
+      input: 0,
     },
     cost: {},
     complexity_score: 0,
@@ -36,7 +36,7 @@ export function createEmptyPromptObject() {
     lint_warnings: [],
     fingerprint: "",
     language: "en",
-    metadata: {}
+    metadata: {},
   };
 }
 
@@ -54,7 +54,7 @@ export function validatePromptIr(ir) {
     "context",
     "output_format",
     "tone",
-    "language"
+    "language",
   ];
 
   for (const field of stringFields) {
@@ -71,7 +71,11 @@ export function validatePromptIr(ir) {
     errors.push("IR field must be an array: steps");
   }
 
-  if (!ir.variants || typeof ir.variants !== "object" || Array.isArray(ir.variants)) {
+  if (
+    !ir.variants ||
+    typeof ir.variants !== "object" ||
+    Array.isArray(ir.variants)
+  ) {
     errors.push("IR field must be an object: variants");
   }
 
@@ -79,7 +83,11 @@ export function validatePromptIr(ir) {
     errors.push("IR field must be an object: tokens");
   }
 
-  if (!ir.metadata || typeof ir.metadata !== "object" || Array.isArray(ir.metadata)) {
+  if (
+    !ir.metadata ||
+    typeof ir.metadata !== "object" ||
+    Array.isArray(ir.metadata)
+  ) {
     errors.push("IR field must be an object: metadata");
   }
 

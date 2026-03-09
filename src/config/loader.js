@@ -8,15 +8,15 @@ export const DEFAULT_CONFIG = {
   ollama: {
     baseUrl: "http://localhost:11434/api",
     model: "llama3.2",
-    timeoutMs: 30000
+    timeoutMs: 30000,
   },
   output: {
-    defaultFormat: "text"
+    defaultFormat: "text",
   },
   benchmark: {
     enableProviders: ["ollama"],
-    exactTokenCounting: false
-  }
+    exactTokenCounting: false,
+  },
 };
 
 export const PROJECT_CONFIG_PATH = ".promptwash.config.json";
@@ -39,7 +39,10 @@ export async function readJsonFile(pathValue) {
     const raw = await fs.readFile(pathValue, "utf8");
     return JSON.parse(raw);
   } catch (error) {
-    throw createFileError(`Unable to read JSON config: ${pathValue}`, error.message);
+    throw createFileError(
+      `Unable to read JSON config: ${pathValue}`,
+      error.message,
+    );
   }
 }
 
@@ -114,7 +117,7 @@ export async function resolveConfig() {
 
   const merged = deepMerge(
     deepMerge(DEFAULT_CONFIG, userConfig),
-    projectConfig
+    projectConfig,
   );
 
   return applyEnvOverrides(merged);
@@ -133,7 +136,10 @@ export function validateConfigObject(config) {
     return errors;
   }
 
-  if (typeof config.ollama.baseUrl !== "string" || !config.ollama.baseUrl.trim()) {
+  if (
+    typeof config.ollama.baseUrl !== "string" ||
+    !config.ollama.baseUrl.trim()
+  ) {
     errors.push("ollama.baseUrl must be a non-empty string");
   }
 
@@ -141,7 +147,10 @@ export function validateConfigObject(config) {
     errors.push("ollama.model must be a non-empty string");
   }
 
-  if (typeof config.ollama.timeoutMs !== "number" || Number.isNaN(config.ollama.timeoutMs)) {
+  if (
+    typeof config.ollama.timeoutMs !== "number" ||
+    Number.isNaN(config.ollama.timeoutMs)
+  ) {
     errors.push("ollama.timeoutMs must be a number");
   }
 
@@ -159,7 +168,7 @@ export function validateConfigObject(config) {
 export async function initializeProjectConfig() {
   if (await fileExists(PROJECT_CONFIG_PATH)) {
     throw createValidationError(
-      `Project config already exists: ${PROJECT_CONFIG_PATH}`
+      `Project config already exists: ${PROJECT_CONFIG_PATH}`,
     );
   }
 
@@ -170,7 +179,7 @@ export async function initializeProjectConfig() {
   } catch (error) {
     throw createFileError(
       `Unable to write project config: ${PROJECT_CONFIG_PATH}`,
-      error.message
+      error.message,
     );
   }
 

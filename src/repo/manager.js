@@ -8,7 +8,7 @@ const execFileAsync = promisify(execFile);
 async function runGit(args) {
   try {
     const result = await execFileAsync("git", args, {
-      encoding: "utf8"
+      encoding: "utf8",
     });
 
     return (result.stdout || "").trim();
@@ -19,8 +19,8 @@ async function runGit(args) {
       code: "GIT_ERROR",
       details: {
         args,
-        stderr
-      }
+        stderr,
+      },
     });
   }
 }
@@ -44,7 +44,11 @@ export async function getRepoHistory(targetPath = null) {
   return await runGit(args);
 }
 
-export async function getRepoDiff(targetPath = null, fromRef = "HEAD~1", toRef = "HEAD") {
+export async function getRepoDiff(
+  targetPath = null,
+  fromRef = "HEAD~1",
+  toRef = "HEAD",
+) {
   const args = ["diff", `${fromRef}..${toRef}`];
 
   if (targetPath) {

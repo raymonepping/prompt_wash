@@ -1,4 +1,9 @@
-import { printInfo, printJson, printSuccess, printWarning } from "../utils/display.js";
+import {
+  printInfo,
+  printJson,
+  printSuccess,
+  printWarning,
+} from "../utils/display.js";
 import { resolveInputSource } from "../utils/input.js";
 import { runPipeline } from "../pipeline/index.js";
 import { validatePromptIr } from "../ir/schema.js";
@@ -7,7 +12,9 @@ import { createValidationError } from "../utils/errors.js";
 export function registerParseCommand(program) {
   program
     .command("parse")
-    .description("Clean raw prompt input, detect intent, and generate Prompt IR")
+    .description(
+      "Clean raw prompt input, detect intent, and generate Prompt IR",
+    )
     .argument("[input]", "Prompt text or path to a file")
     .option("-f, --file", "Treat input as a file path")
     .option("-o, --output <format>", "Output format: text|json", "text")
@@ -16,7 +23,7 @@ export function registerParseCommand(program) {
 
       const promptObject = await runPipeline(resolved.value, {
         source: resolved.kind,
-        path: resolved.path
+        path: resolved.path,
       });
 
       const irErrors = validatePromptIr(promptObject.ir);

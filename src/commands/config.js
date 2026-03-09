@@ -1,8 +1,13 @@
-import { printInfo, printJson, printSuccess, printWarning } from "../utils/display.js";
+import {
+  printInfo,
+  printJson,
+  printSuccess,
+  printWarning,
+} from "../utils/display.js";
 import {
   initializeProjectConfig,
   resolveConfig,
-  validateConfigObject
+  validateConfigObject,
 } from "../config/loader.js";
 import { createOllamaClient } from "../ollama/client.js";
 
@@ -53,7 +58,7 @@ export function registerConfigCommand(program) {
       const result = {
         valid: errors.length === 0,
         errors,
-        ollama
+        ollama,
       };
 
       if (options.output === "json") {

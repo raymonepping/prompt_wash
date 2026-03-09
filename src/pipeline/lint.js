@@ -2,7 +2,8 @@ function hasConflictingInstructions(text) {
   const lower = text.toLowerCase();
 
   const conciseSignals = /\bbrief\b|\bconcise\b|\bshort\b/.test(lower);
-  const verboseSignals = /\bdetailed\b|\bcomprehensive\b|\bin depth\b|\bextensive\b/.test(lower);
+  const verboseSignals =
+    /\bdetailed\b|\bcomprehensive\b|\bin depth\b|\bextensive\b/.test(lower);
 
   return conciseSignals && verboseSignals;
 }
@@ -34,14 +35,14 @@ export function lintPrompt(promptObject) {
     looks_like_document: false,
     heading_count: 0,
     bullet_count: 0,
-    command_count: 0
+    command_count: 0,
   };
 
   if (!intent.trim()) {
     warnings.push({
       code: "PW001",
       level: "error",
-      message: "Unable to detect a clear goal or task."
+      message: "Unable to detect a clear goal or task.",
     });
   }
 
@@ -49,7 +50,7 @@ export function lintPrompt(promptObject) {
     warnings.push({
       code: "PW002",
       level: "warning",
-      message: "Missing explicit output format."
+      message: "Missing explicit output format.",
     });
   }
 
@@ -57,7 +58,7 @@ export function lintPrompt(promptObject) {
     warnings.push({
       code: "PW003",
       level: "warning",
-      message: "Multiple tasks or steps detected."
+      message: "Multiple tasks or steps detected.",
     });
   }
 
@@ -65,7 +66,7 @@ export function lintPrompt(promptObject) {
     warnings.push({
       code: "PW004",
       level: "warning",
-      message: "High constraint density detected."
+      message: "High constraint density detected.",
     });
   }
 
@@ -73,7 +74,7 @@ export function lintPrompt(promptObject) {
     warnings.push({
       code: "PW005",
       level: "warning",
-      message: "Input looks more like documentation than a single prompt."
+      message: "Input looks more like documentation than a single prompt.",
     });
   }
 
@@ -81,7 +82,8 @@ export function lintPrompt(promptObject) {
     warnings.push({
       code: "PW006",
       level: "warning",
-      message: "Potentially conflicting brevity and depth instructions detected."
+      message:
+        "Potentially conflicting brevity and depth instructions detected.",
     });
   }
 
@@ -89,7 +91,7 @@ export function lintPrompt(promptObject) {
     warnings.push({
       code: "PW007",
       level: "warning",
-      message: "No actionable steps detected."
+      message: "No actionable steps detected.",
     });
   }
 
@@ -97,7 +99,7 @@ export function lintPrompt(promptObject) {
     warnings.push({
       code: "PW008",
       level: "warning",
-      message: "Output format may not fit the detected audience."
+      message: "Output format may not fit the detected audience.",
     });
   }
 
@@ -105,7 +107,7 @@ export function lintPrompt(promptObject) {
     warnings.push({
       code: "PW009",
       level: "warning",
-      message: "Prompt is large and may create unnecessary context pressure."
+      message: "Prompt is large and may create unnecessary context pressure.",
     });
   }
 

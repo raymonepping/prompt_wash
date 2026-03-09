@@ -4,7 +4,7 @@ const FILLER_PATTERNS = [
   /\bmaybe\b/gi,
   /\bkind of\b/gi,
   /\bsort of\b/gi,
-  /\bplease\b/gi
+  /\bplease\b/gi,
 ];
 
 export async function cleanPromptInput(input) {

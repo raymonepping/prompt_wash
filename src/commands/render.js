@@ -12,7 +12,7 @@ export function registerRenderCommand(program) {
     .option(
       "-p, --provider <provider>",
       "Target provider: openai|claude|generic|compact",
-      "generic"
+      "generic",
     )
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (input, options) => {
@@ -20,14 +20,14 @@ export function registerRenderCommand(program) {
 
       const promptObject = await runPipeline(resolved.value, {
         source: resolved.kind,
-        path: resolved.path
+        path: resolved.path,
       });
 
       const variants = {
         generic: adaptPrompt(promptObject, "generic"),
         compact: adaptPrompt(promptObject, "compact"),
         openai: adaptPrompt(promptObject, "openai"),
-        claude: adaptPrompt(promptObject, "claude")
+        claude: adaptPrompt(promptObject, "claude"),
       };
 
       const rendered = variants[options.provider] ?? variants.generic;
@@ -43,7 +43,7 @@ export function registerRenderCommand(program) {
         audience: promptObject.ir.audience,
         output_format: promptObject.ir.output_format,
         compact_score: compactScore,
-        rendered
+        rendered,
       };
 
       if (options.output === "json") {
@@ -59,7 +59,7 @@ export function registerRenderCommand(program) {
 
       if (options.provider === "compact") {
         printInfo(
-          `Compact saved ${compactScore.saved_tokens} tokens (${compactScore.saved_percent}%) versus generic`
+          `Compact saved ${compactScore.saved_tokens} tokens (${compactScore.saved_percent}%) versus generic`,
         );
       }
 

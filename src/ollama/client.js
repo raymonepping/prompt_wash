@@ -19,8 +19,8 @@ export function createOllamaClient(config = {}) {
         signal: controller.signal,
         headers: {
           "content-type": "application/json",
-          ...(options.headers ?? {})
-        }
+          ...(options.headers ?? {}),
+        },
       });
 
       const text = await response.text();
@@ -32,8 +32,8 @@ export function createOllamaClient(config = {}) {
           details: {
             status: response.status,
             statusText: response.statusText,
-            body: data
-          }
+            body: data,
+          },
         });
       }
 
@@ -42,7 +42,7 @@ export function createOllamaClient(config = {}) {
       if (error.name === "AbortError") {
         throw new PromptWashError("Ollama request timed out", {
           code: "OLLAMA_TIMEOUT",
-          details: { timeoutMs, baseUrl, path }
+          details: { timeoutMs, baseUrl, path },
         });
       }
 
@@ -54,8 +54,8 @@ export function createOllamaClient(config = {}) {
         code: "OLLAMA_UNREACHABLE",
         details: {
           baseUrl,
-          message: error.message
-        }
+          message: error.message,
+        },
       });
     } finally {
       clearTimeout(timeout);
@@ -78,7 +78,7 @@ export function createOllamaClient(config = {}) {
           reachable: true,
           configured_model: model,
           installed_model: installed,
-          available_models: models.map((item) => item.name)
+          available_models: models.map((item) => item.name),
         };
       } catch (error) {
         return {
@@ -90,10 +90,10 @@ export function createOllamaClient(config = {}) {
           error: {
             code: error.code ?? "OLLAMA_ERROR",
             message: error.message,
-            details: error.details ?? null
-          }
+            details: error.details ?? null,
+          },
         };
       }
-    }
+    },
   };
 }

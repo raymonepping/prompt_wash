@@ -59,7 +59,7 @@ function looksLikeOutputInstruction(text) {
 
 function looksLikeTaskSentence(text) {
   return /^(explain|write|summarize|compare|generate|create|list|describe|analyze|review|refactor|translate)\b/i.test(
-    text
+    text,
   );
 }
 
@@ -172,7 +172,7 @@ export function classifySentences(text) {
     constraints: [],
     outputInstructions: [],
     audienceHints: [],
-    context: []
+    context: [],
   };
 
   for (const sentence of sentences) {
@@ -244,7 +244,12 @@ export function detectSteps(text) {
     const likelyTaskBullets = lines
       .filter(isBulletLine)
       .map(stripBullet)
-      .filter((line) => looksLikeTaskSentence(line) || looksLikeConstraint(line) || looksLikeOutputInstruction(line))
+      .filter(
+        (line) =>
+          looksLikeTaskSentence(line) ||
+          looksLikeConstraint(line) ||
+          looksLikeOutputInstruction(line),
+      )
       .slice(0, 8);
 
     return likelyTaskBullets;
@@ -254,7 +259,7 @@ export function detectSteps(text) {
   const ordered = [
     ...classification.tasks,
     ...classification.constraints,
-    ...classification.outputInstructions
+    ...classification.outputInstructions,
   ];
 
   return [...new Set(ordered)];
@@ -263,7 +268,7 @@ export function detectSteps(text) {
 export function detectGoal(text) {
   if (looksLikePromptDocument(text)) {
     const lines = splitLines(text).filter(
-      (line) => !isHeading(line) && !isBulletLine(line) && !isCommandLike(line)
+      (line) => !isHeading(line) && !isBulletLine(line) && !isCommandLike(line),
     );
 
     return lines[0] ?? "";
@@ -295,7 +300,7 @@ export function detectDocumentSignals(text) {
     heading_count: lines.filter(isHeading).length,
     bullet_count: lines.filter(isBulletLine).length,
     command_count: lines.filter(isCommandLike).length,
-    looks_like_document: looksLikePromptDocument(text)
+    looks_like_document: looksLikePromptDocument(text),
   };
 }
 

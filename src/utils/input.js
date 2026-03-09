@@ -76,7 +76,7 @@ export async function resolveInputSource(input, options = {}) {
     return {
       kind: "file",
       value: await readFileUtf8(input),
-      path: input
+      path: input,
     };
   }
 
@@ -84,7 +84,7 @@ export async function resolveInputSource(input, options = {}) {
     return {
       kind: "argument",
       value: input,
-      path: null
+      path: null,
     };
   }
 
@@ -94,11 +94,11 @@ export async function resolveInputSource(input, options = {}) {
     return {
       kind: "stdin",
       value: stdinValue,
-      path: null
+      path: null,
     };
   }
 
   throw createValidationError(
-    "No input provided. Pass prompt text, use --file <path>, or pipe content through stdin."
+    "No input provided. Pass prompt text, use --file <path>, or pipe content through stdin.",
   );
 }

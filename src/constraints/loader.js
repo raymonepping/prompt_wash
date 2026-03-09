@@ -4,19 +4,19 @@ import path from "node:path";
 import { createFileError, createValidationError } from "../utils/errors.js";
 
 export const CONSTRAINTS_DIR = ".promptwash";
-export const CONSTRAINTS_JSON_PATH = path.join(CONSTRAINTS_DIR, "constraints.json");
+export const CONSTRAINTS_JSON_PATH = path.join(
+  CONSTRAINTS_DIR,
+  "constraints.json",
+);
 export const CONSTRAINTS_MD_PATH = path.join(CONSTRAINTS_DIR, "constraints.md");
 
 export const DEFAULT_CONSTRAINTS = {
   structural: [
     "do not invent missing information",
     "preserve technical accuracy",
-    "no em dashes"
+    "no em dashes",
   ],
-  output: [
-    "images must be wide",
-    "images must not contain text"
-  ]
+  output: ["images must be wide", "images must not contain text"],
 };
 
 export async function fileExists(pathValue) {
@@ -68,7 +68,7 @@ export function validateConstraintsObject(value) {
 export async function initializeConstraints() {
   if (await fileExists(CONSTRAINTS_JSON_PATH)) {
     throw createValidationError(
-      `Constraints file already exists: ${CONSTRAINTS_JSON_PATH}`
+      `Constraints file already exists: ${CONSTRAINTS_JSON_PATH}`,
     );
   }
 
@@ -77,12 +77,12 @@ export async function initializeConstraints() {
     await fs.writeFile(
       CONSTRAINTS_JSON_PATH,
       `${JSON.stringify(DEFAULT_CONSTRAINTS, null, 2)}\n`,
-      "utf8"
+      "utf8",
     );
   } catch (error) {
     throw createFileError(
       `Unable to write constraints file: ${CONSTRAINTS_JSON_PATH}`,
-      error.message
+      error.message,
     );
   }
 
@@ -101,7 +101,7 @@ export async function loadConstraints() {
   } catch (error) {
     throw createFileError(
       `Unable to read constraints file: ${CONSTRAINTS_JSON_PATH}`,
-      error.message
+      error.message,
     );
   }
 }

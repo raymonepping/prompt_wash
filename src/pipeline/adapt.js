@@ -21,19 +21,21 @@ export function adaptPrompt(promptObject, provider = "generic") {
           constraints.length > 0 && `Constraints: ${constraints.join("; ")}`,
           outputFormat && `Output: ${outputFormat}`,
           audience !== "general" && `Audience: ${audience}`,
-          context && `Context: ${context}`
+          context && `Context: ${context}`,
         ]
           .filter(Boolean)
-          .join(" ")
+          .join(" "),
       );
 
     case "openai":
       return [
         context ? `Context:\n${context}\n` : "",
         `Task:\n${goal}\n`,
-        constraints.length > 0 ? `Constraints:\n${formatList(constraints)}\n` : "",
+        constraints.length > 0
+          ? `Constraints:\n${formatList(constraints)}\n`
+          : "",
         outputFormat ? `Output format:\n${outputFormat}\n` : "",
-        audience !== "general" ? `Audience:\n${audience}\n` : ""
+        audience !== "general" ? `Audience:\n${audience}\n` : "",
       ]
         .filter(Boolean)
         .join("\n")
@@ -44,9 +46,11 @@ export function adaptPrompt(promptObject, provider = "generic") {
         "You are a careful assistant.",
         context ? `Context:\n${context}\n` : "",
         `Request:\n${goal}\n`,
-        constraints.length > 0 ? `Constraints:\n${formatList(constraints)}\n` : "",
+        constraints.length > 0
+          ? `Constraints:\n${formatList(constraints)}\n`
+          : "",
         outputFormat ? `Desired output:\n${outputFormat}\n` : "",
-        audience !== "general" ? `Audience:\n${audience}\n` : ""
+        audience !== "general" ? `Audience:\n${audience}\n` : "",
       ]
         .filter(Boolean)
         .join("\n")
@@ -57,9 +61,11 @@ export function adaptPrompt(promptObject, provider = "generic") {
       return [
         context ? `Context:\n${context}\n` : "",
         `Task:\n${goal}\n`,
-        constraints.length > 0 ? `Constraints:\n${formatList(constraints)}\n` : "",
+        constraints.length > 0
+          ? `Constraints:\n${formatList(constraints)}\n`
+          : "",
         outputFormat ? `Output format:\n${outputFormat}\n` : "",
-        audience !== "general" ? `Audience:\n${audience}\n` : ""
+        audience !== "general" ? `Audience:\n${audience}\n` : "",
       ]
         .filter(Boolean)
         .join("\n")
@@ -82,6 +88,6 @@ export function scoreRenderedVariants(variants) {
     generic_tokens: genericTokens,
     compact_tokens: compactTokens,
     saved_tokens: savedTokens,
-    saved_percent: savedPercent
+    saved_percent: savedPercent,
   };
 }
