@@ -16,12 +16,15 @@ export function registerRenderCommand(program) {
   program
     .command("render")
     .description("Render Prompt IR into provider-specific prompt variants")
-    .argument("[input]", "Prompt IR, PromptWash JSON, raw prompt, or path to a file")
+    .argument(
+      "[input]",
+      "Prompt IR, PromptWash JSON, raw prompt, or path to a file",
+    )
     .option("-f, --file", "Treat input as a file path")
     .option(
       "-p, --provider <provider>",
       "Target provider: openai|claude|generic|compact",
-      "generic"
+      "generic",
     )
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (input, options) => {
@@ -38,11 +41,13 @@ export function registerRenderCommand(program) {
       if (normalizedObject) {
         promptObject = normalizedObject.promptObject;
         sourceType =
-          normalizedObject.type === "prompt_object" ? "promptwash_json" : "ir_json";
+          normalizedObject.type === "prompt_object"
+            ? "promptwash_json"
+            : "ir_json";
       } else {
         promptObject = await runPipeline(resolved.value, {
           source: resolved.kind,
-          path: resolved.path
+          path: resolved.path,
         });
       }
 
@@ -50,7 +55,7 @@ export function registerRenderCommand(program) {
         generic: adaptPrompt(promptObject, "generic"),
         compact: adaptPrompt(promptObject, "compact"),
         openai: adaptPrompt(promptObject, "openai"),
-        claude: adaptPrompt(promptObject, "claude")
+        claude: adaptPrompt(promptObject, "claude"),
       };
 
       const rendered = variants[options.provider] ?? variants.generic;
@@ -66,7 +71,7 @@ export function registerRenderCommand(program) {
         audience: promptObject.ir.audience,
         output_format: promptObject.ir.output_format,
         compact_score: compactScore,
-        rendered
+        rendered,
       };
 
       if (options.output === "json") {
@@ -83,7 +88,7 @@ export function registerRenderCommand(program) {
 
       if (options.provider === "compact") {
         printInfo(
-          `Compact saved ${compactScore.saved_tokens} tokens (${compactScore.saved_percent}%) versus generic`
+          `Compact saved ${compactScore.saved_tokens} tokens (${compactScore.saved_percent}%) versus generic`,
         );
       }
 

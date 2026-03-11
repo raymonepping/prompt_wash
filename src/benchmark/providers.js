@@ -25,7 +25,7 @@ function buildVariantMetrics(variants, config) {
 
     result[provider] = {
       tokens,
-      estimated_cost: estimateVariantCost(tokens, provider, config)
+      estimated_cost: estimateVariantCost(tokens, provider, config),
     };
   }
 
@@ -40,7 +40,7 @@ export async function buildBenchmarkResult(promptObject) {
     generic: adaptPrompt(promptObject, "generic"),
     compact: adaptPrompt(promptObject, "compact"),
     openai: adaptPrompt(promptObject, "openai"),
-    claude: adaptPrompt(promptObject, "claude")
+    claude: adaptPrompt(promptObject, "claude"),
   };
 
   const compactScore = scoreRenderedVariants(variants);
@@ -49,7 +49,7 @@ export async function buildBenchmarkResult(promptObject) {
     enabled_providers: providers,
     variants: buildVariantMetrics(variants, config),
     compact_score: compactScore,
-    provider_health: {}
+    provider_health: {},
   };
 
   if (providers.includes("ollama")) {

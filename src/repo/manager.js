@@ -9,7 +9,7 @@ const execFileAsync = promisify(execFile);
 async function runGit(args) {
   try {
     const result = await execFileAsync("git", args, {
-      encoding: "utf8"
+      encoding: "utf8",
     });
 
     return (result.stdout || "").trim();
@@ -20,8 +20,8 @@ async function runGit(args) {
       code: "GIT_ERROR",
       details: {
         args,
-        stderr
-      }
+        stderr,
+      },
     });
   }
 }
@@ -45,7 +45,11 @@ export async function getRepoHistory(targetPath = null) {
   return await runGit(args);
 }
 
-export async function getRepoDiff(targetPath = null, fromRef = "HEAD~1", toRef = "HEAD") {
+export async function getRepoDiff(
+  targetPath = null,
+  fromRef = "HEAD~1",
+  toRef = "HEAD",
+) {
   const args = ["diff", `${fromRef}..${toRef}`];
 
   if (targetPath) {
@@ -62,7 +66,7 @@ export async function getRepoStatus() {
 export async function validatePublishTarget(targetPath) {
   if (!targetPath) {
     throw new PromptWashError("Publish target path is required.", {
-      code: "PUBLISH_TARGET_REQUIRED"
+      code: "PUBLISH_TARGET_REQUIRED",
     });
   }
 
@@ -72,12 +76,12 @@ export async function validatePublishTarget(targetPath) {
     return {
       exists: true,
       type: stat.isDirectory() ? "directory" : "file",
-      path: targetPath
+      path: targetPath,
     };
   } catch {
     throw new PromptWashError("Publish target does not exist.", {
       code: "PUBLISH_TARGET_MISSING",
-      details: { path: targetPath }
+      details: { path: targetPath },
     });
   }
 }
@@ -91,7 +95,7 @@ export async function previewPublishTarget(targetPath) {
     git_status: status,
     would_stage: [validated.path],
     would_commit: false,
-    would_push: false
+    would_push: false,
   };
 }
 
@@ -100,7 +104,7 @@ export async function stagePublishTarget(targetPath) {
   await runGit(["add", "--", targetPath]);
 
   return {
-    staged: [targetPath]
+    staged: [targetPath],
   };
 }
 
@@ -112,7 +116,7 @@ export async function hasStagedChanges() {
 export async function createCommit(message) {
   if (!message || !message.trim()) {
     throw new PromptWashError("Commit message is required.", {
-      code: "COMMIT_MESSAGE_REQUIRED"
+      code: "COMMIT_MESSAGE_REQUIRED",
     });
   }
 
@@ -120,7 +124,7 @@ export async function createCommit(message) {
   const latest = await runGit(["log", "--oneline", "--max-count=1"]);
 
   return {
-    commit: latest
+    commit: latest,
   };
 }
 
@@ -138,7 +142,7 @@ export async function publishTarget(targetPath, message) {
       staged: stageResult.staged,
       committed: false,
       pushed: false,
-      message: "No staged changes detected. Nothing was committed."
+      message: "No staged changes detected. Nothing was committed.",
     };
   }
 
@@ -151,6 +155,6 @@ export async function publishTarget(targetPath, message) {
     committed: true,
     pushed: false,
     commit: commitResult.commit,
-    message: "Publish commit created locally. No push was attempted."
+    message: "Publish commit created locally. No push was attempted.",
   };
 }

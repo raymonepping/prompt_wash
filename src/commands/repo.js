@@ -1,4 +1,9 @@
-import { printInfo, printJson, printSuccess, printWarning } from "../utils/display.js";
+import {
+  printInfo,
+  printJson,
+  printSuccess,
+  printWarning,
+} from "../utils/display.js";
 import { PromptWashError } from "../utils/errors.js";
 import {
   getRepoDiff,
@@ -6,7 +11,7 @@ import {
   getRepoStatus,
   isGitRepository,
   previewPublishTarget,
-  publishTarget
+  publishTarget,
 } from "../repo/manager.js";
 
 async function ensureGitRepo() {
@@ -15,7 +20,7 @@ async function ensureGitRepo() {
   if (!insideRepo) {
     throw new PromptWashError("Current directory is not a Git repository.", {
       code: "NOT_A_GIT_REPO",
-      details: "Run this command inside a Git working tree."
+      details: "Run this command inside a Git working tree.",
     });
   }
 }
@@ -23,7 +28,9 @@ async function ensureGitRepo() {
 export function registerRepoCommand(program) {
   const repo = program
     .command("repo")
-    .description("Manage prompt repository connection, publishing, and history");
+    .description(
+      "Manage prompt repository connection, publishing, and history",
+    );
 
   repo
     .command("connect")
@@ -41,8 +48,8 @@ export function registerRepoCommand(program) {
         next_steps: [
           "Validate the remote exists or can be added",
           "Store PromptWash repository metadata",
-          "Support prompt publishing workflows safely"
-        ]
+          "Support prompt publishing workflows safely",
+        ],
       };
 
       if (options.output === "json") {
@@ -66,9 +73,12 @@ export function registerRepoCommand(program) {
       await ensureGitRepo();
 
       if (options.dryRun && options.confirm) {
-        throw new PromptWashError("Use either --dry-run or --confirm, not both.", {
-          code: "INVALID_PUBLISH_MODE"
-        });
+        throw new PromptWashError(
+          "Use either --dry-run or --confirm, not both.",
+          {
+            code: "INVALID_PUBLISH_MODE",
+          },
+        );
       }
 
       if (!options.dryRun && !options.confirm) {
@@ -78,13 +88,14 @@ export function registerRepoCommand(program) {
           command: "repo publish",
           path: pathValue ?? null,
           status: "preview_only",
-          message: "No action taken. Use --dry-run to preview or --confirm to stage and commit locally.",
+          message:
+            "No action taken. Use --dry-run to preview or --confirm to stage and commit locally.",
           preview,
           safe_behavior: [
             "No files were staged",
             "No commit was created",
-            "No remote push was attempted"
-          ]
+            "No remote push was attempted",
+          ],
         };
 
         if (options.output === "json") {
@@ -109,13 +120,13 @@ export function registerRepoCommand(program) {
           safe_behavior: [
             "No files were staged",
             "No commit was created",
-            "No remote push was attempted"
+            "No remote push was attempted",
           ],
           next_steps: [
             "Review the preview",
             "Use --confirm to create a local commit",
-            "Add --message to control commit text"
-          ]
+            "Add --message to control commit text",
+          ],
         };
 
         if (options.output === "json") {
@@ -129,9 +140,13 @@ export function registerRepoCommand(program) {
       }
 
       const commitMessage =
-        options.message ?? `PromptWash publish: ${pathValue ?? "selected target"}`;
+        options.message ??
+        `PromptWash publish: ${pathValue ?? "selected target"}`;
 
-      const publishResult = await publishTarget(pathValue ?? null, commitMessage);
+      const publishResult = await publishTarget(
+        pathValue ?? null,
+        commitMessage,
+      );
 
       const result = {
         command: "repo publish",
@@ -142,8 +157,8 @@ export function registerRepoCommand(program) {
         safe_behavior: [
           "Only the selected path was staged",
           "A local commit may have been created",
-          "No remote push was attempted"
-        ]
+          "No remote push was attempted",
+        ],
       };
 
       if (options.output === "json") {
@@ -178,7 +193,7 @@ export function registerRepoCommand(program) {
         printJson({
           command: "repo history",
           path: pathValue ?? null,
-          history
+          history,
         });
         return;
       }
@@ -204,7 +219,7 @@ export function registerRepoCommand(program) {
       const diff = await getRepoDiff(
         pathValue ?? null,
         options.from,
-        options.to
+        options.to,
       );
 
       if (options.output === "json") {
@@ -213,7 +228,7 @@ export function registerRepoCommand(program) {
           path: pathValue ?? null,
           from: options.from,
           to: options.to,
-          diff
+          diff,
         });
         return;
       }
@@ -239,7 +254,7 @@ export function registerRepoCommand(program) {
       if (options.output === "json") {
         printJson({
           command: "repo status",
-          status
+          status,
         });
         return;
       }
