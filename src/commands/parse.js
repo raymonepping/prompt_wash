@@ -1,10 +1,5 @@
-import {
-  printInfo,
-  printJson,
-  printSuccess,
-  printWarning,
-} from "../utils/display.js";
-import { resolveInputSource } from "../utils/input.js";
+import { printInfo, printJson, printSuccess, printWarning } from "../utils/display.js";
+import { resolveInputSource, writeFileUtf8 } from "../utils/input.js";
 import { runPipeline } from "../pipeline/index.js";
 import { validatePromptIr } from "../ir/schema.js";
 import { createValidationError } from "../utils/errors.js";
@@ -12,12 +7,11 @@ import { createValidationError } from "../utils/errors.js";
 export function registerParseCommand(program) {
   program
     .command("parse")
-    .description(
-      "Clean raw prompt input, detect intent, and generate Prompt IR",
-    )
+    .description("Clean raw prompt input, detect intent, and generate Prompt IR")
     .argument("[input]", "Prompt text or path to a file")
     .option("-f, --file", "Treat input as a file path")
     .option("--enrich", "Use Ollama to enrich the deterministic parse", false)
+    .option("--write <path>", "Write PromptWash JSON artifact to a file")
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (input, options) => {
       const resolved = await resolveInputSource(input, options);
@@ -25,13 +19,17 @@ export function registerParseCommand(program) {
       const promptObject = await runPipeline(resolved.value, {
         source: resolved.kind,
         path: resolved.path,
-        enrich: options.enrich,
+        enrich: options.enrich
       });
 
       const irErrors = validatePromptIr(promptObject.ir);
 
       if (irErrors.length > 0) {
         throw createValidationError("Generated Prompt IR is invalid", irErrors);
+      }
+
+      if (options.write) {
+        await writeFileUtf8(options.write, `${JSON.stringify(promptObject, null, 2)}\n`);
       }
 
       if (options.output === "json") {
@@ -49,6 +47,10 @@ export function registerParseCommand(program) {
 
       if (resolved.path) {
         printInfo(`Path: ${resolved.path}`);
+      }
+
+      if (options.write) {
+        printInfo(`Artifact written: ${options.write}`);
       }
 
       if (options.enrich) {

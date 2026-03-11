@@ -35,6 +35,23 @@ export async function readFileUtf8(pathValue) {
   }
 }
 
+export async function writeFileUtf8(pathValue, content) {
+  try {
+    const normalized = typeof content === "string" ? content : String(content);
+    const dir = pathValue.includes("/") || pathValue.includes("\\")
+      ? pathValue.replace(/[\\/][^\\/]+$/, "")
+      : "";
+
+    if (dir) {
+      await fs.mkdir(dir, { recursive: true });
+    }
+
+    await fs.writeFile(pathValue, normalized, "utf8");
+  } catch (error) {
+    throw createFileError(`Unable to write file: ${pathValue}`, error.message);
+  }
+}
+
 export async function readStdin() {
   if (process.stdin.isTTY) {
     return "";
@@ -76,7 +93,7 @@ export async function resolveInputSource(input, options = {}) {
     return {
       kind: "file",
       value: await readFileUtf8(input),
-      path: input,
+      path: input
     };
   }
 
@@ -84,7 +101,7 @@ export async function resolveInputSource(input, options = {}) {
     return {
       kind: "argument",
       value: input,
-      path: null,
+      path: null
     };
   }
 
@@ -94,11 +111,11 @@ export async function resolveInputSource(input, options = {}) {
     return {
       kind: "stdin",
       value: stdinValue,
-      path: null,
+      path: null
     };
   }
 
   throw createValidationError(
-    "No input provided. Pass prompt text, use --file <path>, or pipe content through stdin.",
+    "No input provided. Pass prompt text, use --file <path>, or pipe content through stdin."
   );
 }

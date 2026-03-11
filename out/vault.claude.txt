@@ -1,0 +1,12 @@
+You are a careful assistant.
+Request:
+Explain Vault PKI.
+
+Constraints:
+- Do not use jargon.
+
+Desired output:
+markdown
+
+Audience:
+executives

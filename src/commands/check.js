@@ -7,6 +7,7 @@ import {
 import { resolveInputSource, readFileUtf8 } from "../utils/input.js";
 import { runPipeline } from "../pipeline/index.js";
 import { buildBenchmarkResult } from "../benchmark/providers.js";
+import { resolvePromptObjectFromSource } from "../utils/prompt-source.js";
 
 function splitSentences(text) {
   return text
@@ -49,7 +50,10 @@ export function registerCheckCommand(program) {
   program
     .command("check")
     .description("Lint, analyze, compare, and benchmark prompts")
-    .argument("[input]", "Prompt text, Prompt IR, or path to a file")
+    .argument(
+      "[input]",
+      "Prompt text, Prompt IR, PromptWash JSON, or path to a file",
+    )
     .option("-f, --file", "Treat input as a file path")
     .option("--benchmark", "Run benchmark flow if configured", false)
     .option("--baseline <path>", "Optional baseline prompt or IR file")
@@ -62,11 +66,10 @@ export function registerCheckCommand(program) {
     .action(async (input, options) => {
       const resolved = await resolveInputSource(input, options);
 
-      const promptObject = await runPipeline(resolved.value, {
-        source: resolved.kind,
-        path: resolved.path,
-        enrich: options.enrich,
-      });
+      const { promptObject, sourceType } = await resolvePromptObjectFromSource(
+        resolved,
+        { enrich: options.enrich },
+      );
 
       let baselineDiff = null;
 
@@ -88,7 +91,7 @@ export function registerCheckCommand(program) {
 
       const result = {
         command: "check",
-        source: resolved.kind,
+        source: sourceType,
         path: resolved.path,
         benchmark_requested: options.benchmark,
         enrich_requested: options.enrich,
@@ -123,6 +126,7 @@ export function registerCheckCommand(program) {
         printSuccess("Prompt checks completed successfully");
       }
 
+      printInfo(`Source: ${sourceType}`);
       printInfo(`Intent: ${promptObject.intent || "(not detected)"}`);
       printInfo(`Complexity score: ${promptObject.complexity_score}`);
       printInfo(`Semantic drift risk: ${promptObject.semantic_drift_risk}`);

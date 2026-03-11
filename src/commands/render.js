@@ -1,16 +1,7 @@
 import { printInfo, printJson, printSuccess } from "../utils/display.js";
-import { resolveInputSource } from "../utils/input.js";
-import { runPipeline } from "../pipeline/index.js";
+import { resolveInputSource, writeFileUtf8 } from "../utils/input.js";
 import { adaptPrompt, scoreRenderedVariants } from "../pipeline/adapt.js";
-import { normalizePromptInputObject } from "../utils/prompt-object.js";
-
-function tryParseJson(text) {
-  try {
-    return JSON.parse(text);
-  } catch {
-    return null;
-  }
-}
+import { resolvePromptObjectFromSource } from "../utils/prompt-source.js";
 
 export function registerRenderCommand(program) {
   program
@@ -26,30 +17,15 @@ export function registerRenderCommand(program) {
       "Target provider: openai|claude|generic|compact",
       "generic",
     )
+    .option("--write <path>", "Write rendered output to a file")
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (input, options) => {
       const resolved = await resolveInputSource(input, options);
 
-      const parsedJson = tryParseJson(resolved.value);
-      const normalizedObject = parsedJson
-        ? normalizePromptInputObject(parsedJson)
-        : null;
-
-      let promptObject;
-      let sourceType = resolved.kind;
-
-      if (normalizedObject) {
-        promptObject = normalizedObject.promptObject;
-        sourceType =
-          normalizedObject.type === "prompt_object"
-            ? "promptwash_json"
-            : "ir_json";
-      } else {
-        promptObject = await runPipeline(resolved.value, {
-          source: resolved.kind,
-          path: resolved.path,
-        });
-      }
+      const { promptObject, sourceType } = await resolvePromptObjectFromSource(
+        resolved,
+        { enrich: false },
+      );
 
       const variants = {
         generic: adaptPrompt(promptObject, "generic"),
@@ -60,6 +36,10 @@ export function registerRenderCommand(program) {
 
       const rendered = variants[options.provider] ?? variants.generic;
       const compactScore = scoreRenderedVariants(variants);
+
+      if (options.write) {
+        await writeFileUtf8(options.write, `${rendered}\n`);
+      }
 
       const result = {
         provider: options.provider,
@@ -84,6 +64,9 @@ export function registerRenderCommand(program) {
       printInfo(`Source: ${sourceType}`);
       if (resolved.path) {
         printInfo(`Path: ${resolved.path}`);
+      }
+      if (options.write) {
+        printInfo(`Rendered output written: ${options.write}`);
       }
 
       if (options.provider === "compact") {
