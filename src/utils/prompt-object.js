@@ -26,7 +26,7 @@ export function normalizePromptInputObject(value) {
   if (looksLikePromptWashObject(value)) {
     return {
       type: "prompt_object",
-      promptObject: value
+      promptObject: value,
     };
   }
 
@@ -40,11 +40,13 @@ export function normalizePromptInputObject(value) {
         variants: {
           compact: "",
           openai: "",
-          claude: ""
+          claude: "",
         },
         intent: value.goal ?? "",
         audience: value.audience ?? "general",
-        constraints: Array.isArray(value.constraints) ? [...value.constraints] : [],
+        constraints: Array.isArray(value.constraints)
+          ? [...value.constraints]
+          : [],
         tokens: value.tokens ?? { input: 0 },
         cost: {},
         complexity_score: 0,
@@ -53,9 +55,9 @@ export function normalizePromptInputObject(value) {
         fingerprint: "",
         language: value.language ?? "en",
         metadata: {
-          source: "ir_json"
-        }
-      }
+          source: "ir_json",
+        },
+      },
     };
   }
 

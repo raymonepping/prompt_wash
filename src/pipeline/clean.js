@@ -4,7 +4,7 @@ const FILLER_PATTERNS = [
   /\bmaybe\b/gi,
   /\bkind of\b/gi,
   /\bsort of\b/gi,
-  /\bplease\b/gi
+  /\bplease\b/gi,
 ];
 
 export async function cleanPromptInput(input) {
@@ -25,7 +25,10 @@ function isNonEmptyString(value) {
 }
 
 function isUsefulArray(value) {
-  return Array.isArray(value) && value.some((item) => typeof item === "string" && item.trim());
+  return (
+    Array.isArray(value) &&
+    value.some((item) => typeof item === "string" && item.trim())
+  );
 }
 
 function normalizeOutputFormat(value) {
@@ -130,7 +133,7 @@ export function mergeEnrichment(promptObject, enrichment = {}) {
     audience: false,
     tone: false,
     constraints: false,
-    steps: false
+    steps: false,
   };
 
   if (isNonEmptyString(enrichment.goal) && merged.ir.goal.trim().length < 12) {
@@ -138,18 +141,26 @@ export function mergeEnrichment(promptObject, enrichment = {}) {
     appliedFields.goal = true;
   }
 
-  if (looksUsefulContext(enrichment.context, merged.ir.goal) && !merged.ir.context.trim()) {
+  if (
+    looksUsefulContext(enrichment.context, merged.ir.goal) &&
+    !merged.ir.context.trim()
+  ) {
     merged.ir.context = enrichment.context.trim();
     appliedFields.context = true;
   }
 
-  const normalizedOutputFormat = normalizeOutputFormat(enrichment.output_format);
+  const normalizedOutputFormat = normalizeOutputFormat(
+    enrichment.output_format,
+  );
   if (normalizedOutputFormat && !merged.ir.output_format.trim()) {
     merged.ir.output_format = normalizedOutputFormat;
     appliedFields.output_format = true;
   }
 
-  if (isNonEmptyString(enrichment.audience) && merged.ir.audience === "general") {
+  if (
+    isNonEmptyString(enrichment.audience) &&
+    merged.ir.audience === "general"
+  ) {
     merged.ir.audience = enrichment.audience.trim();
     appliedFields.audience = true;
   }
@@ -159,7 +170,10 @@ export function mergeEnrichment(promptObject, enrichment = {}) {
     appliedFields.tone = true;
   }
 
-  if (isUsefulArray(enrichment.constraints) && merged.ir.constraints.length === 0) {
+  if (
+    isUsefulArray(enrichment.constraints) &&
+    merged.ir.constraints.length === 0
+  ) {
     merged.ir.constraints = enrichment.constraints
       .map((item) => item.trim())
       .filter(Boolean);
@@ -186,8 +200,8 @@ export function mergeEnrichment(promptObject, enrichment = {}) {
       merged: mergedAnyField,
       used: mergedAnyField,
       applied_fields: appliedFields,
-      raw: enrichment
-    }
+      raw: enrichment,
+    },
   };
 
   return merged;
