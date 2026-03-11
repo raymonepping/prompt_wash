@@ -9,6 +9,12 @@
   },
   "benchmark": {
     "enableProviders": ["ollama"],
-    "exactTokenCounting": false
+    "exactTokenCounting": false,
+    "pricing": {
+      "generic": 0,
+      "compact": 0,
+      "openai": 0,
+      "claude": 0
+    }
   }
 }
