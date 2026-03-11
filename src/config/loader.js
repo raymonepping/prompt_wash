@@ -16,6 +16,20 @@ export const DEFAULT_CONFIG = {
   benchmark: {
     enableProviders: ["ollama"],
     exactTokenCounting: false,
+    pricing: {
+      generic: 0,
+      compact: 0,
+      openai: 0,
+      claude: 0,
+      ollama: 0,
+    },
+    models: {
+      generic: "generic-default",
+      compact: "compact-default",
+      openai: "openai-default",
+      claude: "claude-default",
+      ollama: "llama3.2",
+    },
   },
 };
 
@@ -39,10 +53,7 @@ export async function readJsonFile(pathValue) {
     const raw = await fs.readFile(pathValue, "utf8");
     return JSON.parse(raw);
   } catch (error) {
-    throw createFileError(
-      `Unable to read JSON config: ${pathValue}`,
-      error.message,
-    );
+    throw createFileError(`Unable to read JSON config: ${pathValue}`, error.message);
   }
 }
 
@@ -136,10 +147,7 @@ export function validateConfigObject(config) {
     return errors;
   }
 
-  if (
-    typeof config.ollama.baseUrl !== "string" ||
-    !config.ollama.baseUrl.trim()
-  ) {
+  if (typeof config.ollama.baseUrl !== "string" || !config.ollama.baseUrl.trim()) {
     errors.push("ollama.baseUrl must be a non-empty string");
   }
 
@@ -147,10 +155,7 @@ export function validateConfigObject(config) {
     errors.push("ollama.model must be a non-empty string");
   }
 
-  if (
-    typeof config.ollama.timeoutMs !== "number" ||
-    Number.isNaN(config.ollama.timeoutMs)
-  ) {
+  if (typeof config.ollama.timeoutMs !== "number" || Number.isNaN(config.ollama.timeoutMs)) {
     errors.push("ollama.timeoutMs must be a number");
   }
 
@@ -160,6 +165,30 @@ export function validateConfigObject(config) {
 
   if (config.benchmark && typeof config.benchmark !== "object") {
     errors.push("benchmark must be an object when provided");
+  }
+
+  if (config.benchmark?.pricing && typeof config.benchmark.pricing !== "object") {
+    errors.push("benchmark.pricing must be an object when provided");
+  }
+
+  if (config.benchmark?.models && typeof config.benchmark.models !== "object") {
+    errors.push("benchmark.models must be an object when provided");
+  }
+
+  if (config.benchmark?.pricing) {
+    for (const [provider, price] of Object.entries(config.benchmark.pricing)) {
+      if (typeof price !== "number" || Number.isNaN(price) || price < 0) {
+        errors.push(`benchmark.pricing.${provider} must be a non-negative number`);
+      }
+    }
+  }
+
+  if (config.benchmark?.models) {
+    for (const [provider, model] of Object.entries(config.benchmark.models)) {
+      if (typeof model !== "string" || !model.trim()) {
+        errors.push(`benchmark.models.${provider} must be a non-empty string`);
+      }
+    }
   }
 
   return errors;

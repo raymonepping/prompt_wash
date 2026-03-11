@@ -70,10 +70,23 @@ export async function enrichPromptObject(promptObject) {
 
   const systemPrompt = `
 You are helping improve a deterministic prompt parser.
+
 Return only valid JSON.
+Do not include markdown fences.
 Do not invent facts.
-Only extract what is explicitly present in the prompt.
-If a field is unclear, return an empty string or empty array.
+Do not paraphrase unless the prompt itself already makes the meaning explicit.
+Prefer empty strings or empty arrays over guessing.
+
+Important extraction rules:
+- "goal" should be the main task sentence only.
+- "context" should only be additional background context, not the task itself.
+- Do not put constraints into "context".
+- Do not put output format instructions into "context".
+- "constraints" should only contain explicit limits or prohibitions.
+- "steps" should only contain explicit task or instruction steps.
+- "output_format" should be a simple canonical label when possible, like "markdown", "json", "table", "bullet_list", or "summary".
+- "audience" should only be filled when explicitly present.
+- "tone" should only be filled when explicitly present.
 
 Expected JSON schema:
 {
@@ -88,6 +101,15 @@ Expected JSON schema:
   `;
 
   const userPrompt = `
+Deterministic parse summary:
+- goal: ${promptObject.ir.goal}
+- audience: ${promptObject.ir.audience}
+- context: ${promptObject.ir.context}
+- constraints: ${JSON.stringify(promptObject.ir.constraints)}
+- steps: ${JSON.stringify(promptObject.ir.steps)}
+- output_format: ${promptObject.ir.output_format}
+- tone: ${promptObject.ir.tone}
+
 Raw prompt:
 ${promptObject.cleaned}
   `;

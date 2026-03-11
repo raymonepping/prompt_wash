@@ -4,10 +4,11 @@ import {
   printSuccess,
   printWarning,
 } from "../utils/display.js";
-import { resolveInputSource, readFileUtf8 } from "../utils/input.js";
-import { runPipeline } from "../pipeline/index.js";
+import { resolveInputSource, readFileUtf8, writeFileUtf8 } from "../utils/input.js";
 import { buildBenchmarkResult } from "../benchmark/providers.js";
 import { resolvePromptObjectFromSource } from "../utils/prompt-source.js";
+import { runPipeline } from "../pipeline/index.js";
+import { renderCheckReport, getReportFormatFromPath } from "../utils/report.js";
 
 function splitSentences(text) {
   return text
@@ -62,13 +63,15 @@ export function registerCheckCommand(program) {
       "Use Ollama to enrich the deterministic parse before checking",
       false,
     )
+    .option("--enrich-debug", "Show raw enrichment acceptance/rejection details", false)
+    .option("--report <path>", "Write a JSON or Markdown report to a file")
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (input, options) => {
       const resolved = await resolveInputSource(input, options);
 
       const { promptObject, sourceType } = await resolvePromptObjectFromSource(
         resolved,
-        { enrich: options.enrich },
+        { enrich: options.enrich || options.enrichDebug },
       );
 
       let baselineDiff = null;
@@ -94,7 +97,7 @@ export function registerCheckCommand(program) {
         source: sourceType,
         path: resolved.path,
         benchmark_requested: options.benchmark,
-        enrich_requested: options.enrich,
+        enrich_requested: options.enrich || options.enrichDebug,
         baseline: options.baseline ?? null,
         intent: promptObject.intent,
         complexity_score: promptObject.complexity_score,
@@ -115,6 +118,12 @@ export function registerCheckCommand(program) {
         benchmark,
       };
 
+      if (options.report) {
+        const reportFormat = getReportFormatFromPath(options.report);
+        const reportContent = renderCheckReport(result, reportFormat);
+        await writeFileUtf8(options.report, reportContent);
+      }
+
       if (options.output === "json") {
         printJson(result);
         return;
@@ -134,8 +143,11 @@ export function registerCheckCommand(program) {
       printInfo(
         `Lint summary: ${result.lint_summary.errors} errors, ${result.lint_summary.warnings} warnings`,
       );
+      if (options.report) {
+        printInfo(`Report written: ${options.report}`);
+      }
 
-      if (options.enrich) {
+      if (options.enrich || options.enrichDebug) {
         const enrichmentMeta = promptObject.metadata.enrichment ?? {};
         console.log("");
         console.log("Enrichment:");
@@ -144,6 +156,31 @@ export function registerCheckCommand(program) {
         console.log(`- Merged: ${enrichmentMeta.merged ? "yes" : "no"}`);
         if (enrichmentMeta.reason) {
           console.log(`- Note: ${enrichmentMeta.reason}`);
+        }
+
+        if (options.enrichDebug) {
+          console.log("- Applied fields:");
+          const appliedFields = enrichmentMeta.applied_fields ?? {};
+          if (Object.keys(appliedFields).length === 0) {
+            console.log("  (none)");
+          } else {
+            for (const [field, applied] of Object.entries(appliedFields)) {
+              console.log(`  - ${field}: ${applied ? "accepted" : "not accepted"}`);
+            }
+          }
+
+          console.log("- Rejected fields:");
+          const rejectedFields = enrichmentMeta.rejected_fields ?? {};
+          if (Object.keys(rejectedFields).length === 0) {
+            console.log("  (none)");
+          } else {
+            for (const [field, reason] of Object.entries(rejectedFields)) {
+              console.log(`  - ${field}: ${reason}`);
+            }
+          }
+
+          console.log("- Raw enrichment:");
+          console.log(JSON.stringify(enrichmentMeta.raw ?? null, null, 2));
         }
       }
 
@@ -190,9 +227,27 @@ export function registerCheckCommand(program) {
         console.log(
           `- Compact saved ${benchmark.compact_score.saved_tokens} tokens (${benchmark.compact_score.saved_percent}%)`,
         );
+
         for (const [name, data] of Object.entries(benchmark.variants)) {
-          console.log(`- ${name}: ${data.tokens} tokens`);
+          const costText =
+            data.estimated_cost === null ? "n/a" : data.estimated_cost;
+          console.log(
+            `- ${name}: ${data.tokens} tokens | model: ${data.model} | estimated cost: ${costText}`,
+          );
         }
+
+        if (benchmark.efficiency_summary?.lowest_token_variant) {
+          console.log(
+            `- Lowest token variant: ${benchmark.efficiency_summary.lowest_token_variant.provider}`,
+          );
+        }
+
+        if (benchmark.efficiency_summary?.lowest_cost_variant) {
+          console.log(
+            `- Lowest cost variant: ${benchmark.efficiency_summary.lowest_cost_variant.provider}`,
+          );
+        }
+
         if (benchmark.provider_health.ollama) {
           console.log(
             `- Ollama reachable: ${benchmark.provider_health.ollama.reachable ? "yes" : "no"}`,

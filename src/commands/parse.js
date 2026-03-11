@@ -16,6 +16,7 @@ export function registerParseCommand(program) {
       "Clean raw prompt input, detect intent, and generate Prompt IR",
     )
     .argument("[input]", "Prompt text or path to a file")
+    .option("--enrich-debug", "Show raw enrichment acceptance/rejection details", false)
     .option("-f, --file", "Treat input as a file path")
     .option("--enrich", "Use Ollama to enrich the deterministic parse", false)
     .option("--write <path>", "Write PromptWash JSON artifact to a file")
@@ -26,7 +27,7 @@ export function registerParseCommand(program) {
       const promptObject = await runPipeline(resolved.value, {
         source: resolved.kind,
         path: resolved.path,
-        enrich: options.enrich,
+        enrich: options.enrich || options.enrichDebug,
       });
 
       const irErrors = validatePromptIr(promptObject.ir);
@@ -63,7 +64,7 @@ export function registerParseCommand(program) {
         printInfo(`Artifact written: ${options.write}`);
       }
 
-      if (options.enrich) {
+      if (options.enrich || options.enrichDebug) {
         const enrichmentMeta = promptObject.metadata.enrichment ?? {};
         console.log("");
         console.log("Enrichment:");
@@ -72,6 +73,31 @@ export function registerParseCommand(program) {
         console.log(`- Merged: ${enrichmentMeta.merged ? "yes" : "no"}`);
         if (enrichmentMeta.reason) {
           console.log(`- Note: ${enrichmentMeta.reason}`);
+        }
+
+        if (options.enrichDebug) {
+          console.log("- Applied fields:");
+          const appliedFields = enrichmentMeta.applied_fields ?? {};
+          if (Object.keys(appliedFields).length === 0) {
+            console.log("  (none)");
+          } else {
+            for (const [field, applied] of Object.entries(appliedFields)) {
+              console.log(`  - ${field}: ${applied ? "accepted" : "not accepted"}`);
+            }
+          }
+
+          console.log("- Rejected fields:");
+          const rejectedFields = enrichmentMeta.rejected_fields ?? {};
+          if (Object.keys(rejectedFields).length === 0) {
+            console.log("  (none)");
+          } else {
+            for (const [field, reason] of Object.entries(rejectedFields)) {
+              console.log(`  - ${field}: ${reason}`);
+            }
+          }
+
+          console.log("- Raw enrichment:");
+          console.log(JSON.stringify(enrichmentMeta.raw ?? null, null, 2));
         }
       }
 

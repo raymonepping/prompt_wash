@@ -13,7 +13,11 @@ function buildArtifactSuggestions(diagnosis) {
     "Or provide a Prompt IR JSON object with keys like goal, audience, constraints, and steps.",
   ];
 
-  if (diagnosis.likely_shape === "prompt_object_like") {
+  if (diagnosis.likely_shape === "prompt_object") {
+    suggestions.unshift(
+      "This looks like a PromptWash artifact, but its nested IR structure is incomplete or malformed.",
+    );
+  } else if (diagnosis.likely_shape === "prompt_object_like") {
     suggestions.unshift(
       "This JSON looks somewhat like a PromptWash artifact, but required top-level keys are missing.",
     );

@@ -13,8 +13,16 @@
     "pricing": {
       "generic": 0,
       "compact": 0,
-      "openai": 0,
-      "claude": 0
+      "openai": 0.000002,
+      "claude": 0.000003,
+      "ollama": 0
+    },
+    "models": {
+      "generic": "generic-default",
+      "compact": "compact-default",
+      "openai": "gpt-4.1-mini",
+      "claude": "claude-3.5-sonnet",
+      "ollama": "llama3:latest"
     }
   }
 }

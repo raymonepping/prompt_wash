@@ -25,10 +25,7 @@ function isNonEmptyString(value) {
 }
 
 function isUsefulArray(value) {
-  return (
-    Array.isArray(value) &&
-    value.some((item) => typeof item === "string" && item.trim())
-  );
+  return Array.isArray(value) && value.some((item) => typeof item === "string" && item.trim());
 }
 
 function normalizeOutputFormat(value) {
@@ -90,6 +87,31 @@ function looksOutputLike(value) {
   );
 }
 
+function looksAudienceLike(value) {
+  if (!isNonEmptyString(value)) {
+    return false;
+  }
+
+  return (
+    /\bexecutives?\b/i.test(value) ||
+    /\bdevelopers?\b/i.test(value) ||
+    /\bengineers?\b/i.test(value) ||
+    /\bbeginners?\b/i.test(value) ||
+    /\bstudents?\b/i.test(value)
+  );
+}
+
+function normalizeArray(values) {
+  if (!Array.isArray(values)) {
+    return [];
+  }
+
+  return values
+    .filter((item) => typeof item === "string")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 function looksUsefulContext(value, currentGoal = "") {
   if (!isNonEmptyString(value)) {
     return false;
@@ -98,7 +120,7 @@ function looksUsefulContext(value, currentGoal = "") {
   const cleaned = value.trim();
   const wordCount = cleaned.split(/\s+/).length;
 
-  if (wordCount < 3) {
+  if (wordCount < 4) {
     return false;
   }
 
@@ -107,6 +129,10 @@ function looksUsefulContext(value, currentGoal = "") {
   }
 
   if (looksOutputLike(cleaned)) {
+    return false;
+  }
+
+  if (looksAudienceLike(cleaned)) {
     return false;
   }
 
@@ -126,6 +152,7 @@ function looksUsefulContext(value, currentGoal = "") {
 
 export function mergeEnrichment(promptObject, enrichment = {}) {
   const merged = structuredClone(promptObject);
+
   const appliedFields = {
     goal: false,
     context: false,
@@ -136,55 +163,90 @@ export function mergeEnrichment(promptObject, enrichment = {}) {
     steps: false,
   };
 
-  if (isNonEmptyString(enrichment.goal) && merged.ir.goal.trim().length < 12) {
-    merged.ir.goal = enrichment.goal.trim();
-    appliedFields.goal = true;
+  const rejectedFields = {};
+
+  if (isNonEmptyString(enrichment.goal)) {
+    if (merged.ir.goal.trim().length < 12) {
+      merged.ir.goal = enrichment.goal.trim();
+      appliedFields.goal = true;
+    } else {
+      rejectedFields.goal = "Existing deterministic goal was already strong enough.";
+    }
   }
 
-  if (
-    looksUsefulContext(enrichment.context, merged.ir.goal) &&
-    !merged.ir.context.trim()
-  ) {
-    merged.ir.context = enrichment.context.trim();
-    appliedFields.context = true;
+  if (isNonEmptyString(enrichment.context)) {
+    if (merged.ir.context.trim()) {
+      rejectedFields.context = "Existing deterministic context already present.";
+    } else if (!looksUsefulContext(enrichment.context, merged.ir.goal)) {
+      rejectedFields.context =
+        "Rejected because the suggested context looked too weak, instruction-like, or duplicated the goal.";
+    } else {
+      merged.ir.context = enrichment.context.trim();
+      appliedFields.context = true;
+    }
   }
 
-  const normalizedOutputFormat = normalizeOutputFormat(
-    enrichment.output_format,
-  );
-  if (normalizedOutputFormat && !merged.ir.output_format.trim()) {
-    merged.ir.output_format = normalizedOutputFormat;
-    appliedFields.output_format = true;
+  const normalizedOutputFormat = normalizeOutputFormat(enrichment.output_format);
+  if (isNonEmptyString(enrichment.output_format)) {
+    if (merged.ir.output_format.trim()) {
+      rejectedFields.output_format =
+        "Existing deterministic output format already present.";
+    } else if (!normalizedOutputFormat) {
+      rejectedFields.output_format = "Rejected because output format could not be normalized.";
+    } else {
+      merged.ir.output_format = normalizedOutputFormat;
+      appliedFields.output_format = true;
+    }
   }
 
-  if (
-    isNonEmptyString(enrichment.audience) &&
-    merged.ir.audience === "general"
-  ) {
-    merged.ir.audience = enrichment.audience.trim();
-    appliedFields.audience = true;
+  if (isNonEmptyString(enrichment.audience)) {
+    if (merged.ir.audience !== "general") {
+      rejectedFields.audience = "Existing deterministic audience already present.";
+    } else {
+      merged.ir.audience = enrichment.audience.trim();
+      appliedFields.audience = true;
+    }
   }
 
-  if (isNonEmptyString(enrichment.tone) && merged.ir.tone === "neutral") {
-    merged.ir.tone = enrichment.tone.trim();
-    appliedFields.tone = true;
+  if (isNonEmptyString(enrichment.tone)) {
+    const normalizedTone = enrichment.tone.trim();
+
+    if (merged.ir.tone !== "neutral") {
+      rejectedFields.tone = "Existing deterministic tone already present.";
+    } else if (merged.ir.tone === normalizedTone) {
+      rejectedFields.tone =
+        "Rejected because the enriched tone matched the existing deterministic tone.";
+    } else {
+      merged.ir.tone = normalizedTone;
+      appliedFields.tone = true;
+    }
   }
 
-  if (
-    isUsefulArray(enrichment.constraints) &&
-    merged.ir.constraints.length === 0
-  ) {
-    merged.ir.constraints = enrichment.constraints
-      .map((item) => item.trim())
-      .filter(Boolean);
-    appliedFields.constraints = true;
+  if (Array.isArray(enrichment.constraints)) {
+    const normalizedConstraints = normalizeArray(enrichment.constraints);
+
+    if (merged.ir.constraints.length > 0) {
+      rejectedFields.constraints =
+        "Existing deterministic constraints already present.";
+    } else if (normalizedConstraints.length === 0) {
+      rejectedFields.constraints = "Rejected because no usable constraints remained after normalization.";
+    } else {
+      merged.ir.constraints = normalizedConstraints;
+      appliedFields.constraints = true;
+    }
   }
 
-  if (isUsefulArray(enrichment.steps) && merged.ir.steps.length <= 1) {
-    merged.ir.steps = enrichment.steps
-      .map((item) => item.trim())
-      .filter(Boolean);
-    appliedFields.steps = true;
+  if (Array.isArray(enrichment.steps)) {
+    const normalizedSteps = normalizeArray(enrichment.steps);
+
+    if (merged.ir.steps.length > 1) {
+      rejectedFields.steps = "Existing deterministic steps already present.";
+    } else if (normalizedSteps.length === 0) {
+      rejectedFields.steps = "Rejected because no usable steps remained after normalization.";
+    } else {
+      merged.ir.steps = normalizedSteps;
+      appliedFields.steps = true;
+    }
   }
 
   merged.intent = merged.ir.goal;
@@ -200,6 +262,7 @@ export function mergeEnrichment(promptObject, enrichment = {}) {
       merged: mergedAnyField,
       used: mergedAnyField,
       applied_fields: appliedFields,
+      rejected_fields: rejectedFields,
       raw: enrichment,
     },
   };
