@@ -4,11 +4,7 @@ import {
   printSuccess,
   printWarning,
 } from "../utils/display.js";
-import {
-  resolveInputSource,
-  readFileUtf8,
-  writeFileUtf8,
-} from "../utils/input.js";
+import { resolveInputSource, readFileUtf8, writeFileUtf8 } from "../utils/input.js";
 import { buildBenchmarkResult } from "../benchmark/providers.js";
 import { resolvePromptObjectFromSource } from "../utils/prompt-source.js";
 import { runPipeline } from "../pipeline/index.js";
@@ -67,12 +63,13 @@ export function registerCheckCommand(program) {
       "Use Ollama to enrich the deterministic parse before checking",
       false,
     )
-    .option(
-      "--enrich-debug",
-      "Show raw enrichment acceptance/rejection details",
-      false,
-    )
+    .option("--enrich-debug", "Show raw enrichment acceptance/rejection details", false)
     .option("--report <path>", "Write a JSON or Markdown report to a file")
+    .option(
+      "--report-mode <mode>",
+      "Report mode: summary|full",
+      "full",
+    )
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (input, options) => {
       const resolved = await resolveInputSource(input, options);
@@ -124,11 +121,20 @@ export function registerCheckCommand(program) {
         metadata: promptObject.metadata,
         baseline_diff: baselineDiff,
         benchmark,
+        report_metadata: {
+          generated_at: new Date().toISOString(),
+          fingerprint: promptObject.fingerprint ?? null,
+          report_mode: options.reportMode,
+        },
       };
 
       if (options.report) {
         const reportFormat = getReportFormatFromPath(options.report);
-        const reportContent = renderCheckReport(result, reportFormat);
+        const reportContent = renderCheckReport(
+          result,
+          reportFormat,
+          options.reportMode,
+        );
         await writeFileUtf8(options.report, reportContent);
       }
 
@@ -173,9 +179,7 @@ export function registerCheckCommand(program) {
             console.log("  (none)");
           } else {
             for (const [field, applied] of Object.entries(appliedFields)) {
-              console.log(
-                `  - ${field}: ${applied ? "accepted" : "not accepted"}`,
-              );
+              console.log(`  - ${field}: ${applied ? "accepted" : "not accepted"}`);
             }
           }
 

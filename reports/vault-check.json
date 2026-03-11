@@ -1,0 +1,130 @@
+{
+  "command": "check",
+  "source": "argument",
+  "path": null,
+  "benchmark_requested": true,
+  "enrich_requested": false,
+  "baseline": null,
+  "intent": "Explain Vault PKI.",
+  "complexity_score": 6,
+  "semantic_drift_risk": "low",
+  "lint_warnings": [],
+  "lint_summary": {
+    "total": 0,
+    "errors": 0,
+    "warnings": 0
+  },
+  "tokens": {
+    "input": 19
+  },
+  "metadata": {
+    "source": "argument",
+    "path": null,
+    "document_signals": {
+      "heading_count": 0,
+      "bullet_count": 0,
+      "command_count": 0,
+      "looks_like_document": false
+    },
+    "sentence_classification": {
+      "tasks": [
+        "Explain Vault PKI."
+      ],
+      "constraints": [
+        "Do not use jargon."
+      ],
+      "outputInstructions": [
+        "Use a markdown summary for executives."
+      ],
+      "audienceHints": [],
+      "context": []
+    },
+    "enrichment": {
+      "requested": false,
+      "succeeded": false,
+      "merged": false,
+      "used": false,
+      "reason": null,
+      "health": null,
+      "applied_fields": {},
+      "raw": null
+    }
+  },
+  "baseline_diff": null,
+  "benchmark": {
+    "enabled_providers": [
+      "ollama"
+    ],
+    "variants": {
+      "generic": {
+        "provider": "generic",
+        "model": "generic-default",
+        "tokens": 27,
+        "estimated_cost": 0,
+        "estimated_cost_per_1k_tokens": 0
+      },
+      "compact": {
+        "provider": "compact",
+        "model": "compact-default",
+        "tokens": 22,
+        "estimated_cost": 0,
+        "estimated_cost_per_1k_tokens": 0
+      },
+      "openai": {
+        "provider": "openai",
+        "model": "gpt-4.1-mini",
+        "tokens": 27,
+        "estimated_cost": 0.000054,
+        "estimated_cost_per_1k_tokens": 0.002
+      },
+      "claude": {
+        "provider": "claude",
+        "model": "claude-3.5-sonnet",
+        "tokens": 35,
+        "estimated_cost": 0.000105,
+        "estimated_cost_per_1k_tokens": 0.003
+      }
+    },
+    "compact_score": {
+      "generic_tokens": 27,
+      "compact_tokens": 22,
+      "saved_tokens": 5,
+      "saved_percent": 19
+    },
+    "efficiency_summary": {
+      "lowest_token_variant": {
+        "provider": "compact",
+        "model": "compact-default",
+        "tokens": 22,
+        "estimated_cost": 0,
+        "estimated_cost_per_1k_tokens": 0
+      },
+      "highest_token_variant": {
+        "provider": "claude",
+        "model": "claude-3.5-sonnet",
+        "tokens": 35,
+        "estimated_cost": 0.000105,
+        "estimated_cost_per_1k_tokens": 0.003
+      },
+      "lowest_cost_variant": {
+        "provider": "generic",
+        "model": "generic-default",
+        "tokens": 27,
+        "estimated_cost": 0,
+        "estimated_cost_per_1k_tokens": 0
+      }
+    },
+    "provider_health": {
+      "ollama": {
+        "ok": true,
+        "reachable": true,
+        "configured_model": "llama3:latest",
+        "installed_model": true,
+        "available_models": [
+          "llama3.2:latest",
+          "llama3:latest"
+        ]
+      }
+    }
+  }
+}
