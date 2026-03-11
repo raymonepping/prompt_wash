@@ -152,6 +152,39 @@ function renderEnrichmentMarkdown(metadata, enrichRequested) {
   return lines.join("\n");
 }
 
+function renderComparisonMarkdown(comparison) {
+  if (!comparison) {
+    return "(not requested)";
+  }
+
+  const lines = [];
+
+  lines.push("## Comparison");
+  lines.push("");
+  lines.push(`- Left label: ${comparison.left.label}`);
+  lines.push(`- Right label: ${comparison.right.label}`);
+  lines.push("");
+  lines.push("### Winners");
+  lines.push("");
+  lines.push(`- Generic tokens: ${comparison.winners.generic_tokens ?? "n/a"}`);
+  lines.push(`- Compact tokens: ${comparison.winners.compact_tokens ?? "n/a"}`);
+  lines.push(`- Generic cost: ${comparison.winners.generic_cost ?? "n/a"}`);
+  lines.push(`- Compact cost: ${comparison.winners.compact_cost ?? "n/a"}`);
+  lines.push(`- Lint total: ${comparison.winners.lint_total ?? "n/a"}`);
+  lines.push("");
+  lines.push("### Deltas");
+  lines.push("");
+  lines.push(`- Generic tokens delta: ${formatValue(comparison.deltas.generic_tokens)}`);
+  lines.push(`- Compact tokens delta: ${formatValue(comparison.deltas.compact_tokens)}`);
+  lines.push(`- Generic cost delta: ${formatValue(comparison.deltas.generic_cost)}`);
+  lines.push(`- Compact cost delta: ${formatValue(comparison.deltas.compact_cost)}`);
+  lines.push(`- Lint total delta: ${formatValue(comparison.deltas.lint_total)}`);
+  lines.push(`- Lint errors delta: ${formatValue(comparison.deltas.lint_errors)}`);
+  lines.push(`- Lint warnings delta: ${formatValue(comparison.deltas.lint_warnings)}`);
+
+  return lines.join("\n");
+}
+
 function renderSummaryMarkdown(result) {
   const lines = [];
 
@@ -167,9 +200,7 @@ function renderSummaryMarkdown(result) {
   lines.push(`- Path: ${formatValue(result.path)}`);
   lines.push(`- Intent: ${formatValue(result.intent)}`);
   lines.push(`- Complexity score: ${formatValue(result.complexity_score)}`);
-  lines.push(
-    `- Semantic drift risk: ${formatValue(result.semantic_drift_risk)}`,
-  );
+  lines.push(`- Semantic drift risk: ${formatValue(result.semantic_drift_risk)}`);
   lines.push(`- Token estimate: ${formatValue(result.tokens?.input)}`);
   lines.push(
     `- Lint summary: ${formatValue(result.lint_summary?.errors)} errors, ${formatValue(result.lint_summary?.warnings)} warnings`,
@@ -185,6 +216,11 @@ function renderSummaryMarkdown(result) {
   lines.push("");
   lines.push(renderBenchmarkMarkdown(result.benchmark));
   lines.push("");
+
+  if (result.comparison) {
+    lines.push(renderComparisonMarkdown(result.comparison));
+    lines.push("");
+  }
 
   return `${lines.join("\n")}\n`;
 }
@@ -205,9 +241,7 @@ function renderFullMarkdown(result) {
   lines.push(`- Path: ${formatValue(result.path)}`);
   lines.push(`- Intent: ${formatValue(result.intent)}`);
   lines.push(`- Complexity score: ${formatValue(result.complexity_score)}`);
-  lines.push(
-    `- Semantic drift risk: ${formatValue(result.semantic_drift_risk)}`,
-  );
+  lines.push(`- Semantic drift risk: ${formatValue(result.semantic_drift_risk)}`);
   lines.push(`- Token estimate: ${formatValue(result.tokens?.input)}`);
   lines.push(
     `- Lint summary: ${formatValue(result.lint_summary?.errors)} errors, ${formatValue(result.lint_summary?.warnings)} warnings`,
@@ -221,9 +255,7 @@ function renderFullMarkdown(result) {
 
   lines.push("## Enrichment");
   lines.push("");
-  lines.push(
-    renderEnrichmentMarkdown(result.metadata, result.enrich_requested),
-  );
+  lines.push(renderEnrichmentMarkdown(result.metadata, result.enrich_requested));
   lines.push("");
 
   lines.push("## Baseline Diff");
@@ -236,6 +268,11 @@ function renderFullMarkdown(result) {
   lines.push(renderBenchmarkMarkdown(result.benchmark));
   lines.push("");
 
+  if (result.comparison) {
+    lines.push(renderComparisonMarkdown(result.comparison));
+    lines.push("");
+  }
+
   lines.push("## Metadata");
   lines.push("");
   lines.push("```json");
@@ -246,11 +283,7 @@ function renderFullMarkdown(result) {
   return `${lines.join("\n")}\n`;
 }
 
-export function renderCheckReport(
-  result,
-  format = "json",
-  reportMode = "full",
-) {
+export function renderCheckReport(result, format = "json", reportMode = "full") {
   if (format === "json") {
     return `${JSON.stringify(result, null, 2)}\n`;
   }
