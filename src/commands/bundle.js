@@ -14,7 +14,10 @@ export function registerBundleCommand(program) {
   program
     .command("bundle")
     .description("Export a complete PromptWash bundle for one prompt")
-    .argument("[input]", "Prompt text, PromptWash JSON, Prompt IR, or path to a file")
+    .argument(
+      "[input]",
+      "Prompt text, PromptWash JSON, Prompt IR, or path to a file",
+    )
     .option("-f, --file", "Treat input as a file path")
     .option("--name <name>", "Bundle name", "promptwash-bundle")
     .option(
@@ -24,12 +27,12 @@ export function registerBundleCommand(program) {
     )
     .option("--dir <path>", "Base output directory", "bundle")
     .option("--enrich", "Use Ollama enrichment before bundling", false)
-    .option("--benchmark", "Include benchmark data in the generated check report", true)
     .option(
-      "--report-mode <mode>",
-      "Check report mode: summary|full",
-      "full",
+      "--benchmark",
+      "Include benchmark data in the generated check report",
+      true,
     )
+    .option("--report-mode <mode>", "Check report mode: summary|full", "full")
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (input, options) => {
       const resolved = await resolveInputSource(input, options);
