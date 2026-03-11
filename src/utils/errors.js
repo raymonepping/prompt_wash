@@ -29,7 +29,11 @@ export function exitWithError(error) {
     printError(`${error.message} [${error.code}]`);
 
     if (error.details) {
-      console.error(error.details);
+      if (typeof error.details === "string") {
+        console.error(error.details);
+      } else {
+        console.error(JSON.stringify(error.details, null, 2));
+      }
     }
 
     process.exit(1);

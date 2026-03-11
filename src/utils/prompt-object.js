@@ -2,6 +2,22 @@ function isObject(value) {
   return value && typeof value === "object" && !Array.isArray(value);
 }
 
+const PROMPT_OBJECT_REQUIRED_KEYS = ["raw", "cleaned", "ir", "intent"];
+const IR_REQUIRED_KEYS = ["goal", "audience", "constraints", "steps"];
+
+function getObjectKeys(value) {
+  if (!isObject(value)) {
+    return [];
+  }
+
+  return Object.keys(value).sort();
+}
+
+function missingKeys(value, requiredKeys) {
+  const keys = new Set(getObjectKeys(value));
+  return requiredKeys.filter((key) => !keys.has(key));
+}
+
 export function looksLikePromptWashObject(value) {
   return (
     isObject(value) &&
@@ -20,6 +36,49 @@ export function looksLikePromptIr(value) {
     Array.isArray(value.constraints) &&
     Array.isArray(value.steps)
   );
+}
+
+export function diagnosePromptJsonShape(value) {
+  const keys = getObjectKeys(value);
+
+  if (!isObject(value)) {
+    return {
+      kind: "not_object",
+      keys,
+      prompt_object_missing: [...PROMPT_OBJECT_REQUIRED_KEYS],
+      ir_missing: [...IR_REQUIRED_KEYS],
+      likely_shape: "unknown",
+    };
+  }
+
+  const promptObjectMissing = missingKeys(value, PROMPT_OBJECT_REQUIRED_KEYS);
+  const irMissing = missingKeys(value, IR_REQUIRED_KEYS);
+
+  let likelyShape = "unknown";
+
+  if (promptObjectMissing.length === 0 && looksLikePromptWashObject(value)) {
+    likelyShape = "prompt_object";
+  } else if (irMissing.length === 0 && looksLikePromptIr(value)) {
+    likelyShape = "ir";
+  } else {
+    const promptHits =
+      PROMPT_OBJECT_REQUIRED_KEYS.length - promptObjectMissing.length;
+    const irHits = IR_REQUIRED_KEYS.length - irMissing.length;
+
+    if (promptHits > irHits && promptHits > 0) {
+      likelyShape = "prompt_object_like";
+    } else if (irHits > promptHits && irHits > 0) {
+      likelyShape = "ir_like";
+    }
+  }
+
+  return {
+    kind: "object",
+    keys,
+    prompt_object_missing: promptObjectMissing,
+    ir_missing: irMissing,
+    likely_shape: likelyShape,
+  };
 }
 
 export function validatePromptWashObject(value) {
