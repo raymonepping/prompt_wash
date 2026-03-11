@@ -9,7 +9,7 @@ function sanitizeEnrichment(value) {
     constraints: [],
     steps: [],
     output_format: "",
-    tone: "",
+    tone: ""
   };
 
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -60,10 +60,11 @@ export async function enrichPromptObject(promptObject) {
 
   if (!health.ok || !health.installed_model) {
     return {
-      ok: false,
+      requested: true,
+      succeeded: false,
       enrichment: null,
       reason: "Ollama is unavailable or configured model is not installed.",
-      health,
+      health
     };
   }
 
@@ -91,15 +92,26 @@ Raw prompt:
 ${promptObject.cleaned}
   `;
 
-  const response = await client.generateJson({
-    systemPrompt,
-    userPrompt,
-  });
+  try {
+    const response = await client.generateJson({
+      systemPrompt,
+      userPrompt
+    });
 
-  return {
-    ok: true,
-    enrichment: sanitizeEnrichment(response.parsed),
-    reason: null,
-    health,
-  };
+    return {
+      requested: true,
+      succeeded: true,
+      enrichment: sanitizeEnrichment(response.parsed),
+      reason: null,
+      health
+    };
+  } catch (error) {
+    return {
+      requested: true,
+      succeeded: false,
+      enrichment: null,
+      reason: error.message,
+      health
+    };
+  }
 }

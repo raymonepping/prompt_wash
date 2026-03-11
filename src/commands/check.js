@@ -135,8 +135,9 @@ export function registerCheckCommand(program) {
         const enrichmentMeta = promptObject.metadata.enrichment ?? {};
         console.log("");
         console.log("Enrichment:");
-        console.log(`- Requested: yes`);
-        console.log(`- OK: ${enrichmentMeta.ok ? "yes" : "no"}`);
+        console.log(`- Requested: ${enrichmentMeta.requested ? "yes" : "no"}`);
+        console.log(`- Succeeded: ${enrichmentMeta.succeeded ? "yes" : "no"}`);
+        console.log(`- Merged: ${enrichmentMeta.merged ? "yes" : "no"}`);
         if (enrichmentMeta.reason) {
           console.log(`- Note: ${enrichmentMeta.reason}`);
         }
