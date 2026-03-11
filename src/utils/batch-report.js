@@ -50,7 +50,10 @@ export function renderBatchReport(batchResult, format = "json") {
       );
     }
 
-    if (Array.isArray(item.result.lint_warnings) && item.result.lint_warnings.length > 0) {
+    if (
+      Array.isArray(item.result.lint_warnings) &&
+      item.result.lint_warnings.length > 0
+    ) {
       lines.push("- Lint warnings:");
       for (const warning of item.result.lint_warnings) {
         lines.push(`  - [${warning.code}] ${warning.message}`);

@@ -1,4 +1,9 @@
-import { printInfo, printJson, printSuccess, printWarning } from "../utils/display.js";
+import {
+  printInfo,
+  printJson,
+  printSuccess,
+  printWarning,
+} from "../utils/display.js";
 import { readFileUtf8, writeFileUtf8 } from "../utils/input.js";
 import { resolvePromptObjectFromSource } from "../utils/prompt-source.js";
 import { buildBenchmarkResult } from "../benchmark/providers.js";
@@ -69,7 +74,9 @@ async function buildSingleBatchCheckResult(filePath, options) {
 export function registerBatchCheckCommand(program) {
   program
     .command("batch-check")
-    .description("Run PromptWash checks across multiple prompt files or artifacts")
+    .description(
+      "Run PromptWash checks across multiple prompt files or artifacts",
+    )
     .argument("<target>", "Directory or file to process")
     .option("--benchmark", "Run benchmark flow for each file", false)
     .option("--enrich", "Use Ollama enrichment before checking", false)
