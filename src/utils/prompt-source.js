@@ -33,7 +33,9 @@ export async function resolvePromptObjectFromSource(resolved, options = {}) {
     return {
       promptObject: normalizedObject.promptObject,
       sourceType:
-        normalizedObject.type === "prompt_object" ? "promptwash_json" : "ir_json",
+        normalizedObject.type === "prompt_object"
+          ? "promptwash_json"
+          : "ir_json",
     };
   }
 

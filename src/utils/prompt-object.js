@@ -94,7 +94,9 @@ export function normalizePromptInputObject(value) {
         },
         intent: value.goal ?? "",
         audience: value.audience ?? "general",
-        constraints: Array.isArray(value.constraints) ? [...value.constraints] : [],
+        constraints: Array.isArray(value.constraints)
+          ? [...value.constraints]
+          : [],
         tokens: value.tokens ?? { input: 0 },
         cost: {},
         complexity_score: 0,
