@@ -1,0 +1,73 @@
+{
+  "raw": "Explain Vault PKI in detail. Use a markdown summary for executives.",
+  "cleaned": "Explain Vault PKI in detail. Use a markdown summary for executives.",
+  "ir": {
+    "goal": "Explain Vault PKI in detail.",
+    "audience": "executives",
+    "context": "",
+    "constraints": [],
+    "steps": [
+      "Explain Vault PKI in detail.",
+      "Use a markdown summary for executives."
+    ],
+    "output_format": "markdown",
+    "tone": "neutral",
+    "language": "en",
+    "variants": {},
+    "tokens": {
+      "input": 17
+    },
+    "metadata": {
+      "source": "argument",
+      "path": null
+    }
+  },
+  "variants": {
+    "compact": "",
+    "openai": "",
+    "claude": ""
+  },
+  "intent": "Explain Vault PKI in detail.",
+  "audience": "executives",
+  "constraints": [],
+  "tokens": {
+    "input": 17
+  },
+  "cost": {},
+  "complexity_score": 4,
+  "semantic_drift_risk": "low",
+  "lint_warnings": [],
+  "fingerprint": "pw_533cdfb0",
+  "language": "en",
+  "metadata": {
+    "source": "argument",
+    "path": null,
+    "document_signals": {
+      "heading_count": 0,
+      "bullet_count": 0,
+      "command_count": 0,
+      "looks_like_document": false
+    },
+    "sentence_classification": {
+      "tasks": [
+        "Explain Vault PKI in detail."
+      ],
+      "constraints": [],
+      "outputInstructions": [
+        "Use a markdown summary for executives."
+      ],
+      "audienceHints": [],
+      "context": []
+    },
+    "enrichment": {
+      "requested": false,
+      "succeeded": false,
+      "merged": false,
+      "used": false,
+      "reason": null,
+      "health": null,
+      "applied_fields": {},
+      "raw": null
+    }
+  }
+}

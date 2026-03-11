@@ -6,6 +6,7 @@ import { registerCheckCommand } from "./commands/check.js";
 import { registerRepoCommand } from "./commands/repo.js";
 import { registerConstraintsCommand } from "./commands/constraints.js";
 import { registerConfigCommand } from "./commands/config.js";
+import { registerBundleCommand } from "./commands/bundle.js";
 
 export async function runCli(argv = process.argv) {
   const program = new Command();
@@ -24,6 +25,7 @@ export async function runCli(argv = process.argv) {
   registerRepoCommand(program);
   registerConstraintsCommand(program);
   registerConfigCommand(program);
+  registerBundleCommand(program);
 
   await program.parseAsync(argv);
 }
