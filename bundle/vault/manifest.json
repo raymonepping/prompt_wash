@@ -1,0 +1,18 @@
+{
+  "bundle_name": "vault",
+  "provider": "claude",
+  "source": "argument",
+  "input_path": null,
+  "generated_at": "2026-03-11T09:06:33.531Z",
+  "fingerprint": "pw_42d7f7c1",
+  "intent": "Explain Vault PKI.",
+  "audience": "executives",
+  "output_format": "markdown",
+  "files": {
+    "bundle_dir": "bundle/vault",
+    "prompt_json": "bundle/vault/prompt.json",
+    "rendered_txt": "bundle/vault/rendered.claude.txt",
+    "check_report": "bundle/vault/check.md",
+    "manifest_json": "bundle/vault/manifest.json"
+  }
+}

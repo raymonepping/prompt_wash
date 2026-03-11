@@ -1,0 +1,80 @@
+{
+  "raw": "Explain Vault PKI. Do not use jargon. Use a markdown summary for executives.",
+  "cleaned": "Explain Vault PKI. Do not use jargon. Use a markdown summary for executives.",
+  "ir": {
+    "goal": "Explain Vault PKI.",
+    "audience": "executives",
+    "context": "",
+    "constraints": [
+      "Do not use jargon."
+    ],
+    "steps": [
+      "Explain Vault PKI.",
+      "Do not use jargon.",
+      "Use a markdown summary for executives."
+    ],
+    "output_format": "markdown",
+    "tone": "neutral",
+    "language": "en",
+    "variants": {},
+    "tokens": {
+      "input": 19
+    },
+    "metadata": {
+      "source": "argument",
+      "path": null
+    }
+  },
+  "variants": {
+    "compact": "",
+    "openai": "",
+    "claude": ""
+  },
+  "intent": "Explain Vault PKI.",
+  "audience": "executives",
+  "constraints": [
+    "Do not use jargon."
+  ],
+  "tokens": {
+    "input": 19
+  },
+  "cost": {},
+  "complexity_score": 6,
+  "semantic_drift_risk": "low",
+  "lint_warnings": [],
+  "fingerprint": "pw_42d7f7c1",
+  "language": "en",
+  "metadata": {
+    "source": "argument",
+    "path": null,
+    "document_signals": {
+      "heading_count": 0,
+      "bullet_count": 0,
+      "command_count": 0,
+      "looks_like_document": false
+    },
+    "sentence_classification": {
+      "tasks": [
+        "Explain Vault PKI."
+      ],
+      "constraints": [
+        "Do not use jargon."
+      ],
+      "outputInstructions": [
+        "Use a markdown summary for executives."
+      ],
+      "audienceHints": [],
+      "context": []
+    },
+    "enrichment": {
+      "requested": false,
+      "succeeded": false,
+      "merged": false,
+      "used": false,
+      "reason": null,
+      "health": null,
+      "applied_fields": {},
+      "raw": null
+    }
+  }
+}
