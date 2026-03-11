@@ -142,7 +142,9 @@ export function renderCheckReport(result, format = "json") {
   lines.push(`- Path: ${formatValue(result.path)}`);
   lines.push(`- Intent: ${formatValue(result.intent)}`);
   lines.push(`- Complexity score: ${formatValue(result.complexity_score)}`);
-  lines.push(`- Semantic drift risk: ${formatValue(result.semantic_drift_risk)}`);
+  lines.push(
+    `- Semantic drift risk: ${formatValue(result.semantic_drift_risk)}`,
+  );
   lines.push(`- Token estimate: ${formatValue(result.tokens?.input)}`);
   lines.push(
     `- Lint summary: ${formatValue(result.lint_summary?.errors)} errors, ${formatValue(result.lint_summary?.warnings)} warnings`,
@@ -156,7 +158,9 @@ export function renderCheckReport(result, format = "json") {
 
   lines.push("## Enrichment");
   lines.push("");
-  lines.push(renderEnrichmentMarkdown(result.metadata, result.enrich_requested));
+  lines.push(
+    renderEnrichmentMarkdown(result.metadata, result.enrich_requested),
+  );
   lines.push("");
 
   lines.push("## Baseline Diff");

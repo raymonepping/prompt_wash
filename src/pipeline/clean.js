@@ -25,7 +25,10 @@ function isNonEmptyString(value) {
 }
 
 function isUsefulArray(value) {
-  return Array.isArray(value) && value.some((item) => typeof item === "string" && item.trim());
+  return (
+    Array.isArray(value) &&
+    value.some((item) => typeof item === "string" && item.trim())
+  );
 }
 
 function normalizeOutputFormat(value) {
@@ -170,13 +173,15 @@ export function mergeEnrichment(promptObject, enrichment = {}) {
       merged.ir.goal = enrichment.goal.trim();
       appliedFields.goal = true;
     } else {
-      rejectedFields.goal = "Existing deterministic goal was already strong enough.";
+      rejectedFields.goal =
+        "Existing deterministic goal was already strong enough.";
     }
   }
 
   if (isNonEmptyString(enrichment.context)) {
     if (merged.ir.context.trim()) {
-      rejectedFields.context = "Existing deterministic context already present.";
+      rejectedFields.context =
+        "Existing deterministic context already present.";
     } else if (!looksUsefulContext(enrichment.context, merged.ir.goal)) {
       rejectedFields.context =
         "Rejected because the suggested context looked too weak, instruction-like, or duplicated the goal.";
@@ -186,13 +191,16 @@ export function mergeEnrichment(promptObject, enrichment = {}) {
     }
   }
 
-  const normalizedOutputFormat = normalizeOutputFormat(enrichment.output_format);
+  const normalizedOutputFormat = normalizeOutputFormat(
+    enrichment.output_format,
+  );
   if (isNonEmptyString(enrichment.output_format)) {
     if (merged.ir.output_format.trim()) {
       rejectedFields.output_format =
         "Existing deterministic output format already present.";
     } else if (!normalizedOutputFormat) {
-      rejectedFields.output_format = "Rejected because output format could not be normalized.";
+      rejectedFields.output_format =
+        "Rejected because output format could not be normalized.";
     } else {
       merged.ir.output_format = normalizedOutputFormat;
       appliedFields.output_format = true;
@@ -201,7 +209,8 @@ export function mergeEnrichment(promptObject, enrichment = {}) {
 
   if (isNonEmptyString(enrichment.audience)) {
     if (merged.ir.audience !== "general") {
-      rejectedFields.audience = "Existing deterministic audience already present.";
+      rejectedFields.audience =
+        "Existing deterministic audience already present.";
     } else {
       merged.ir.audience = enrichment.audience.trim();
       appliedFields.audience = true;
@@ -229,7 +238,8 @@ export function mergeEnrichment(promptObject, enrichment = {}) {
       rejectedFields.constraints =
         "Existing deterministic constraints already present.";
     } else if (normalizedConstraints.length === 0) {
-      rejectedFields.constraints = "Rejected because no usable constraints remained after normalization.";
+      rejectedFields.constraints =
+        "Rejected because no usable constraints remained after normalization.";
     } else {
       merged.ir.constraints = normalizedConstraints;
       appliedFields.constraints = true;
@@ -242,7 +252,8 @@ export function mergeEnrichment(promptObject, enrichment = {}) {
     if (merged.ir.steps.length > 1) {
       rejectedFields.steps = "Existing deterministic steps already present.";
     } else if (normalizedSteps.length === 0) {
-      rejectedFields.steps = "Rejected because no usable steps remained after normalization.";
+      rejectedFields.steps =
+        "Rejected because no usable steps remained after normalization.";
     } else {
       merged.ir.steps = normalizedSteps;
       appliedFields.steps = true;

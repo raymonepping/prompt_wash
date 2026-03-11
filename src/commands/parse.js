@@ -16,7 +16,11 @@ export function registerParseCommand(program) {
       "Clean raw prompt input, detect intent, and generate Prompt IR",
     )
     .argument("[input]", "Prompt text or path to a file")
-    .option("--enrich-debug", "Show raw enrichment acceptance/rejection details", false)
+    .option(
+      "--enrich-debug",
+      "Show raw enrichment acceptance/rejection details",
+      false,
+    )
     .option("-f, --file", "Treat input as a file path")
     .option("--enrich", "Use Ollama to enrich the deterministic parse", false)
     .option("--write <path>", "Write PromptWash JSON artifact to a file")
@@ -82,7 +86,9 @@ export function registerParseCommand(program) {
             console.log("  (none)");
           } else {
             for (const [field, applied] of Object.entries(appliedFields)) {
-              console.log(`  - ${field}: ${applied ? "accepted" : "not accepted"}`);
+              console.log(
+                `  - ${field}: ${applied ? "accepted" : "not accepted"}`,
+              );
             }
           }
 

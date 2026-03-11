@@ -4,7 +4,11 @@ import {
   printSuccess,
   printWarning,
 } from "../utils/display.js";
-import { resolveInputSource, readFileUtf8, writeFileUtf8 } from "../utils/input.js";
+import {
+  resolveInputSource,
+  readFileUtf8,
+  writeFileUtf8,
+} from "../utils/input.js";
 import { buildBenchmarkResult } from "../benchmark/providers.js";
 import { resolvePromptObjectFromSource } from "../utils/prompt-source.js";
 import { runPipeline } from "../pipeline/index.js";
@@ -63,7 +67,11 @@ export function registerCheckCommand(program) {
       "Use Ollama to enrich the deterministic parse before checking",
       false,
     )
-    .option("--enrich-debug", "Show raw enrichment acceptance/rejection details", false)
+    .option(
+      "--enrich-debug",
+      "Show raw enrichment acceptance/rejection details",
+      false,
+    )
     .option("--report <path>", "Write a JSON or Markdown report to a file")
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (input, options) => {
@@ -165,7 +173,9 @@ export function registerCheckCommand(program) {
             console.log("  (none)");
           } else {
             for (const [field, applied] of Object.entries(appliedFields)) {
-              console.log(`  - ${field}: ${applied ? "accepted" : "not accepted"}`);
+              console.log(
+                `  - ${field}: ${applied ? "accepted" : "not accepted"}`,
+              );
             }
           }
 
