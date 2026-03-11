@@ -174,13 +174,27 @@ function renderComparisonMarkdown(comparison) {
   lines.push("");
   lines.push("### Deltas");
   lines.push("");
-  lines.push(`- Generic tokens delta: ${formatValue(comparison.deltas.generic_tokens)}`);
-  lines.push(`- Compact tokens delta: ${formatValue(comparison.deltas.compact_tokens)}`);
-  lines.push(`- Generic cost delta: ${formatValue(comparison.deltas.generic_cost)}`);
-  lines.push(`- Compact cost delta: ${formatValue(comparison.deltas.compact_cost)}`);
-  lines.push(`- Lint total delta: ${formatValue(comparison.deltas.lint_total)}`);
-  lines.push(`- Lint errors delta: ${formatValue(comparison.deltas.lint_errors)}`);
-  lines.push(`- Lint warnings delta: ${formatValue(comparison.deltas.lint_warnings)}`);
+  lines.push(
+    `- Generic tokens delta: ${formatValue(comparison.deltas.generic_tokens)}`,
+  );
+  lines.push(
+    `- Compact tokens delta: ${formatValue(comparison.deltas.compact_tokens)}`,
+  );
+  lines.push(
+    `- Generic cost delta: ${formatValue(comparison.deltas.generic_cost)}`,
+  );
+  lines.push(
+    `- Compact cost delta: ${formatValue(comparison.deltas.compact_cost)}`,
+  );
+  lines.push(
+    `- Lint total delta: ${formatValue(comparison.deltas.lint_total)}`,
+  );
+  lines.push(
+    `- Lint errors delta: ${formatValue(comparison.deltas.lint_errors)}`,
+  );
+  lines.push(
+    `- Lint warnings delta: ${formatValue(comparison.deltas.lint_warnings)}`,
+  );
 
   return lines.join("\n");
 }
@@ -200,7 +214,9 @@ function renderSummaryMarkdown(result) {
   lines.push(`- Path: ${formatValue(result.path)}`);
   lines.push(`- Intent: ${formatValue(result.intent)}`);
   lines.push(`- Complexity score: ${formatValue(result.complexity_score)}`);
-  lines.push(`- Semantic drift risk: ${formatValue(result.semantic_drift_risk)}`);
+  lines.push(
+    `- Semantic drift risk: ${formatValue(result.semantic_drift_risk)}`,
+  );
   lines.push(`- Token estimate: ${formatValue(result.tokens?.input)}`);
   lines.push(
     `- Lint summary: ${formatValue(result.lint_summary?.errors)} errors, ${formatValue(result.lint_summary?.warnings)} warnings`,
@@ -241,7 +257,9 @@ function renderFullMarkdown(result) {
   lines.push(`- Path: ${formatValue(result.path)}`);
   lines.push(`- Intent: ${formatValue(result.intent)}`);
   lines.push(`- Complexity score: ${formatValue(result.complexity_score)}`);
-  lines.push(`- Semantic drift risk: ${formatValue(result.semantic_drift_risk)}`);
+  lines.push(
+    `- Semantic drift risk: ${formatValue(result.semantic_drift_risk)}`,
+  );
   lines.push(`- Token estimate: ${formatValue(result.tokens?.input)}`);
   lines.push(
     `- Lint summary: ${formatValue(result.lint_summary?.errors)} errors, ${formatValue(result.lint_summary?.warnings)} warnings`,
@@ -255,7 +273,9 @@ function renderFullMarkdown(result) {
 
   lines.push("## Enrichment");
   lines.push("");
-  lines.push(renderEnrichmentMarkdown(result.metadata, result.enrich_requested));
+  lines.push(
+    renderEnrichmentMarkdown(result.metadata, result.enrich_requested),
+  );
   lines.push("");
 
   lines.push("## Baseline Diff");
@@ -283,7 +303,11 @@ function renderFullMarkdown(result) {
   return `${lines.join("\n")}\n`;
 }
 
-export function renderCheckReport(result, format = "json", reportMode = "full") {
+export function renderCheckReport(
+  result,
+  format = "json",
+  reportMode = "full",
+) {
   if (format === "json") {
     return `${JSON.stringify(result, null, 2)}\n`;
   }

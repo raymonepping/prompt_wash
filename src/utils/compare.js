@@ -16,7 +16,9 @@ function getBenchmarkVariant(benchmark, variantName = "generic") {
 
 function getEstimatedCost(benchmark, variantName = "generic") {
   const variant = getBenchmarkVariant(benchmark, variantName);
-  return typeof variant?.estimated_cost === "number" ? variant.estimated_cost : null;
+  return typeof variant?.estimated_cost === "number"
+    ? variant.estimated_cost
+    : null;
 }
 
 function getTokenCount(benchmark, variantName = "generic") {
@@ -140,7 +142,12 @@ export function buildComparisonResult(leftResult, rightResult, options = {}) {
         leftLabel,
         rightLabel,
       ),
-      lint_total: chooseLower(leftLint.total, rightLint.total, leftLabel, rightLabel),
+      lint_total: chooseLower(
+        leftLint.total,
+        rightLint.total,
+        leftLabel,
+        rightLabel,
+      ),
     },
   };
 }

@@ -4,7 +4,11 @@ import {
   printSuccess,
   printWarning,
 } from "../utils/display.js";
-import { resolveInputSource, readFileUtf8, writeFileUtf8 } from "../utils/input.js";
+import {
+  resolveInputSource,
+  readFileUtf8,
+  writeFileUtf8,
+} from "../utils/input.js";
 import { buildBenchmarkResult } from "../benchmark/providers.js";
 import { resolvePromptObjectFromSource } from "../utils/prompt-source.js";
 import { runPipeline } from "../pipeline/index.js";
@@ -119,19 +123,22 @@ export function registerCheckCommand(program) {
     .option("-f, --file", "Treat input as a file path")
     .option("--benchmark", "Run benchmark flow if configured", false)
     .option("--baseline <path>", "Optional baseline prompt or IR file")
-    .option("--compare <path>", "Optional prompt/artifact file to compare against")
+    .option(
+      "--compare <path>",
+      "Optional prompt/artifact file to compare against",
+    )
     .option(
       "--enrich",
       "Use Ollama to enrich the deterministic parse before checking",
       false,
     )
-    .option("--enrich-debug", "Show raw enrichment acceptance/rejection details", false)
-    .option("--report <path>", "Write a JSON or Markdown report to a file")
     .option(
-      "--report-mode <mode>",
-      "Report mode: summary|full",
-      "full",
+      "--enrich-debug",
+      "Show raw enrichment acceptance/rejection details",
+      false,
     )
+    .option("--report <path>", "Write a JSON or Markdown report to a file")
+    .option("--report-mode <mode>", "Report mode: summary|full", "full")
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (input, options) => {
       const resolved = await resolveInputSource(input, options);
@@ -153,7 +160,10 @@ export function registerCheckCommand(program) {
           enrichDebug: false,
         };
 
-        const secondary = await buildSingleCheckResult(compareResolved, compareOptions);
+        const secondary = await buildSingleCheckResult(
+          compareResolved,
+          compareOptions,
+        );
 
         comparison = buildComparisonResult(primary.result, secondary.result, {
           leftLabel: resolved.path ?? "primary",
@@ -190,7 +200,9 @@ export function registerCheckCommand(program) {
       printInfo(`Source: ${primary.sourceType}`);
       printInfo(`Intent: ${primary.promptObject.intent || "(not detected)"}`);
       printInfo(`Complexity score: ${primary.promptObject.complexity_score}`);
-      printInfo(`Semantic drift risk: ${primary.promptObject.semantic_drift_risk}`);
+      printInfo(
+        `Semantic drift risk: ${primary.promptObject.semantic_drift_risk}`,
+      );
       printInfo(`Token estimate: ${primary.promptObject.tokens.input}`);
       printInfo(
         `Lint summary: ${result.lint_summary.errors} errors, ${result.lint_summary.warnings} warnings`,
@@ -217,7 +229,9 @@ export function registerCheckCommand(program) {
             console.log("  (none)");
           } else {
             for (const [field, applied] of Object.entries(appliedFields)) {
-              console.log(`  - ${field}: ${applied ? "accepted" : "not accepted"}`);
+              console.log(
+                `  - ${field}: ${applied ? "accepted" : "not accepted"}`,
+              );
             }
           }
 
@@ -317,11 +331,21 @@ export function registerCheckCommand(program) {
         console.log("Comparison:");
         console.log(`- Left label: ${comparison.left.label}`);
         console.log(`- Right label: ${comparison.right.label}`);
-        console.log(`- Winner (generic tokens): ${comparison.winners.generic_tokens ?? "n/a"}`);
-        console.log(`- Winner (compact tokens): ${comparison.winners.compact_tokens ?? "n/a"}`);
-        console.log(`- Winner (generic cost): ${comparison.winners.generic_cost ?? "n/a"}`);
-        console.log(`- Winner (compact cost): ${comparison.winners.compact_cost ?? "n/a"}`);
-        console.log(`- Winner (lint total): ${comparison.winners.lint_total ?? "n/a"}`);
+        console.log(
+          `- Winner (generic tokens): ${comparison.winners.generic_tokens ?? "n/a"}`,
+        );
+        console.log(
+          `- Winner (compact tokens): ${comparison.winners.compact_tokens ?? "n/a"}`,
+        );
+        console.log(
+          `- Winner (generic cost): ${comparison.winners.generic_cost ?? "n/a"}`,
+        );
+        console.log(
+          `- Winner (compact cost): ${comparison.winners.compact_cost ?? "n/a"}`,
+        );
+        console.log(
+          `- Winner (lint total): ${comparison.winners.lint_total ?? "n/a"}`,
+        );
       }
     });
 }
