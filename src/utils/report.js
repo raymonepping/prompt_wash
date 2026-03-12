@@ -152,6 +152,57 @@ function renderEnrichmentMarkdown(metadata, enrichRequested) {
   return lines.join("\n");
 }
 
+function renderGovernanceMarkdown(governance) {
+  if (!governance) {
+    return "(not requested)";
+  }
+
+  const lines = [];
+
+  lines.push("### Risk");
+  lines.push("");
+  lines.push(`- Score: ${governance.risk.risk_score}`);
+  lines.push(`- Level: ${governance.risk.risk_level}`);
+
+  const detectedRiskSignals = Object.entries(governance.risk.signals)
+    .filter(([, detected]) => detected)
+    .map(([name]) => name);
+
+  lines.push(
+    `- Signals: ${detectedRiskSignals.length ? detectedRiskSignals.join(", ") : "none"}`,
+  );
+
+  if (governance.risk.recommendations?.length) {
+    lines.push("- Recommendations:");
+    for (const item of governance.risk.recommendations) {
+      lines.push(`  - ${item}`);
+    }
+  }
+
+  lines.push("");
+  lines.push("### Bias");
+  lines.push("");
+  lines.push(`- Score: ${governance.bias.bias_score}`);
+  lines.push(`- Level: ${governance.bias.bias_level}`);
+
+  const detectedBiasSignals = Object.entries(governance.bias.signals)
+    .filter(([, detected]) => detected)
+    .map(([name]) => name);
+
+  lines.push(
+    `- Signals: ${detectedBiasSignals.length ? detectedBiasSignals.join(", ") : "none"}`,
+  );
+
+  if (governance.bias.recommendations?.length) {
+    lines.push("- Recommendations:");
+    for (const item of governance.bias.recommendations) {
+      lines.push(`  - ${item}`);
+    }
+  }
+
+  return lines.join("\n");
+}
+
 function renderComparisonMarkdown(comparison) {
   if (!comparison) {
     return "(not requested)";
@@ -174,27 +225,13 @@ function renderComparisonMarkdown(comparison) {
   lines.push("");
   lines.push("### Deltas");
   lines.push("");
-  lines.push(
-    `- Generic tokens delta: ${formatValue(comparison.deltas.generic_tokens)}`,
-  );
-  lines.push(
-    `- Compact tokens delta: ${formatValue(comparison.deltas.compact_tokens)}`,
-  );
-  lines.push(
-    `- Generic cost delta: ${formatValue(comparison.deltas.generic_cost)}`,
-  );
-  lines.push(
-    `- Compact cost delta: ${formatValue(comparison.deltas.compact_cost)}`,
-  );
-  lines.push(
-    `- Lint total delta: ${formatValue(comparison.deltas.lint_total)}`,
-  );
-  lines.push(
-    `- Lint errors delta: ${formatValue(comparison.deltas.lint_errors)}`,
-  );
-  lines.push(
-    `- Lint warnings delta: ${formatValue(comparison.deltas.lint_warnings)}`,
-  );
+  lines.push(`- Generic tokens delta: ${formatValue(comparison.deltas.generic_tokens)}`);
+  lines.push(`- Compact tokens delta: ${formatValue(comparison.deltas.compact_tokens)}`);
+  lines.push(`- Generic cost delta: ${formatValue(comparison.deltas.generic_cost)}`);
+  lines.push(`- Compact cost delta: ${formatValue(comparison.deltas.compact_cost)}`);
+  lines.push(`- Lint total delta: ${formatValue(comparison.deltas.lint_total)}`);
+  lines.push(`- Lint errors delta: ${formatValue(comparison.deltas.lint_errors)}`);
+  lines.push(`- Lint warnings delta: ${formatValue(comparison.deltas.lint_warnings)}`);
 
   return lines.join("\n");
 }
@@ -214,9 +251,7 @@ function renderSummaryMarkdown(result) {
   lines.push(`- Path: ${formatValue(result.path)}`);
   lines.push(`- Intent: ${formatValue(result.intent)}`);
   lines.push(`- Complexity score: ${formatValue(result.complexity_score)}`);
-  lines.push(
-    `- Semantic drift risk: ${formatValue(result.semantic_drift_risk)}`,
-  );
+  lines.push(`- Semantic drift risk: ${formatValue(result.semantic_drift_risk)}`);
   lines.push(`- Token estimate: ${formatValue(result.tokens?.input)}`);
   lines.push(
     `- Lint summary: ${formatValue(result.lint_summary?.errors)} errors, ${formatValue(result.lint_summary?.warnings)} warnings`,
@@ -227,6 +262,13 @@ function renderSummaryMarkdown(result) {
   lines.push("");
   lines.push(renderLintWarningsMarkdown(result.lint_warnings));
   lines.push("");
+
+  if (result.governance) {
+    lines.push("## Governance");
+    lines.push("");
+    lines.push(renderGovernanceMarkdown(result.governance));
+    lines.push("");
+  }
 
   lines.push("## Benchmark");
   lines.push("");
@@ -257,9 +299,7 @@ function renderFullMarkdown(result) {
   lines.push(`- Path: ${formatValue(result.path)}`);
   lines.push(`- Intent: ${formatValue(result.intent)}`);
   lines.push(`- Complexity score: ${formatValue(result.complexity_score)}`);
-  lines.push(
-    `- Semantic drift risk: ${formatValue(result.semantic_drift_risk)}`,
-  );
+  lines.push(`- Semantic drift risk: ${formatValue(result.semantic_drift_risk)}`);
   lines.push(`- Token estimate: ${formatValue(result.tokens?.input)}`);
   lines.push(
     `- Lint summary: ${formatValue(result.lint_summary?.errors)} errors, ${formatValue(result.lint_summary?.warnings)} warnings`,
@@ -273,10 +313,15 @@ function renderFullMarkdown(result) {
 
   lines.push("## Enrichment");
   lines.push("");
-  lines.push(
-    renderEnrichmentMarkdown(result.metadata, result.enrich_requested),
-  );
+  lines.push(renderEnrichmentMarkdown(result.metadata, result.enrich_requested));
   lines.push("");
+
+  if (result.governance) {
+    lines.push("## Governance");
+    lines.push("");
+    lines.push(renderGovernanceMarkdown(result.governance));
+    lines.push("");
+  }
 
   lines.push("## Baseline Diff");
   lines.push("");
@@ -303,11 +348,7 @@ function renderFullMarkdown(result) {
   return `${lines.join("\n")}\n`;
 }
 
-export function renderCheckReport(
-  result,
-  format = "json",
-  reportMode = "full",
-) {
+export function renderCheckReport(result, format = "json", reportMode = "full") {
   if (format === "json") {
     return `${JSON.stringify(result, null, 2)}\n`;
   }

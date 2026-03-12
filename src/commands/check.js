@@ -14,6 +14,8 @@ import { resolvePromptObjectFromSource } from "../utils/prompt-source.js";
 import { runPipeline } from "../pipeline/index.js";
 import { renderCheckReport, getReportFormatFromPath } from "../utils/report.js";
 import { buildComparisonResult } from "../utils/compare.js";
+import { analyzePromptRisk } from "../services/governance/risk_scoring.js";
+import { analyzePromptBias } from "../services/governance/bias_detection.js";
 
 function splitSentences(text) {
   return text
@@ -76,6 +78,19 @@ async function buildSingleCheckResult(resolved, options) {
     benchmark = await buildBenchmarkResult(promptObject);
   }
 
+  let governance = null;
+  if (options.governance) {
+    const [risk, bias] = await Promise.all([
+      analyzePromptRisk(promptObject),
+      analyzePromptBias(promptObject),
+    ]);
+
+    governance = {
+      risk,
+      bias,
+    };
+  }
+
   return {
     promptObject,
     sourceType,
@@ -102,6 +117,7 @@ async function buildSingleCheckResult(resolved, options) {
       tokens: promptObject.tokens,
       metadata: promptObject.metadata,
       baseline_diff: baselineDiff,
+      governance,
       benchmark,
       report_metadata: {
         generated_at: new Date().toISOString(),
@@ -115,11 +131,12 @@ async function buildSingleCheckResult(resolved, options) {
 export function registerCheckCommand(program) {
   program
     .command("check")
-    .description("Lint, analyze, compare, and benchmark prompts")
+    .description("Lint, analyze, compare, benchmark, and govern prompts")
     .argument(
       "[input]",
       "Prompt text, Prompt IR, PromptWash JSON, or path to a file",
     )
+    .option("--governance", "Include governance analysis (risk and bias)", false)
     .option("-f, --file", "Treat input as a file path")
     .option("--benchmark", "Run benchmark flow if configured", false)
     .option("--baseline <path>", "Optional baseline prompt or IR file")
@@ -324,6 +341,32 @@ export function registerCheckCommand(program) {
             `- Ollama configured model installed: ${benchmark.provider_health.ollama.installed_model ? "yes" : "no"}`,
           );
         }
+      }
+
+      if (result.governance) {
+        console.log("");
+        console.log("Governance:");
+        console.log(
+          `- Risk score: ${result.governance.risk.risk_score} (${result.governance.risk.risk_level})`,
+        );
+        console.log(
+          `- Bias score: ${result.governance.bias.bias_score} (${result.governance.bias.bias_level})`,
+        );
+
+        const riskSignals = Object.entries(result.governance.risk.signals)
+          .filter(([, detected]) => detected)
+          .map(([name]) => name);
+
+        const biasSignals = Object.entries(result.governance.bias.signals)
+          .filter(([, detected]) => detected)
+          .map(([name]) => name);
+
+        console.log(
+          `- Risk signals: ${riskSignals.length ? riskSignals.join(", ") : "none"}`,
+        );
+        console.log(
+          `- Bias signals: ${biasSignals.length ? biasSignals.join(", ") : "none"}`,
+        );
       }
 
       if (comparison) {
