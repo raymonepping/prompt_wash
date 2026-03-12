@@ -10,6 +10,7 @@ import { registerBundleCommand } from "./commands/bundle.js";
 import { registerBatchCheckCommand } from "./commands/batch-check.js";
 import { registerRiskCommand } from "./commands/risk.js";
 import { registerRiskRulesCommand } from "./commands/risk-rules.js";
+import { registerBiasCommand } from "./commands/bias.js";
 
 export async function runCli(argv = process.argv) {
   const program = new Command();
@@ -32,6 +33,7 @@ export async function runCli(argv = process.argv) {
   registerBatchCheckCommand(program);
   registerRiskCommand(program);
   registerRiskRulesCommand(program);
+  registerBiasCommand(program);
 
   await program.parseAsync(argv);
 }
