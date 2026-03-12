@@ -42,7 +42,10 @@ function evaluateCheck(checkName, promptObject) {
       return !promptObject?.ir?.output_format?.trim();
 
     case "missing_constraints":
-      return !Array.isArray(promptObject?.constraints) || promptObject.constraints.length === 0;
+      return (
+        !Array.isArray(promptObject?.constraints) ||
+        promptObject.constraints.length === 0
+      );
 
     case "missing_audience":
       return !promptObject?.audience || promptObject.audience === "general";
@@ -62,7 +65,9 @@ function evaluateCheckCategory(promptObject, category) {
   }
 
   const checks = Array.isArray(category.checks) ? category.checks : [];
-  const matches = checks.filter((checkName) => evaluateCheck(checkName, promptObject));
+  const matches = checks.filter((checkName) =>
+    evaluateCheck(checkName, promptObject),
+  );
 
   return {
     matched: matches.length > 0,
@@ -107,15 +112,21 @@ function buildRecommendations(results) {
   }
 
   if (results.signals.prompt_injection) {
-    recommendations.push("Remove instruction-override language such as attempts to ignore prior instructions.");
+    recommendations.push(
+      "Remove instruction-override language such as attempts to ignore prior instructions.",
+    );
   }
 
   if (results.signals.manipulation) {
-    recommendations.push("Remove manipulative or safeguard-bypassing language.");
+    recommendations.push(
+      "Remove manipulative or safeguard-bypassing language.",
+    );
   }
 
   if (results.signals.compliance_risk) {
-    recommendations.push("Review the prompt for compliance-sensitive phrasing.");
+    recommendations.push(
+      "Review the prompt for compliance-sensitive phrasing.",
+    );
   }
 
   return recommendations;
@@ -127,7 +138,10 @@ export async function analyzePromptRisk(promptObject) {
   const text = normalizeText(promptObject);
 
   const patternResults = {
-    prompt_injection: evaluatePatternCategory(text, categories.prompt_injection),
+    prompt_injection: evaluatePatternCategory(
+      text,
+      categories.prompt_injection,
+    ),
     manipulation: evaluatePatternCategory(text, categories.manipulation),
     compliance_risk: evaluatePatternCategory(text, categories.compliance_risk),
   };

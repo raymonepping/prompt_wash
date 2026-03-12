@@ -1,4 +1,9 @@
-import { printInfo, printJson, printSuccess, printWarning } from "../utils/display.js";
+import {
+  printInfo,
+  printJson,
+  printSuccess,
+  printWarning,
+} from "../utils/display.js";
 import { resolveInputSource } from "../utils/input.js";
 import { resolvePromptObjectFromSource } from "../utils/prompt-source.js";
 import { analyzePromptRisk } from "../services/governance/risk_scoring.js";
@@ -7,7 +12,10 @@ export function registerRiskCommand(program) {
   program
     .command("risk")
     .description("Analyze prompt risk using PromptWash governance rules")
-    .argument("[input]", "Prompt text, PromptWash JSON, Prompt IR, or path to a file")
+    .argument(
+      "[input]",
+      "Prompt text, PromptWash JSON, Prompt IR, or path to a file",
+    )
     .option("-f, --file", "Treat input as a file path")
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (input, options) => {
@@ -50,10 +58,18 @@ export function registerRiskCommand(program) {
       console.log("");
       console.log("Detected Signals");
       console.log("");
-      console.log(`Prompt Injection Risk: ${risk.signals.prompt_injection ? "detected" : "none detected"}`);
-      console.log(`Manipulation Risk: ${risk.signals.manipulation ? "detected" : "none detected"}`);
-      console.log(`Ambiguity Risk: ${risk.signals.ambiguity ? "detected" : "none detected"}`);
-      console.log(`Compliance Risk: ${risk.signals.compliance_risk ? "detected" : "none detected"}`);
+      console.log(
+        `Prompt Injection Risk: ${risk.signals.prompt_injection ? "detected" : "none detected"}`,
+      );
+      console.log(
+        `Manipulation Risk: ${risk.signals.manipulation ? "detected" : "none detected"}`,
+      );
+      console.log(
+        `Ambiguity Risk: ${risk.signals.ambiguity ? "detected" : "none detected"}`,
+      );
+      console.log(
+        `Compliance Risk: ${risk.signals.compliance_risk ? "detected" : "none detected"}`,
+      );
 
       console.log("");
       console.log("Matches");
