@@ -1,4 +1,8 @@
-import { printInfo, printJson, printSuccess } from "../utils/display.js";
+import {
+  printInfo,
+  printJson,
+  printSuccess,
+} from "../utils/display.js";
 import { resolveInputSource } from "../utils/input.js";
 import { resolvePromptObjectFromSource } from "../utils/prompt-source.js";
 import { createValidationError } from "../utils/errors.js";
@@ -18,6 +22,54 @@ function toDefaultArtifactPath(familyOrNodeId) {
   return `artifacts/${familyOrNodeId}.json`;
 }
 
+function buildChildrenMap(record) {
+  const childrenMap = new Map();
+
+  for (const node of record.nodes) {
+    const parentKey = node.parent ?? "__root__";
+
+    if (!childrenMap.has(parentKey)) {
+      childrenMap.set(parentKey, []);
+    }
+
+    childrenMap.get(parentKey).push(node);
+  }
+
+  for (const children of childrenMap.values()) {
+    children.sort((left, right) => left.id.localeCompare(right.id));
+  }
+
+  return childrenMap;
+}
+
+function renderTreeLines(record) {
+  const rootNode = record.nodes.find((node) => node.id === record.root);
+
+  if (!rootNode) {
+    return [];
+  }
+
+  const childrenMap = buildChildrenMap(record);
+  const lines = [rootNode.id];
+
+  function walk(nodeId, prefix = "") {
+    const children = childrenMap.get(nodeId) ?? [];
+
+    children.forEach((child, index) => {
+      const isLast = index === children.length - 1;
+      const branch = isLast ? "└─ " : "├─ ";
+      lines.push(`${prefix}${branch}${child.id}`);
+
+      const nextPrefix = `${prefix}${isLast ? "   " : "│  "}`;
+      walk(child.id, nextPrefix);
+    });
+  }
+
+  walk(rootNode.id);
+
+  return lines;
+}
+
 export function registerLineageCommand(program) {
   const lineage = program
     .command("lineage")
@@ -26,16 +78,10 @@ export function registerLineageCommand(program) {
   lineage
     .command("init")
     .description("Initialize a new lineage family from a prompt or artifact")
-    .argument(
-      "[input]",
-      "Prompt text, PromptWash JSON, Prompt IR, or path to a file",
-    )
+    .argument("[input]", "Prompt text, PromptWash JSON, Prompt IR, or path to a file")
     .option("-f, --file", "Treat input as a file path")
     .option("--family <name>", "Lineage family name")
-    .option(
-      "--artifact <path>",
-      "Artifact path to associate with the root node",
-    )
+    .option("--artifact <path>", "Artifact path to associate with the root node")
     .option("--label <value>", "Optional label for the root node", "root")
     .option("--notes <value>", "Optional notes for the root node", "")
     .option("-o, --output <format>", "Output format: text|json", "text")
@@ -48,10 +94,7 @@ export function registerLineageCommand(program) {
       );
 
       const family = toLineageFamilyName(
-        options.family ??
-          promptObject.fingerprint ??
-          promptObject.intent ??
-          "prompt",
+        options.family ?? promptObject.fingerprint ?? promptObject.intent ?? "prompt",
       );
 
       const rootNode = createLineageNode({
@@ -98,10 +141,7 @@ export function registerLineageCommand(program) {
     .command("iterate")
     .description("Add a child iteration to an existing lineage family")
     .argument("<family>", "Lineage family name")
-    .argument(
-      "[input]",
-      "Prompt text, PromptWash JSON, Prompt IR, or path to a file",
-    )
+    .argument("[input]", "Prompt text, PromptWash JSON, Prompt IR, or path to a file")
     .option("-f, --file", "Treat input as a file path")
     .option("--parent <nodeId>", "Parent node id inside the family")
     .option("--artifact <path>", "Artifact path to associate with the new node")
@@ -200,6 +240,43 @@ export function registerLineageCommand(program) {
         console.log(`  label: ${node.label || "(none)"}`);
         console.log(`  notes: ${node.notes || "(none)"}`);
         console.log(`  fingerprint: ${node.fingerprint ?? "(none)"}`);
+      }
+    });
+
+  lineage
+    .command("graph")
+    .description("Render a lineage family as a tree")
+    .argument("<family>", "Lineage family name")
+    .option("-o, --output <format>", "Output format: text|json", "text")
+    .action(async (family, options) => {
+      const record = await loadLineageRecord(family);
+
+      if (!record) {
+        throw createValidationError(`Lineage family not found: ${family}`);
+      }
+
+      const lines = renderTreeLines(record);
+
+      const result = {
+        command: "lineage graph",
+        family,
+        root: record.root,
+        nodes: record.nodes.length,
+        lines,
+      };
+
+      if (options.output === "json") {
+        printJson(result);
+        return;
+      }
+
+      printSuccess("Lineage graph rendered successfully");
+      printInfo(`Family: ${record.family}`);
+      printInfo(`Root: ${record.root}`);
+      printInfo(`Nodes: ${record.nodes.length}`);
+      console.log("");
+      for (const line of lines) {
+        console.log(line);
       }
     });
 

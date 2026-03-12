@@ -11,6 +11,24 @@
       "label": "root",
       "notes": "",
       "fingerprint": "pw_31a9c6c7"
+    },
+    {
+      "id": "vault-pki.a",
+      "parent": "vault-pki",
+      "artifact": "artifacts/vault-pki.a.json",
+      "created_at": "2026-03-12T20:18:22.969Z",
+      "label": "",
+      "notes": "",
+      "fingerprint": "pw_263d8a1f"
+    },
+    {
+      "id": "vault-pki.b",
+      "parent": "vault-pki",
+      "artifact": "artifacts/vault-pki.b.json",
+      "created_at": "2026-03-12T20:18:42.795Z",
+      "label": "",
+      "notes": "",
+      "fingerprint": "pw_9921be01"
     }
   ]
 }
