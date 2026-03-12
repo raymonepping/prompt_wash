@@ -96,7 +96,9 @@ export function validateBiasRulesObject(rules) {
       typeof rules.thresholds.low === "number" &&
       rules.thresholds.very_low > rules.thresholds.low
     ) {
-      errors.push("thresholds.very_low must be less than or equal to thresholds.low");
+      errors.push(
+        "thresholds.very_low must be less than or equal to thresholds.low",
+      );
     }
 
     if (
@@ -104,7 +106,9 @@ export function validateBiasRulesObject(rules) {
       typeof rules.thresholds.medium === "number" &&
       rules.thresholds.low > rules.thresholds.medium
     ) {
-      errors.push("thresholds.low must be less than or equal to thresholds.medium");
+      errors.push(
+        "thresholds.low must be less than or equal to thresholds.medium",
+      );
     }
 
     if (
@@ -112,7 +116,9 @@ export function validateBiasRulesObject(rules) {
       typeof rules.thresholds.high === "number" &&
       rules.thresholds.medium > rules.thresholds.high
     ) {
-      errors.push("thresholds.medium must be less than or equal to thresholds.high");
+      errors.push(
+        "thresholds.medium must be less than or equal to thresholds.high",
+      );
     }
   }
 

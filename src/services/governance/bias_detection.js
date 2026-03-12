@@ -96,10 +96,19 @@ export async function analyzePromptBias(promptObject) {
   const text = normalizeText(promptObject);
 
   const results = {
-    outcome_steering: evaluatePatternCategory(text, categories.outcome_steering),
+    outcome_steering: evaluatePatternCategory(
+      text,
+      categories.outcome_steering,
+    ),
     vendor_bias: evaluatePatternCategory(text, categories.vendor_bias),
-    advocacy_language: evaluatePatternCategory(text, categories.advocacy_language),
-    forced_recommendation: evaluatePatternCategory(text, categories.forced_recommendation),
+    advocacy_language: evaluatePatternCategory(
+      text,
+      categories.advocacy_language,
+    ),
+    forced_recommendation: evaluatePatternCategory(
+      text,
+      categories.forced_recommendation,
+    ),
   };
 
   const totalScore = Object.values(results).reduce(

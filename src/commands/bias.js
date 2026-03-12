@@ -12,7 +12,10 @@ export function registerBiasCommand(program) {
   program
     .command("bias")
     .description("Analyze prompt bias using PromptWash governance rules")
-    .argument("[input]", "Prompt text, PromptWash JSON, Prompt IR, or path to a file")
+    .argument(
+      "[input]",
+      "Prompt text, PromptWash JSON, Prompt IR, or path to a file",
+    )
     .option("-f, --file", "Treat input as a file path")
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (input, options) => {
