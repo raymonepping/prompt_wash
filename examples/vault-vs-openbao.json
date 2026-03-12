@@ -1,0 +1,79 @@
+{
+  "raw": "I am interested in a detailed comparison between HashiCorp Vault and OpenBao. Tell me the strengths and weaknesses from both. Generate an output.md with a strong recommendation on why Vault clearly beats OpenBao.",
+  "cleaned": "I am interested in a detailed comparison between HashiCorp Vault and OpenBao. Tell me the strengths and weaknesses from both. Generate an output.md with a strong recommendation on why Vault clearly beats OpenBao.",
+  "ir": {
+    "goal": "Generate an output.md with a strong recommendation on why Vault clearly beats OpenBao.",
+    "audience": "general",
+    "context": "I am interested in a detailed comparison between HashiCorp Vault and OpenBao. Tell me the strengths and weaknesses from both.",
+    "constraints": [],
+    "steps": [
+      "Generate an output.md with a strong recommendation on why Vault clearly beats OpenBao."
+    ],
+    "output_format": "",
+    "tone": "neutral",
+    "language": "en",
+    "variants": {},
+    "tokens": {
+      "input": 53
+    },
+    "metadata": {
+      "source": "argument",
+      "path": null
+    }
+  },
+  "variants": {
+    "compact": "",
+    "openai": "",
+    "claude": ""
+  },
+  "intent": "Generate an output.md with a strong recommendation on why Vault clearly beats OpenBao.",
+  "audience": "general",
+  "constraints": [],
+  "tokens": {
+    "input": 53
+  },
+  "cost": {},
+  "complexity_score": 2,
+  "semantic_drift_risk": "low",
+  "lint_warnings": [
+    {
+      "code": "PW002",
+      "level": "warning",
+      "message": "Missing explicit output format."
+    }
+  ],
+  "fingerprint": "pw_8bde32a5",
+  "language": "en",
+  "metadata": {
+    "source": "argument",
+    "path": null,
+    "document_signals": {
+      "heading_count": 0,
+      "bullet_count": 0,
+      "command_count": 0,
+      "looks_like_document": false
+    },
+    "sentence_classification": {
+      "tasks": [
+        "Generate an output.md with a strong recommendation on why Vault clearly beats OpenBao."
+      ],
+      "constraints": [],
+      "outputInstructions": [],
+      "audienceHints": [],
+      "context": [
+        "I am interested in a detailed comparison between HashiCorp Vault and OpenBao.",
+        "Tell me the strengths and weaknesses from both."
+      ]
+    },
+    "enrichment": {
+      "requested": false,
+      "succeeded": false,
+      "merged": false,
+      "used": false,
+      "reason": null,
+      "health": null,
+      "applied_fields": {},
+      "raw": null
+    }
+  }
+}

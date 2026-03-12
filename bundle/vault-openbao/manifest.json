@@ -1,0 +1,18 @@
+{
+  "bundle_name": "vault-openbao",
+  "provider": "claude",
+  "source": "argument",
+  "input_path": null,
+  "generated_at": "2026-03-11T09:29:45.716Z",
+  "fingerprint": "pw_8bde32a5",
+  "intent": "Generate an output.md with a strong recommendation on why Vault clearly beats OpenBao.",
+  "audience": "general",
+  "output_format": "",
+  "files": {
+    "bundle_dir": "bundle/vault-openbao",
+    "prompt_json": "bundle/vault-openbao/prompt.json",
+    "rendered_txt": "bundle/vault-openbao/rendered.claude.txt",
+    "check_report": "bundle/vault-openbao/check.md",
+    "manifest_json": "bundle/vault-openbao/manifest.json"
+  }
+}

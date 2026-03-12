@@ -8,6 +8,7 @@ import { registerConstraintsCommand } from "./commands/constraints.js";
 import { registerConfigCommand } from "./commands/config.js";
 import { registerBundleCommand } from "./commands/bundle.js";
 import { registerBatchCheckCommand } from "./commands/batch-check.js";
+import { registerRiskCommand } from "./commands/risk.js";
 
 export async function runCli(argv = process.argv) {
   const program = new Command();
@@ -28,6 +29,7 @@ export async function runCli(argv = process.argv) {
   registerConfigCommand(program);
   registerBundleCommand(program);
   registerBatchCheckCommand(program);
+  registerRiskCommand(program);
 
   await program.parseAsync(argv);
 }

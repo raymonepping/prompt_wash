@@ -1,0 +1,59 @@
+export const DEFAULT_RISK_RULES = {
+  version: 1,
+  categories: {
+    prompt_injection: {
+      weight: 40,
+      enabled: true,
+      patterns: [
+        "ignore previous instructions",
+        "disregard earlier directions",
+        "override system prompt",
+        "forget your prior rules",
+        "ignore the system message",
+        "bypass prior instructions",
+      ],
+    },
+    manipulation: {
+      weight: 30,
+      enabled: true,
+      patterns: [
+        "do whatever it takes",
+        "bypass safeguards",
+        "without restrictions",
+        "ignore safety",
+        "ignore guardrails",
+        "avoid constraints",
+      ],
+    },
+    ambiguity: {
+      weight: 20,
+      enabled: true,
+      checks: [
+        "missing_output_format",
+        "missing_constraints",
+        "missing_audience",
+      ],
+    },
+    compliance_risk: {
+      weight: 25,
+      enabled: true,
+      patterns: [
+        "hide this from",
+        "avoid detection",
+        "circumvent policy",
+        "evade compliance",
+        "conceal this",
+      ],
+    },
+  },
+  thresholds: {
+    very_low: 20,
+    low: 40,
+    medium: 60,
+    high: 80,
+  },
+};
+
+export function cloneDefaultRiskRules() {
+  return structuredClone(DEFAULT_RISK_RULES);
+}
