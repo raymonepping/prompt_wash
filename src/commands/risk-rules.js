@@ -1,8 +1,4 @@
-import {
-  printInfo,
-  printJson,
-  printSuccess,
-} from "../utils/display.js";
+import { printInfo, printJson, printSuccess } from "../utils/display.js";
 import {
   initializeProjectRiskRules,
   loadProjectRiskRules,
@@ -40,7 +36,11 @@ export function registerRiskRulesCommand(program) {
   riskRules
     .command("view")
     .description("View resolved risk rules")
-    .option("--project-only", "Show only project risk rules when present", false)
+    .option(
+      "--project-only",
+      "Show only project risk rules when present",
+      false,
+    )
     .option("-o, --output <format>", "Output format: text|json", "json")
     .action(async (options) => {
       const rules = options.projectOnly
