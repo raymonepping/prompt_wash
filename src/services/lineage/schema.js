@@ -79,7 +79,10 @@ export function validateLineageRecord(record) {
       seenIds.add(node.id);
     }
 
-    if (node.parent !== null && (typeof node.parent !== "string" || !node.parent.trim())) {
+    if (
+      node.parent !== null &&
+      (typeof node.parent !== "string" || !node.parent.trim())
+    ) {
       errors.push(`nodes[${index}].parent must be null or a non-empty string`);
     }
 
@@ -103,7 +106,9 @@ export function validateLineageRecord(record) {
       node.fingerprint !== null &&
       !(typeof node.fingerprint === "string" && node.fingerprint.trim())
     ) {
-      errors.push(`nodes[${index}].fingerprint must be null or a non-empty string`);
+      errors.push(
+        `nodes[${index}].fingerprint must be null or a non-empty string`,
+      );
     }
   }
 

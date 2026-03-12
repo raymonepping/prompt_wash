@@ -1,8 +1,4 @@
-import {
-  printInfo,
-  printJson,
-  printSuccess,
-} from "../utils/display.js";
+import { printInfo, printJson, printSuccess } from "../utils/display.js";
 import { resolveInputSource } from "../utils/input.js";
 import { resolvePromptObjectFromSource } from "../utils/prompt-source.js";
 import {
@@ -25,10 +21,16 @@ export function registerLineageCommand(program) {
   lineage
     .command("init")
     .description("Initialize a new lineage family from a prompt or artifact")
-    .argument("[input]", "Prompt text, PromptWash JSON, Prompt IR, or path to a file")
+    .argument(
+      "[input]",
+      "Prompt text, PromptWash JSON, Prompt IR, or path to a file",
+    )
     .option("-f, --file", "Treat input as a file path")
     .option("--family <name>", "Lineage family name")
-    .option("--artifact <path>", "Artifact path to associate with the root node")
+    .option(
+      "--artifact <path>",
+      "Artifact path to associate with the root node",
+    )
     .option("--label <value>", "Optional label for the root node", "root")
     .option("--notes <value>", "Optional notes for the root node", "")
     .option("-o, --output <format>", "Output format: text|json", "text")
@@ -41,7 +43,10 @@ export function registerLineageCommand(program) {
       );
 
       const family = toLineageFamilyName(
-        options.family ?? promptObject.fingerprint ?? promptObject.intent ?? "prompt",
+        options.family ??
+          promptObject.fingerprint ??
+          promptObject.intent ??
+          "prompt",
       );
 
       const rootNode = createLineageNode({

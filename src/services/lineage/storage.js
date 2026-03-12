@@ -2,10 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 import { createFileError, createValidationError } from "../../utils/errors.js";
-import {
-  createLineageRecord,
-  validateLineageRecord,
-} from "./schema.js";
+import { createLineageRecord, validateLineageRecord } from "./schema.js";
 
 export const LINEAGE_DIR = ".promptwash/lineage";
 
@@ -26,7 +23,10 @@ export async function ensureLineageDir() {
   try {
     await fs.mkdir(LINEAGE_DIR, { recursive: true });
   } catch (error) {
-    throw createFileError(`Unable to create lineage directory: ${LINEAGE_DIR}`, error.message);
+    throw createFileError(
+      `Unable to create lineage directory: ${LINEAGE_DIR}`,
+      error.message,
+    );
   }
 }
 
@@ -43,7 +43,10 @@ export async function loadLineageRecord(family) {
     const errors = validateLineageRecord(record);
 
     if (errors.length > 0) {
-      throw createValidationError(`Invalid lineage record: ${filePath}`, errors);
+      throw createValidationError(
+        `Invalid lineage record: ${filePath}`,
+        errors,
+      );
     }
 
     return record;
@@ -52,7 +55,10 @@ export async function loadLineageRecord(family) {
       throw error;
     }
 
-    throw createFileError(`Unable to load lineage record: ${filePath}`, error.message);
+    throw createFileError(
+      `Unable to load lineage record: ${filePath}`,
+      error.message,
+    );
   }
 }
 
@@ -68,9 +74,16 @@ export async function saveLineageRecord(record) {
   const filePath = lineagePathForFamily(record.family);
 
   try {
-    await fs.writeFile(filePath, `${JSON.stringify(record, null, 2)}\n`, "utf8");
+    await fs.writeFile(
+      filePath,
+      `${JSON.stringify(record, null, 2)}\n`,
+      "utf8",
+    );
   } catch (error) {
-    throw createFileError(`Unable to write lineage record: ${filePath}`, error.message);
+    throw createFileError(
+      `Unable to write lineage record: ${filePath}`,
+      error.message,
+    );
   }
 
   return filePath;
@@ -110,6 +123,9 @@ export async function listLineageFamilies() {
       .map((entry) => entry.name.replace(/\.json$/i, ""))
       .sort();
   } catch (error) {
-    throw createFileError(`Unable to list lineage families: ${LINEAGE_DIR}`, error.message);
+    throw createFileError(
+      `Unable to list lineage families: ${LINEAGE_DIR}`,
+      error.message,
+    );
   }
 }
