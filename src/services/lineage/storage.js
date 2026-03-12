@@ -2,7 +2,10 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 import { createFileError, createValidationError } from "../../utils/errors.js";
-import { createLineageRecord, validateLineageRecord } from "./schema.js";
+import {
+  createLineageRecord,
+  validateLineageRecord,
+} from "./schema.js";
 
 export const LINEAGE_DIR = ".promptwash/lineage";
 
@@ -43,10 +46,7 @@ export async function loadLineageRecord(family) {
     const errors = validateLineageRecord(record);
 
     if (errors.length > 0) {
-      throw createValidationError(
-        `Invalid lineage record: ${filePath}`,
-        errors,
-      );
+      throw createValidationError(`Invalid lineage record: ${filePath}`, errors);
     }
 
     return record;
@@ -74,11 +74,7 @@ export async function saveLineageRecord(record) {
   const filePath = lineagePathForFamily(record.family);
 
   try {
-    await fs.writeFile(
-      filePath,
-      `${JSON.stringify(record, null, 2)}\n`,
-      "utf8",
-    );
+    await fs.writeFile(filePath, `${JSON.stringify(record, null, 2)}\n`, "utf8");
   } catch (error) {
     throw createFileError(
       `Unable to write lineage record: ${filePath}`,
@@ -107,6 +103,30 @@ export async function initializeLineageRecord({ family, rootNode }) {
   return {
     record,
     path: filePath,
+  };
+}
+
+export async function appendLineageNode(family, node) {
+  const record = await loadLineageRecord(family);
+
+  if (!record) {
+    throw createValidationError(`Lineage family not found: ${family}`);
+  }
+
+  if (record.nodes.some((existingNode) => existingNode.id === node.id)) {
+    throw createValidationError(
+      `Lineage node already exists in family ${family}: ${node.id}`,
+    );
+  }
+
+  record.nodes.push(node);
+
+  const filePath = await saveLineageRecord(record);
+
+  return {
+    record,
+    path: filePath,
+    node,
   };
 }
 

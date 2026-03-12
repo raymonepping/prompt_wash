@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "family": "vault-pki",
+  "root": "vault-pki",
+  "nodes": [
+    {
+      "id": "vault-pki",
+      "parent": null,
+      "artifact": "artifacts/vault-pki.json",
+      "created_at": "2026-03-12T20:07:16.277Z",
+      "label": "root",
+      "notes": "",
+      "fingerprint": "pw_31a9c6c7"
+    }
+  ]
+}

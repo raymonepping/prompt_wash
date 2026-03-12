@@ -36,3 +36,9 @@ export function nextChildNodeId(record, parentId) {
   const suffix = nextSuffix(children.length);
   return `${parentId}.${suffix}`;
 }
+
+export function nextChildNodeId(record, parentId) {
+  const children = record.nodes.filter((node) => node.parent === parentId);
+  const suffix = nextSuffix(children.length);
+  return `${parentId}.${suffix}`;
+}
