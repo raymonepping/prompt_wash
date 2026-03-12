@@ -136,7 +136,11 @@ export function registerCheckCommand(program) {
       "[input]",
       "Prompt text, Prompt IR, PromptWash JSON, or path to a file",
     )
-    .option("--governance", "Include governance analysis (risk and bias)", false)
+    .option(
+      "--governance",
+      "Include governance analysis (risk and bias)",
+      false,
+    )
     .option("-f, --file", "Treat input as a file path")
     .option("--benchmark", "Run benchmark flow if configured", false)
     .option("--baseline <path>", "Optional baseline prompt or IR file")
