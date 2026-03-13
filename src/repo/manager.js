@@ -1,160 +1,162 @@
 import { execFile } from "node:child_process";
-import { promisify } from "node:util";
 import fs from "node:fs/promises";
+import path from "node:path";
+import { promisify } from "node:util";
 
-import { PromptWashError } from "../utils/errors.js";
+import { createFileError, createValidationError } from "../utils/errors.js";
 
 const execFileAsync = promisify(execFile);
 
-async function runGit(args) {
+async function pathExists(pathValue) {
   try {
-    const result = await execFileAsync("git", args, {
-      encoding: "utf8",
-    });
-
-    return (result.stdout || "").trim();
-  } catch (error) {
-    const stderr = error.stderr?.trim() || error.message;
-
-    throw new PromptWashError("Git command failed", {
-      code: "GIT_ERROR",
-      details: {
-        args,
-        stderr,
-      },
-    });
-  }
-}
-
-export async function isGitRepository() {
-  try {
-    const output = await runGit(["rev-parse", "--is-inside-work-tree"]);
-    return output === "true";
+    await fs.access(pathValue);
+    return true;
   } catch {
     return false;
   }
 }
 
-export async function getRepoHistory(targetPath = null) {
-  const args = ["log", "--oneline", "--decorate", "--max-count=20"];
-
-  if (targetPath) {
-    args.push("--", targetPath);
-  }
-
-  return await runGit(args);
-}
-
-export async function getRepoDiff(
-  targetPath = null,
-  fromRef = "HEAD~1",
-  toRef = "HEAD",
-) {
-  const args = ["diff", `${fromRef}..${toRef}`];
-
-  if (targetPath) {
-    args.push("--", targetPath);
-  }
-
-  return await runGit(args);
-}
-
-export async function getRepoStatus() {
-  return await runGit(["status", "--short"]);
-}
-
-export async function validatePublishTarget(targetPath) {
-  if (!targetPath) {
-    throw new PromptWashError("Publish target path is required.", {
-      code: "PUBLISH_TARGET_REQUIRED",
-    });
-  }
-
+async function runGit(args, cwd = process.cwd()) {
   try {
-    const stat = await fs.stat(targetPath);
+    const { stdout } = await execFileAsync("git", args, { cwd });
+    return stdout.trim();
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      throw createFileError("Git is not installed or not available in PATH", error.message);
+    }
 
-    return {
-      exists: true,
-      type: stat.isDirectory() ? "directory" : "file",
-      path: targetPath,
-    };
-  } catch {
-    throw new PromptWashError("Publish target does not exist.", {
-      code: "PUBLISH_TARGET_MISSING",
-      details: { path: targetPath },
-    });
+    throw createFileError(`Git command failed: git ${args.join(" ")}`, error.message);
   }
 }
 
-export async function previewPublishTarget(targetPath) {
-  const validated = await validatePublishTarget(targetPath);
-  const status = await getRepoStatus();
+async function ensureGitRepo(cwd = process.cwd()) {
+  try {
+    await runGit(["rev-parse", "--show-toplevel"], cwd);
+  } catch (error) {
+    throw createValidationError("Current directory is not a Git repository", [
+      error.message,
+    ]);
+  }
+}
+
+export async function getGitStatus(cwd = process.cwd()) {
+  await ensureGitRepo(cwd);
+  return runGit(["status", "--short"], cwd);
+}
+
+export async function getGitHistory(targetPath, cwd = process.cwd()) {
+  await ensureGitRepo(cwd);
+
+  const output = await runGit(
+    ["log", "--date=short", '--pretty=format:%h %ad - %s', "--", targetPath],
+    cwd,
+  );
+
+  return output
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+export async function getGitDiff(targetPath, range = "HEAD~1..HEAD", cwd = process.cwd()) {
+  await ensureGitRepo(cwd);
+  return runGit(["diff", range, "--", targetPath], cwd);
+}
+
+export async function previewPublishTarget(targetPath, cwd = process.cwd()) {
+  await ensureGitRepo(cwd);
+
+  const absolutePath = path.resolve(cwd, targetPath);
+  const exists = await pathExists(absolutePath);
+
+  const target = {
+    exists,
+    type: exists ? "file" : "missing",
+    path: targetPath,
+  };
+
+  const gitStatus = await getGitStatus(cwd).catch(() => "");
 
   return {
-    target: validated,
-    git_status: status,
-    would_stage: [validated.path],
+    target,
+    git_status: gitStatus,
+    would_stage: exists ? [targetPath] : [],
     would_commit: false,
     would_push: false,
   };
 }
 
-export async function stagePublishTarget(targetPath) {
-  await validatePublishTarget(targetPath);
-  await runGit(["add", "--", targetPath]);
+export async function publishPathToGit(
+  targetPath,
+  { message } = {},
+  cwd = process.cwd(),
+) {
+  await ensureGitRepo(cwd);
 
-  return {
-    staged: [targetPath],
-  };
-}
+  const absolutePath = path.resolve(cwd, targetPath);
+  const exists = await pathExists(absolutePath);
 
-export async function hasStagedChanges() {
-  const output = await runGit(["diff", "--cached", "--name-only"]);
-  return output.trim().length > 0;
-}
-
-export async function createCommit(message) {
-  if (!message || !message.trim()) {
-    throw new PromptWashError("Commit message is required.", {
-      code: "COMMIT_MESSAGE_REQUIRED",
-    });
+  if (!exists) {
+    throw createValidationError(`Publish target does not exist: ${targetPath}`);
   }
 
-  await runGit(["commit", "-m", message.trim()]);
-  const latest = await runGit(["log", "--oneline", "--max-count=1"]);
+  const beforeStatus = await getGitStatus(cwd).catch(() => "");
 
-  return {
-    commit: latest,
-  };
-}
+  await runGit(["add", "--", targetPath], cwd);
 
-export async function publishTarget(targetPath, message) {
-  const target = await validatePublishTarget(targetPath);
-  const beforeStatus = await getRepoStatus();
+  const afterStageStatus = await getGitStatus(cwd).catch(() => "");
+  const commitMessage = message ?? `PromptWash publish: ${targetPath}`;
 
-  const stageResult = await stagePublishTarget(target.path);
-  const stagedChanges = await hasStagedChanges();
-
-  if (!stagedChanges) {
+  if (!afterStageStatus.trim()) {
     return {
-      target,
+      target: {
+        exists: true,
+        type: "file",
+        path: targetPath,
+      },
       before_status: beforeStatus,
-      staged: stageResult.staged,
+      staged: [targetPath],
       committed: false,
       pushed: false,
+      commit_message: commitMessage,
       message: "No staged changes detected. Nothing was committed.",
     };
   }
 
-  const commitResult = await createCommit(message);
+  try {
+    await runGit(["commit", "-m", commitMessage], cwd);
+  } catch (error) {
+    const statusAfterCommitAttempt = await getGitStatus(cwd).catch(() => "");
+    if (!statusAfterCommitAttempt.trim()) {
+      return {
+        target: {
+          exists: true,
+          type: "file",
+          path: targetPath,
+        },
+        before_status: beforeStatus,
+        staged: [targetPath],
+        committed: false,
+        pushed: false,
+        commit_message: commitMessage,
+        message: "No staged changes detected. Nothing was committed.",
+      };
+    }
+
+    throw error;
+  }
 
   return {
-    target,
+    target: {
+      exists: true,
+      type: "file",
+      path: targetPath,
+    },
     before_status: beforeStatus,
-    staged: stageResult.staged,
+    staged: [targetPath],
     committed: true,
     pushed: false,
-    commit: commitResult.commit,
-    message: "Publish commit created locally. No push was attempted.",
+    commit_message: commitMessage,
+    message: "Local commit created successfully.",
   };
 }
