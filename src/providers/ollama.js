@@ -1,24 +1,29 @@
 import { performance } from "node:perf_hooks";
 
 import { resolveConfig } from "../config/loader.js";
-import { generateText } from "../ollama/client.js";
+import { createOllamaClient } from "../ollama/client.js";
 import { assertProviderResponse } from "../services/execution/provider_interface.js";
 
 export async function runWithOllama(renderedPrompt) {
   const config = await resolveConfig();
   const model = config.ollama?.model ?? "llama3:latest";
 
-  const started = performance.now();
-  const text = await generateText({
-    prompt: renderedPrompt,
+  const client = createOllamaClient({
+    baseUrl: config.ollama?.baseUrl,
     model,
+    timeoutMs: config.ollama?.timeoutMs,
+  });
+
+  const started = performance.now();
+  const response = await client.generateText({
+    prompt: renderedPrompt,
   });
   const latencyMs = Math.round(performance.now() - started);
 
   const result = {
     provider: "ollama",
     model,
-    text,
+    text: response.text,
     latency_ms: latencyMs,
   };
 

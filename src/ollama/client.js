@@ -129,6 +129,26 @@ export function createOllamaClient(config = {}) {
       }
     },
 
+    async generateText({ prompt, systemPrompt = "" }) {
+      const combinedPrompt = systemPrompt.trim()
+        ? `${systemPrompt.trim()}\n\n${prompt.trim()}`
+        : prompt.trim();
+
+      const data = await request("/generate", {
+        method: "POST",
+        body: JSON.stringify({
+          model,
+          prompt: combinedPrompt,
+          stream: false,
+        }),
+      });
+
+      return {
+        raw: data,
+        text: data.response ?? "",
+      };
+    },
+
     async generateJson({ systemPrompt, userPrompt }) {
       const data = await request("/generate", {
         method: "POST",

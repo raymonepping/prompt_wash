@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "run_id": "run_20260313_192439_eec011",
+  "created_at": "2026-03-13T19:24:39.479Z",
+  "source": {
+    "type": "promptwash_json",
+    "path": "examples/vault.json"
+  },
+  "prompt": {
+    "fingerprint": "pw_42d7f7c1",
+    "intent": "Explain Vault PKI.",
+    "audience": "executives",
+    "output_format": "markdown"
+  },
+  "execution": {
+    "provider": "ollama",
+    "model": "llama3:latest",
+    "render_mode": "generic",
+    "latency_ms": 6810
+  },
+  "input": {
+    "rendered_prompt": "Task:\nExplain Vault PKI.\n\nConstraints:\n- Do not use jargon.\n\nOutput format:\nmarkdown\n\nAudience:\nexecutives"
+  },
+  "output": {
+    "text": "**What is Vault PKI?**\n======================================================\n\nAs an executive, you might be familiar with the importance of secure communication and data transmission. One way to achieve this is by using Public Key Infrastructure (PKI). But what exactly is Vault PKI?\n\n**In Simple Terms**\n-------------------\n\nThink of PKI like a secure postal service for digital communications. It's a system that helps ensure the authenticity, integrity, and confidentiality of online transactions.\n\n**How Does it Work?**\n--------------------\n\n1. **Key Generation**: When someone wants to communicate securely, they generate a pair of keys: a public key (which can be shared) and a private key (kept secret).\n2. **Certificate Issuance**: A trusted Certificate Authority (CA) issues a digital certificate to the user, containing their public key information.\n3. **Certificate Revocation**: If someone's certificate is compromised or no longer needed, it gets revoked by the CA.\n\n**What Makes Vault PKI Special?**\n--------------------------------\n\n1. **Automated Key Management**: Vault PKI streamlines the process of generating, issuing, and revoking certificates, making it easier to manage complex encryption keys.\n2. **Compliance and Security**: It ensures compliance with industry standards and regulations, like GDPR, HIPAA, and PCI-DSS, while maintaining the highest level of security.\n\n**In Conclusion**\n-----------------\n\nVault PKI is a powerful tool for securing online transactions by automating key management and ensuring compliance with industry standards. As an executive, you can trust Vault PKI to protect your organization's sensitive data and maintain a secure digital presence."
+  },
+  "metadata": {
+    "success": true,
+    "error": null
+  }
+}
