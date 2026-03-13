@@ -10,6 +10,19 @@ const DEFAULT_PROJECT_MANIFEST = {
   prompt_folders: ["prompts", "examples", "design"],
   artifact_folders: ["artifacts", "bundle", "reports"],
   lineage_dir: ".promptwash/lineage",
+  strict_prompt_folders: true,
+  include_patterns: [],
+  exclude_patterns: [
+    ".promptwash/**",
+    "docs/**",
+    "reports/**",
+    "bundle/**",
+    "bundles/**",
+    "node_modules/**",
+    ".git/**",
+    "package.json",
+    "package-lock.json",
+  ],
 };
 
 function isObject(value) {
@@ -69,7 +82,33 @@ export function validateProjectManifest(manifest) {
     errors.push("lineage_dir must be a non-empty string");
   }
 
+  if (typeof manifest.strict_prompt_folders !== "boolean") {
+    errors.push("strict_prompt_folders must be a boolean");
+  }
+
+  validateStringArray("include_patterns", manifest.include_patterns, errors);
+  validateStringArray("exclude_patterns", manifest.exclude_patterns, errors);
+
   return errors;
+}
+
+function mergeWithDefaults(manifest) {
+  return {
+    ...cloneDefaultProjectManifest(),
+    ...manifest,
+    prompt_folders: Array.isArray(manifest.prompt_folders)
+      ? manifest.prompt_folders
+      : cloneDefaultProjectManifest().prompt_folders,
+    artifact_folders: Array.isArray(manifest.artifact_folders)
+      ? manifest.artifact_folders
+      : cloneDefaultProjectManifest().artifact_folders,
+    include_patterns: Array.isArray(manifest.include_patterns)
+      ? manifest.include_patterns
+      : cloneDefaultProjectManifest().include_patterns,
+    exclude_patterns: Array.isArray(manifest.exclude_patterns)
+      ? manifest.exclude_patterns
+      : cloneDefaultProjectManifest().exclude_patterns,
+  };
 }
 
 export async function loadProjectManifest() {
@@ -88,7 +127,8 @@ export async function loadProjectManifest() {
     );
   }
 
-  const errors = validateProjectManifest(manifest);
+  const mergedManifest = mergeWithDefaults(manifest);
+  const errors = validateProjectManifest(mergedManifest);
 
   if (errors.length > 0) {
     throw createValidationError(
@@ -97,7 +137,7 @@ export async function loadProjectManifest() {
     );
   }
 
-  return manifest;
+  return mergedManifest;
 }
 
 export async function resolveProjectManifest() {
@@ -123,18 +163,15 @@ export async function initializeProjectManifest(overrides = {}) {
     );
   }
 
-  const manifest = {
+  const manifest = mergeWithDefaults({
     ...cloneDefaultProjectManifest(),
     ...overrides,
-  };
+  });
 
   const errors = validateProjectManifest(manifest);
 
   if (errors.length > 0) {
-    throw createValidationError(
-      "Cannot initialize invalid project manifest",
-      errors,
-    );
+    throw createValidationError("Cannot initialize invalid project manifest", errors);
   }
 
   try {

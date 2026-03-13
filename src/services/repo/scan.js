@@ -8,7 +8,12 @@ import { resolveProjectManifest } from "../project/manifest.js";
 
 const execFileAsync = promisify(execFile);
 
-const PROMPT_EXTENSIONS = new Set([".prompt", ".txt", ".md", ".json"]);
+const PROMPT_EXTENSIONS = new Set([
+  ".prompt",
+  ".txt",
+  ".md",
+  ".json",
+]);
 
 const DEFAULT_PROMPTWASH_DIRECTORIES = [
   ".promptwash",
@@ -31,6 +36,20 @@ function isPromptCandidate(filename) {
   return PROMPT_EXTENSIONS.has(ext);
 }
 
+function globToRegExp(pattern) {
+  const escaped = pattern
+    .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+    .replace(/\*\*/g, "___DOUBLE_WILDCARD___")
+    .replace(/\*/g, "[^/]*")
+    .replace(/___DOUBLE_WILDCARD___/g, ".*");
+
+  return new RegExp(`^${escaped}$`);
+}
+
+function matchesAnyPattern(relativePath, patterns) {
+  return patterns.some((pattern) => globToRegExp(pattern).test(relativePath));
+}
+
 async function pathExists(pathValue) {
   try {
     await fs.access(pathValue);
@@ -51,10 +70,7 @@ async function listFilesRecursive(rootDir, maxDepth = 3, currentDepth = 0) {
   try {
     entries = await fs.readdir(rootDir, { withFileTypes: true });
   } catch (error) {
-    throw createFileError(
-      `Unable to read directory: ${rootDir}`,
-      error.message,
-    );
+    throw createFileError(`Unable to read directory: ${rootDir}`, error.message);
   }
 
   for (const entry of entries) {
@@ -65,9 +81,7 @@ async function listFilesRecursive(rootDir, maxDepth = 3, currentDepth = 0) {
         continue;
       }
 
-      results.push(
-        ...(await listFilesRecursive(fullPath, maxDepth, currentDepth + 1)),
-      );
+      results.push(...(await listFilesRecursive(fullPath, maxDepth, currentDepth + 1)));
       continue;
     }
 
@@ -83,10 +97,7 @@ async function runGit(args, cwd = process.cwd()) {
     return stdout.trim();
   } catch (error) {
     if (error.code === "ENOENT") {
-      throw createFileError(
-        "Git is not installed or not available in PATH",
-        error.message,
-      );
+      throw createFileError("Git is not installed or not available in PATH", error.message);
     }
 
     throw error;
@@ -115,6 +126,29 @@ async function listConfiguredFiles(rootDir, folders, maxDepth = 4) {
   }
 
   return results;
+}
+
+function dedupeAndSort(values) {
+  return [...new Set(values)].sort();
+}
+
+function filterPromptCandidates(rootDir, files, manifest) {
+  const includePatterns = manifest.include_patterns ?? [];
+  const excludePatterns = manifest.exclude_patterns ?? [];
+
+  return dedupeAndSort(
+    files
+      .map((filePath) => path.relative(rootDir, filePath))
+      .filter((relativePath) => isPromptCandidate(path.basename(relativePath)))
+      .filter((relativePath) => !matchesAnyPattern(relativePath, excludePatterns))
+      .filter((relativePath) => {
+        if (includePatterns.length === 0) {
+          return true;
+        }
+
+        return matchesAnyPattern(relativePath, includePatterns);
+      }),
+  );
 }
 
 export async function detectGitRepository(cwd = process.cwd()) {
@@ -167,13 +201,16 @@ export async function scanRepository(cwd = process.cwd()) {
     4,
   );
 
-  const fallbackFiles = await listFilesRecursive(rootDir, 2);
+  let discoverySource = "configured_folders";
+  let candidateFiles = configuredPromptFiles;
 
-  const promptCandidates = [...configuredPromptFiles, ...fallbackFiles]
-    .filter((filePath) => isPromptCandidate(path.basename(filePath)))
-    .map((filePath) => path.relative(rootDir, filePath))
-    .filter((filePath, index, all) => all.indexOf(filePath) === index)
-    .sort();
+  if (!manifest.strict_prompt_folders) {
+    const fallbackFiles = await listFilesRecursive(rootDir, 2);
+    candidateFiles = [...configuredPromptFiles, ...fallbackFiles];
+    discoverySource = "configured_folders_plus_fallback";
+  }
+
+  const promptCandidates = filterPromptCandidates(rootDir, candidateFiles, manifest);
 
   const promptwashAssetDirs = Array.from(
     new Set([
@@ -229,6 +266,12 @@ export async function scanRepository(cwd = process.cwd()) {
           ? ".promptwash/project.json"
           : null,
       manifest,
+    },
+    prompt_discovery: {
+      source: discoverySource,
+      strict_prompt_folders: manifest.strict_prompt_folders,
+      include_patterns: manifest.include_patterns,
+      exclude_patterns: manifest.exclude_patterns,
     },
     prompt_candidates: promptCandidates,
     promptwash_assets: promptwashAssets,

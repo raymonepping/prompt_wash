@@ -1,10 +1,36 @@
 {
-  "name": "promptwash-demo",
+  "name": "prompt_wash",
   "version": 1,
-  "created": "2026-03-12",
   "prompt_folders": [
     "prompts",
     "examples",
     "design"
+  ],
+  "artifact_folders": [
+    "artifacts",
+    "bundle",
+    "reports"
+  ],
+  "lineage_dir": ".promptwash/lineage",
+  "strict_prompt_folders": true,
+  "include_patterns": [
+    "examples/**",
+    "design/**",
+    "prompts/**"
+  ],
+  "exclude_patterns": [
+    ".promptwash/**",
+    "docs/**",
+    "reports/**",
+    "bundle/**",
+    "bundles/**",
+    "node_modules/**",
+    ".git/**",
+    "package.json",
+    "package-lock.json",
+    "README.md",
+    "FOLDER_TREE.md",
+    "sanity_check.md",
+    "out/**"
   ]
 }
