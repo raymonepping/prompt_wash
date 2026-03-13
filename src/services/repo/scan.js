@@ -4,12 +4,18 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 
 import { createFileError } from "../../utils/errors.js";
+import { resolveProjectManifest } from "../project/manifest.js";
 
 const execFileAsync = promisify(execFile);
 
-const PROMPT_EXTENSIONS = new Set([".prompt", ".txt", ".md", ".json"]);
+const PROMPT_EXTENSIONS = new Set([
+  ".prompt",
+  ".txt",
+  ".md",
+  ".json",
+]);
 
-const PROMPTWASH_DIRECTORIES = [
+const DEFAULT_PROMPTWASH_DIRECTORIES = [
   ".promptwash",
   "artifacts",
   "bundle",
@@ -50,10 +56,7 @@ async function listFilesRecursive(rootDir, maxDepth = 3, currentDepth = 0) {
   try {
     entries = await fs.readdir(rootDir, { withFileTypes: true });
   } catch (error) {
-    throw createFileError(
-      `Unable to read directory: ${rootDir}`,
-      error.message,
-    );
+    throw createFileError(`Unable to read directory: ${rootDir}`, error.message);
   }
 
   for (const entry of entries) {
@@ -64,9 +67,7 @@ async function listFilesRecursive(rootDir, maxDepth = 3, currentDepth = 0) {
         continue;
       }
 
-      results.push(
-        ...(await listFilesRecursive(fullPath, maxDepth, currentDepth + 1)),
-      );
+      results.push(...(await listFilesRecursive(fullPath, maxDepth, currentDepth + 1)));
       continue;
     }
 
@@ -82,14 +83,35 @@ async function runGit(args, cwd = process.cwd()) {
     return stdout.trim();
   } catch (error) {
     if (error.code === "ENOENT") {
-      throw createFileError(
-        "Git is not installed or not available in PATH",
-        error.message,
-      );
+      throw createFileError("Git is not installed or not available in PATH", error.message);
     }
 
     throw error;
   }
+}
+
+async function listConfiguredFiles(rootDir, folders, maxDepth = 4) {
+  const results = [];
+
+  for (const folder of folders) {
+    const absolutePath = path.join(rootDir, folder);
+    const exists = await pathExists(absolutePath);
+
+    if (!exists) {
+      continue;
+    }
+
+    const stat = await fs.stat(absolutePath);
+
+    if (stat.isDirectory()) {
+      const files = await listFilesRecursive(absolutePath, maxDepth);
+      results.push(...files);
+    } else {
+      results.push(absolutePath);
+    }
+  }
+
+  return results;
 }
 
 export async function detectGitRepository(cwd = process.cwd()) {
@@ -133,16 +155,34 @@ export async function scanRepository(cwd = process.cwd()) {
   const workingTree = await getGitWorkingTreeStatus(cwd);
 
   const rootDir = repo.root ?? cwd;
-  const allFiles = await listFilesRecursive(rootDir, 3);
+  const projectManifestResolution = await resolveProjectManifest();
+  const manifest = projectManifestResolution.manifest;
 
-  const promptCandidates = allFiles
+  const configuredPromptFiles = await listConfiguredFiles(
+    rootDir,
+    manifest.prompt_folders,
+    4,
+  );
+
+  const fallbackFiles = await listFilesRecursive(rootDir, 2);
+
+  const promptCandidates = [...configuredPromptFiles, ...fallbackFiles]
     .filter((filePath) => isPromptCandidate(path.basename(filePath)))
     .map((filePath) => path.relative(rootDir, filePath))
+    .filter((filePath, index, all) => all.indexOf(filePath) === index)
     .sort();
+
+  const promptwashAssetDirs = Array.from(
+    new Set([
+      ".promptwash",
+      ...DEFAULT_PROMPTWASH_DIRECTORIES,
+      ...manifest.artifact_folders,
+    ]),
+  );
 
   const promptwashAssets = {};
 
-  for (const directory of PROMPTWASH_DIRECTORIES) {
+  for (const directory of promptwashAssetDirs) {
     const absolutePath = path.join(rootDir, directory);
     const exists = await pathExists(absolutePath);
 
@@ -154,7 +194,7 @@ export async function scanRepository(cwd = process.cwd()) {
     const stat = await fs.stat(absolutePath);
 
     if (stat.isDirectory()) {
-      const files = await listFilesRecursive(absolutePath, 3);
+      const files = await listFilesRecursive(absolutePath, 4);
       promptwashAssets[directory] = files
         .map((filePath) => path.relative(rootDir, filePath))
         .sort();
@@ -163,21 +203,32 @@ export async function scanRepository(cwd = process.cwd()) {
     }
   }
 
-  const lineageFamilies =
-    promptwashAssets[".promptwash"]?.filter(
-      (filePath) =>
-        filePath.startsWith(".promptwash/lineage/") &&
-        filePath.endsWith(".json"),
-    ) ?? [];
+  const lineageDir = manifest.lineage_dir;
+  const lineageAbsolutePath = path.join(rootDir, lineageDir);
+  let lineageFamilies = [];
+
+  if (await pathExists(lineageAbsolutePath)) {
+    const lineageFiles = await listFilesRecursive(lineageAbsolutePath, 2);
+    lineageFamilies = lineageFiles
+      .filter((filePath) => filePath.endsWith(".json"))
+      .map((filePath) => path.basename(filePath).replace(/\.json$/i, ""))
+      .sort();
+  }
 
   return {
     root: rootDir,
     git: repo,
     working_tree: workingTree,
+    project_manifest: {
+      source: projectManifestResolution.source,
+      path:
+        projectManifestResolution.source === "project"
+          ? ".promptwash/project.json"
+          : null,
+      manifest,
+    },
     prompt_candidates: promptCandidates,
     promptwash_assets: promptwashAssets,
-    lineage_families: lineageFamilies.map((filePath) =>
-      path.basename(filePath).replace(/\.json$/i, ""),
-    ),
+    lineage_families: lineageFamilies,
   };
 }
