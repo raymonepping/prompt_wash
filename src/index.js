@@ -16,7 +16,6 @@ import { registerLineageCommand } from "./commands/lineage.js";
 import { registerRunCommand } from "./commands/run.js";
 import { registerRunsCommand } from "./commands/runs.js";
 
-
 export async function runCli(argv = process.argv) {
   const program = new Command();
 

@@ -1,8 +1,4 @@
-import {
-  printInfo,
-  printJson,
-  printSuccess,
-} from "../utils/display.js";
+import { printInfo, printJson, printSuccess } from "../utils/display.js";
 import { resolveInputSource, writeFileUtf8 } from "../utils/input.js";
 import { resolvePromptObjectFromSource } from "../utils/prompt-source.js";
 import { executePromptObject } from "../services/execution/execute.js";
@@ -15,12 +11,22 @@ export function registerRunCommand(program) {
   program
     .command("run")
     .description("Execute a prompt using a local provider")
-    .argument("[input]", "Prompt text, PromptWash JSON, Prompt IR, or path to a file")
+    .argument(
+      "[input]",
+      "Prompt text, PromptWash JSON, Prompt IR, or path to a file",
+    )
     .option("-f, --file", "Treat input as a file path")
     .option("--provider <name>", "Execution provider", "ollama")
-    .option("--render-mode <mode>", "Render mode: generic|compact|openai|claude", "generic")
+    .option(
+      "--render-mode <mode>",
+      "Render mode: generic|compact|openai|claude",
+      "generic",
+    )
     .option("--save", "Persist execution artifact to .promptwash/runs", false)
-    .option("--report <path>", "Write a JSON or Markdown execution report to a file")
+    .option(
+      "--report <path>",
+      "Write a JSON or Markdown execution report to a file",
+    )
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (input, options) => {
       const resolved = await resolveInputSource(input, options);
@@ -42,7 +48,10 @@ export function registerRunCommand(program) {
 
       if (options.report) {
         const reportFormat = getExecutionReportFormatFromPath(options.report);
-        const reportContent = renderExecutionReport(execution.artifact, reportFormat);
+        const reportContent = renderExecutionReport(
+          execution.artifact,
+          reportFormat,
+        );
         await writeFileUtf8(options.report, reportContent);
       }
 

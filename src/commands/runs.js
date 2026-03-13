@@ -1,8 +1,4 @@
-import {
-  printInfo,
-  printJson,
-  printSuccess,
-} from "../utils/display.js";
+import { printInfo, printJson, printSuccess } from "../utils/display.js";
 import {
   listExecutionArtifacts,
   loadExecutionArtifact,
@@ -22,9 +18,10 @@ export function registerRunsCommand(program) {
     .action(async (options) => {
       const limit = Number.parseInt(options.limit, 10);
       const runsList = await listExecutionArtifacts();
-      const limitedRuns = Number.isInteger(limit) && limit > 0
-        ? runsList.slice(0, limit)
-        : runsList;
+      const limitedRuns =
+        Number.isInteger(limit) && limit > 0
+          ? runsList.slice(0, limit)
+          : runsList;
 
       const result = {
         command: "runs list",
@@ -75,7 +72,9 @@ export function registerRunsCommand(program) {
       const artifact = await loadExecutionArtifact(latestRun.run_id);
 
       if (!artifact) {
-        throw createValidationError(`Execution run not found: ${latestRun.run_id}`);
+        throw createValidationError(
+          `Execution run not found: ${latestRun.run_id}`,
+        );
       }
 
       const result = {
@@ -137,7 +136,9 @@ export function registerRunsCommand(program) {
       console.log(`- Fingerprint: ${artifact.prompt.fingerprint ?? "(none)"}`);
       console.log(`- Intent: ${artifact.prompt.intent || "(none)"}`);
       console.log(`- Audience: ${artifact.prompt.audience || "(none)"}`);
-      console.log(`- Output format: ${artifact.prompt.output_format || "(none)"}`);
+      console.log(
+        `- Output format: ${artifact.prompt.output_format || "(none)"}`,
+      );
       console.log("");
       console.log("Rendered prompt:");
       console.log("");
