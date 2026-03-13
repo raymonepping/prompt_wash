@@ -5,6 +5,7 @@ import {
   printWarning,
 } from "../utils/display.js";
 import { scanRepository } from "../services/repo/scan.js";
+import { loadLineageHistorySummary } from "../services/repo/history.js";
 import {
   getGitStatus,
   getGitHistory,
@@ -16,9 +17,7 @@ import {
 export function registerRepoCommand(program) {
   const repo = program
     .command("repo")
-    .description(
-      "Manage PromptWash repository connection, publishing, and history",
-    );
+    .description("Manage PromptWash repository connection, publishing, and history");
 
   repo
     .command("status")
@@ -26,9 +25,7 @@ export function registerRepoCommand(program) {
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (options) => {
       const scan = await scanRepository();
-      const gitStatus = await getGitStatus().catch(
-        () => "(git status unavailable)",
-      );
+      const gitStatus = await getGitStatus().catch(() => "(git status unavailable)");
 
       const result = {
         command: "repo status",
@@ -49,9 +46,7 @@ export function registerRepoCommand(program) {
 
       printSuccess("Repository status loaded");
       printInfo(`Git root: ${scan.git.root}`);
-      printInfo(
-        `Working tree clean: ${scan.working_tree.is_clean ? "yes" : "no"}`,
-      );
+      printInfo(`Working tree clean: ${scan.working_tree.is_clean ? "yes" : "no"}`);
       printInfo(`Prompt candidates: ${scan.prompt_candidates.length}`);
       printInfo(`Lineage families: ${scan.lineage_families.length}`);
       console.log("");
@@ -67,9 +62,7 @@ export function registerRepoCommand(program) {
 
   repo
     .command("scan")
-    .description(
-      "Scan the repository for prompt-related files and PromptWash assets",
-    )
+    .description("Scan the repository for prompt-related files and PromptWash assets")
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (options) => {
       const scan = await scanRepository();
@@ -236,18 +229,27 @@ export function registerRepoCommand(program) {
     .command("history")
     .description("Show git history for a prompt-related path")
     .argument("[path]", "Path to inspect")
+    .option("--limit <count>", "Maximum number of commits to show", "10")
+    .option("--lineage <family>", "Optional lineage family to summarize alongside history")
+    .option("--node <nodeId>", "Optional lineage node id when using --lineage")
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (targetPath, options) => {
       if (!targetPath) {
         throw new Error("A path is required for repo history");
       }
 
-      const history = await getGitHistory(targetPath);
+      const limit = Number.parseInt(options.limit, 10);
+      const history = await getGitHistory(targetPath, { limit });
+      const lineage = options.lineage
+        ? await loadLineageHistorySummary(options.lineage, options.node ?? null)
+        : null;
 
       const result = {
         command: "repo history",
         path: targetPath,
+        limit,
         history,
+        lineage,
       };
 
       if (options.output === "json") {
@@ -257,14 +259,28 @@ export function registerRepoCommand(program) {
 
       printSuccess("Git history loaded");
       printInfo(`Path: ${targetPath}`);
+      printInfo(`Limit: ${limit}`);
       console.log("");
       if (!history.length) {
         console.log("(no history found)");
-        return;
+      } else {
+        console.log("Git history:");
+        for (const line of history) {
+          console.log(line);
+        }
       }
 
-      for (const line of history) {
-        console.log(line);
+      if (lineage) {
+        console.log("");
+        console.log("Lineage summary:");
+        console.log(`- Family: ${lineage.family}`);
+        console.log(`- Root: ${lineage.root}`);
+        console.log(`- Total nodes: ${lineage.total_nodes}`);
+        if (lineage.selected_node) {
+          console.log(`- Selected node: ${lineage.selected_node.id}`);
+          console.log(`- Node artifact: ${lineage.selected_node.artifact}`);
+          console.log(`- Node fingerprint: ${lineage.selected_node.fingerprint ?? "(none)"}`);
+        }
       }
     });
 

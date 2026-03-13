@@ -22,16 +22,10 @@ async function runGit(args, cwd = process.cwd()) {
     return stdout.trim();
   } catch (error) {
     if (error.code === "ENOENT") {
-      throw createFileError(
-        "Git is not installed or not available in PATH",
-        error.message,
-      );
+      throw createFileError("Git is not installed or not available in PATH", error.message);
     }
 
-    throw createFileError(
-      `Git command failed: git ${args.join(" ")}`,
-      error.message,
-    );
+    throw createFileError(`Git command failed: git ${args.join(" ")}`, error.message);
   }
 }
 
@@ -50,11 +44,22 @@ export async function getGitStatus(cwd = process.cwd()) {
   return runGit(["status", "--short"], cwd);
 }
 
-export async function getGitHistory(targetPath, cwd = process.cwd()) {
+export async function getGitHistory(targetPath, options = {}, cwd = process.cwd()) {
   await ensureGitRepo(cwd);
 
+  const limit = Number.isInteger(options.limit) && options.limit > 0
+    ? options.limit
+    : 10;
+
   const output = await runGit(
-    ["log", "--date=short", "--pretty=format:%h %ad - %s", "--", targetPath],
+    [
+      "log",
+      `--max-count=${limit}`,
+      "--date=short",
+      "--pretty=format:%h %ad - %s",
+      "--",
+      targetPath,
+    ],
     cwd,
   );
 
@@ -64,11 +69,7 @@ export async function getGitHistory(targetPath, cwd = process.cwd()) {
     .filter(Boolean);
 }
 
-export async function getGitDiff(
-  targetPath,
-  range = "HEAD~1..HEAD",
-  cwd = process.cwd(),
-) {
+export async function getGitDiff(targetPath, range = "HEAD~1..HEAD", cwd = process.cwd()) {
   await ensureGitRepo(cwd);
   return runGit(["diff", range, "--", targetPath], cwd);
 }
