@@ -14,6 +14,8 @@ import { registerBiasCommand } from "./commands/bias.js";
 import { registerBiasRulesCommand } from "./commands/bias-rules.js";
 import { registerLineageCommand } from "./commands/lineage.js";
 import { registerRunCommand } from "./commands/run.js";
+import { registerRunsCommand } from "./commands/runs.js";
+
 
 export async function runCli(argv = process.argv) {
   const program = new Command();
@@ -40,6 +42,7 @@ export async function runCli(argv = process.argv) {
   registerBiasRulesCommand(program);
   registerLineageCommand(program);
   registerRunCommand(program);
+  registerRunsCommand(program);
 
   await program.parseAsync(argv);
 }
