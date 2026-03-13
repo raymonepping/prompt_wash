@@ -8,12 +8,7 @@ import { resolveProjectManifest } from "../project/manifest.js";
 
 const execFileAsync = promisify(execFile);
 
-const PROMPT_EXTENSIONS = new Set([
-  ".prompt",
-  ".txt",
-  ".md",
-  ".json",
-]);
+const PROMPT_EXTENSIONS = new Set([".prompt", ".txt", ".md", ".json"]);
 
 const DEFAULT_PROMPTWASH_DIRECTORIES = [
   ".promptwash",
@@ -56,7 +51,10 @@ async function listFilesRecursive(rootDir, maxDepth = 3, currentDepth = 0) {
   try {
     entries = await fs.readdir(rootDir, { withFileTypes: true });
   } catch (error) {
-    throw createFileError(`Unable to read directory: ${rootDir}`, error.message);
+    throw createFileError(
+      `Unable to read directory: ${rootDir}`,
+      error.message,
+    );
   }
 
   for (const entry of entries) {
@@ -67,7 +65,9 @@ async function listFilesRecursive(rootDir, maxDepth = 3, currentDepth = 0) {
         continue;
       }
 
-      results.push(...(await listFilesRecursive(fullPath, maxDepth, currentDepth + 1)));
+      results.push(
+        ...(await listFilesRecursive(fullPath, maxDepth, currentDepth + 1)),
+      );
       continue;
     }
 
@@ -83,7 +83,10 @@ async function runGit(args, cwd = process.cwd()) {
     return stdout.trim();
   } catch (error) {
     if (error.code === "ENOENT") {
-      throw createFileError("Git is not installed or not available in PATH", error.message);
+      throw createFileError(
+        "Git is not installed or not available in PATH",
+        error.message,
+      );
     }
 
     throw error;
