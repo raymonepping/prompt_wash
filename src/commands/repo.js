@@ -4,45 +4,124 @@ import {
   printSuccess,
   printWarning,
 } from "../utils/display.js";
-import { PromptWashError } from "../utils/errors.js";
+import { scanRepository } from "../services/repo/scan.js";
 import {
-  getRepoDiff,
-  getRepoHistory,
-  getRepoStatus,
-  isGitRepository,
+  getGitStatus,
+  getGitHistory,
+  getGitDiff,
   previewPublishTarget,
-  publishTarget,
+  publishPathToGit,
 } from "../repo/manager.js";
-
-async function ensureGitRepo() {
-  const insideRepo = await isGitRepository();
-
-  if (!insideRepo) {
-    throw new PromptWashError("Current directory is not a Git repository.", {
-      code: "NOT_A_GIT_REPO",
-      details: "Run this command inside a Git working tree.",
-    });
-  }
-}
 
 export function registerRepoCommand(program) {
   const repo = program
     .command("repo")
-    .description(
-      "Manage prompt repository connection, publishing, and history",
-    );
+    .description("Manage PromptWash repository connection, publishing, and history");
+
+  repo
+    .command("status")
+    .description("Show repository working tree status and PromptWash assets")
+    .option("-o, --output <format>", "Output format: text|json", "text")
+    .action(async (options) => {
+      const scan = await scanRepository();
+      const gitStatus = await getGitStatus().catch(() => "(git status unavailable)");
+
+      const result = {
+        command: "repo status",
+        scan,
+        git_status: gitStatus,
+      };
+
+      if (options.output === "json") {
+        printJson(result);
+        return;
+      }
+
+      if (!scan.git.is_git_repo) {
+        printWarning("Current directory is not a Git repository");
+        printInfo(`Scanned root: ${scan.root}`);
+        return;
+      }
+
+      printSuccess("Repository status loaded");
+      printInfo(`Git root: ${scan.git.root}`);
+      printInfo(`Working tree clean: ${scan.working_tree.is_clean ? "yes" : "no"}`);
+      printInfo(`Prompt candidates: ${scan.prompt_candidates.length}`);
+      printInfo(`Lineage families: ${scan.lineage_families.length}`);
+      console.log("");
+      if (scan.working_tree.is_clean) {
+        console.log("(working tree clean)");
+      } else {
+        console.log("Git status:");
+        for (const line of scan.working_tree.status_lines) {
+          console.log(line);
+        }
+      }
+    });
+
+  repo
+    .command("scan")
+    .description("Scan the repository for prompt-related files and PromptWash assets")
+    .option("-o, --output <format>", "Output format: text|json", "text")
+    .action(async (options) => {
+      const scan = await scanRepository();
+
+      const result = {
+        command: "repo scan",
+        scan,
+      };
+
+      if (options.output === "json") {
+        printJson(result);
+        return;
+      }
+
+      if (!scan.git.is_git_repo) {
+        printWarning("Scanned directory is not a Git repository");
+      } else {
+        printSuccess("Repository scan completed successfully");
+      }
+
+      printInfo(`Root: ${scan.root}`);
+      printInfo(`Prompt candidates: ${scan.prompt_candidates.length}`);
+      printInfo(`Lineage families: ${scan.lineage_families.length}`);
+      console.log("");
+
+      console.log("Prompt candidates:");
+      if (scan.prompt_candidates.length === 0) {
+        console.log("(none)");
+      } else {
+        for (const filePath of scan.prompt_candidates) {
+          console.log(`- ${filePath}`);
+        }
+      }
+
+      console.log("");
+      console.log("PromptWash assets:");
+      for (const [name, files] of Object.entries(scan.promptwash_assets)) {
+        console.log(`- ${name}: ${files.length}`);
+      }
+
+      console.log("");
+      console.log("Lineage families:");
+      if (scan.lineage_families.length === 0) {
+        console.log("(none)");
+      } else {
+        for (const family of scan.lineage_families) {
+          console.log(`- ${family}`);
+        }
+      }
+    });
 
   repo
     .command("connect")
-    .description("Connect PromptWash to a git repository")
-    .argument("[remote]", "Repository URL or remote name")
+    .description("Connect PromptWash to a git repository remote")
+    .argument("[remote]", "Remote name", "origin")
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (remote, options) => {
-      await ensureGitRepo();
-
       const result = {
         command: "repo connect",
-        remote: remote ?? "origin",
+        remote,
         status: "scaffold_only",
         message: "Remote connection management is not implemented yet.",
         next_steps: [
@@ -58,44 +137,47 @@ export function registerRepoCommand(program) {
       }
 
       printWarning(result.message);
-      printJson(result);
+      console.log(JSON.stringify(result, null, 2));
     });
 
   repo
     .command("publish")
-    .description("Publish prompt assets into the repository")
-    .argument("[path]", "Prompt file or folder path")
-    .option("--dry-run", "Preview publish behavior without mutating git", false)
+    .description("Publish a prompt-related file into the repository")
+    .argument("[path]", "Path to publish")
+    .option("--dry-run", "Preview the publish flow without changing git", false)
     .option("--confirm", "Stage and commit the selected path locally", false)
-    .option("-m, --message <message>", "Commit message")
+    .option("--message <text>", "Explicit commit message")
     .option("-o, --output <format>", "Output format: text|json", "text")
-    .action(async (pathValue, options) => {
-      await ensureGitRepo();
-
-      if (options.dryRun && options.confirm) {
-        throw new PromptWashError(
-          "Use either --dry-run or --confirm, not both.",
-          {
-            code: "INVALID_PUBLISH_MODE",
-          },
-        );
+    .action(async (targetPath, options) => {
+      if (!targetPath) {
+        throw new Error("A path is required for repo publish");
       }
 
-      if (!options.dryRun && !options.confirm) {
-        const preview = await previewPublishTarget(pathValue ?? null);
+      if (!options.confirm) {
+        const preview = await previewPublishTarget(targetPath);
 
         const result = {
           command: "repo publish",
-          path: pathValue ?? null,
-          status: "preview_only",
-          message:
-            "No action taken. Use --dry-run to preview or --confirm to stage and commit locally.",
+          path: targetPath,
+          status: options.dryRun ? "dry_run" : "preview_only",
+          message: options.dryRun
+            ? "Dry run only. No git mutation was attempted."
+            : "No action taken. Use --dry-run to preview or --confirm to stage and commit locally.",
           preview,
           safe_behavior: [
             "No files were staged",
             "No commit was created",
             "No remote push was attempted",
           ],
+          ...(options.dryRun
+            ? {
+                next_steps: [
+                  "Review the preview",
+                  "Use --confirm to create a local commit",
+                  "Add --message to control commit text",
+                ],
+              }
+            : {}),
         };
 
         if (options.output === "json") {
@@ -104,55 +186,19 @@ export function registerRepoCommand(program) {
         }
 
         printWarning(result.message);
-        printJson(result);
+        console.log(JSON.stringify(result, null, 2));
         return;
       }
 
-      if (options.dryRun) {
-        const preview = await previewPublishTarget(pathValue ?? null);
-
-        const result = {
-          command: "repo publish",
-          path: pathValue ?? null,
-          status: "dry_run",
-          message: "Dry run only. No git mutation was attempted.",
-          preview,
-          safe_behavior: [
-            "No files were staged",
-            "No commit was created",
-            "No remote push was attempted",
-          ],
-          next_steps: [
-            "Review the preview",
-            "Use --confirm to create a local commit",
-            "Add --message to control commit text",
-          ],
-        };
-
-        if (options.output === "json") {
-          printJson(result);
-          return;
-        }
-
-        printWarning(result.message);
-        printJson(result);
-        return;
-      }
-
-      const commitMessage =
-        options.message ??
-        `PromptWash publish: ${pathValue ?? "selected target"}`;
-
-      const publishResult = await publishTarget(
-        pathValue ?? null,
-        commitMessage,
-      );
+      const publishResult = await publishPathToGit(targetPath, {
+        message: options.message,
+      });
 
       const result = {
         command: "repo publish",
-        path: pathValue ?? null,
+        path: targetPath,
         status: publishResult.committed ? "committed" : "no_changes",
-        commit_message: commitMessage,
+        commit_message: publishResult.commit_message,
         result: publishResult,
         safe_behavior: [
           "Only the selected path was staged",
@@ -167,100 +213,87 @@ export function registerRepoCommand(program) {
       }
 
       if (publishResult.committed) {
-        printSuccess("Publish commit created locally");
-        printInfo(`Commit: ${publishResult.commit}`);
+        printSuccess("Path published to local git history");
       } else {
         printWarning(publishResult.message);
       }
 
-      printInfo(`Path: ${pathValue ?? "(none)"}`);
-      printInfo(`Commit message: ${commitMessage}`);
+      printInfo(`Path: ${targetPath}`);
+      printInfo(`Commit message: ${publishResult.commit_message}`);
       console.log("");
-      printJson(result);
+      console.log(JSON.stringify(result, null, 2));
     });
 
   repo
     .command("history")
-    .description("Show prompt history")
-    .argument("[path]", "Prompt file path")
+    .description("Show git history for a prompt-related path")
+    .argument("[path]", "Path to inspect")
     .option("-o, --output <format>", "Output format: text|json", "text")
-    .action(async (pathValue, options) => {
-      await ensureGitRepo();
+    .action(async (targetPath, options) => {
+      if (!targetPath) {
+        throw new Error("A path is required for repo history");
+      }
 
-      const history = await getRepoHistory(pathValue ?? null);
+      const history = await getGitHistory(targetPath);
+
+      const result = {
+        command: "repo history",
+        path: targetPath,
+        history,
+      };
 
       if (options.output === "json") {
-        printJson({
-          command: "repo history",
-          path: pathValue ?? null,
-          history,
-        });
+        printJson(result);
         return;
       }
 
       printSuccess("Git history loaded");
-      if (pathValue) {
-        printInfo(`Path: ${pathValue}`);
-      }
+      printInfo(`Path: ${targetPath}`);
       console.log("");
-      console.log(history || "(no history found)");
+      if (!history.length) {
+        console.log("(no history found)");
+        return;
+      }
+
+      for (const line of history) {
+        console.log(line);
+      }
     });
 
   repo
     .command("diff")
-    .description("Show version diff for a prompt")
-    .argument("[path]", "Prompt file path")
-    .option("--from <ref>", "From git ref", "HEAD~1")
-    .option("--to <ref>", "To git ref", "HEAD")
+    .description("Show git diff for a prompt-related path")
+    .argument("[path]", "Path to inspect")
+    .option("--range <value>", "Git diff range", "HEAD~1..HEAD")
     .option("-o, --output <format>", "Output format: text|json", "text")
-    .action(async (pathValue, options) => {
-      await ensureGitRepo();
+    .action(async (targetPath, options) => {
+      if (!targetPath) {
+        throw new Error("A path is required for repo diff");
+      }
 
-      const diff = await getRepoDiff(
-        pathValue ?? null,
-        options.from,
-        options.to,
-      );
+      const diff = await getGitDiff(targetPath, options.range);
+
+      const result = {
+        command: "repo diff",
+        path: targetPath,
+        range: options.range,
+        diff,
+      };
 
       if (options.output === "json") {
-        printJson({
-          command: "repo diff",
-          path: pathValue ?? null,
-          from: options.from,
-          to: options.to,
-          diff,
-        });
+        printJson(result);
         return;
       }
 
       printSuccess("Git diff loaded");
-      if (pathValue) {
-        printInfo(`Path: ${pathValue}`);
-      }
-      printInfo(`Range: ${options.from}..${options.to}`);
+      printInfo(`Path: ${targetPath}`);
+      printInfo(`Range: ${options.range}`);
       console.log("");
-      console.log(diff || "(no diff found)");
-    });
-
-  repo
-    .command("status")
-    .description("Show working tree status")
-    .option("-o, --output <format>", "Output format: text|json", "text")
-    .action(async (options) => {
-      await ensureGitRepo();
-
-      const status = await getRepoStatus();
-
-      if (options.output === "json") {
-        printJson({
-          command: "repo status",
-          status,
-        });
+      if (!diff.trim()) {
+        console.log("(no diff found)");
         return;
       }
 
-      printSuccess("Git status loaded");
-      console.log("");
-      console.log(status || "(working tree clean)");
+      console.log(diff);
     });
 }

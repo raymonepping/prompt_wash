@@ -29,6 +29,15 @@
       "label": "",
       "notes": "",
       "fingerprint": "pw_9921be01"
+    },
+    {
+      "id": "vault-pki.a.a",
+      "parent": "vault-pki.a",
+      "artifact": "artifacts/vault-pki.a.a.json",
+      "created_at": "2026-03-12T20:29:48.111Z",
+      "label": "",
+      "notes": "",
+      "fingerprint": "pw_faa4ef2d"
     }
   ]
 }
