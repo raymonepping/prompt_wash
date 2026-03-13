@@ -171,7 +171,10 @@ export async function initializeProjectManifest(overrides = {}) {
   const errors = validateProjectManifest(manifest);
 
   if (errors.length > 0) {
-    throw createValidationError("Cannot initialize invalid project manifest", errors);
+    throw createValidationError(
+      "Cannot initialize invalid project manifest",
+      errors,
+    );
   }
 
   try {
