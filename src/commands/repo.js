@@ -16,7 +16,9 @@ import {
 export function registerRepoCommand(program) {
   const repo = program
     .command("repo")
-    .description("Manage PromptWash repository connection, publishing, and history");
+    .description(
+      "Manage PromptWash repository connection, publishing, and history",
+    );
 
   repo
     .command("status")
@@ -24,7 +26,9 @@ export function registerRepoCommand(program) {
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (options) => {
       const scan = await scanRepository();
-      const gitStatus = await getGitStatus().catch(() => "(git status unavailable)");
+      const gitStatus = await getGitStatus().catch(
+        () => "(git status unavailable)",
+      );
 
       const result = {
         command: "repo status",
@@ -45,7 +49,9 @@ export function registerRepoCommand(program) {
 
       printSuccess("Repository status loaded");
       printInfo(`Git root: ${scan.git.root}`);
-      printInfo(`Working tree clean: ${scan.working_tree.is_clean ? "yes" : "no"}`);
+      printInfo(
+        `Working tree clean: ${scan.working_tree.is_clean ? "yes" : "no"}`,
+      );
       printInfo(`Prompt candidates: ${scan.prompt_candidates.length}`);
       printInfo(`Lineage families: ${scan.lineage_families.length}`);
       console.log("");
@@ -61,7 +67,9 @@ export function registerRepoCommand(program) {
 
   repo
     .command("scan")
-    .description("Scan the repository for prompt-related files and PromptWash assets")
+    .description(
+      "Scan the repository for prompt-related files and PromptWash assets",
+    )
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (options) => {
       const scan = await scanRepository();
