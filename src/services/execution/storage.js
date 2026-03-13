@@ -19,7 +19,10 @@ export async function ensureRunsDir() {
   try {
     await fs.mkdir(RUNS_DIR, { recursive: true });
   } catch (error) {
-    throw createFileError(`Unable to create runs directory: ${RUNS_DIR}`, error.message);
+    throw createFileError(
+      `Unable to create runs directory: ${RUNS_DIR}`,
+      error.message,
+    );
   }
 }
 
@@ -31,7 +34,10 @@ export async function saveExecutionArtifact(artifact) {
   const errors = validateExecutionArtifact(artifact);
 
   if (errors.length > 0) {
-    throw createValidationError("Cannot save invalid execution artifact", errors);
+    throw createValidationError(
+      "Cannot save invalid execution artifact",
+      errors,
+    );
   }
 
   await ensureRunsDir();
@@ -39,9 +45,16 @@ export async function saveExecutionArtifact(artifact) {
   const filePath = buildRunArtifactPath(artifact.run_id);
 
   try {
-    await fs.writeFile(filePath, `${JSON.stringify(artifact, null, 2)}\n`, "utf8");
+    await fs.writeFile(
+      filePath,
+      `${JSON.stringify(artifact, null, 2)}\n`,
+      "utf8",
+    );
   } catch (error) {
-    throw createFileError(`Unable to write execution artifact: ${filePath}`, error.message);
+    throw createFileError(
+      `Unable to write execution artifact: ${filePath}`,
+      error.message,
+    );
   }
 
   return filePath;
@@ -58,6 +71,9 @@ export async function loadExecutionArtifact(runId) {
     const raw = await fs.readFile(filePath, "utf8");
     return JSON.parse(raw);
   } catch (error) {
-    throw createFileError(`Unable to load execution artifact: ${filePath}`, error.message);
+    throw createFileError(
+      `Unable to load execution artifact: ${filePath}`,
+      error.message,
+    );
   }
 }

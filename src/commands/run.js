@@ -1,8 +1,4 @@
-import {
-  printInfo,
-  printJson,
-  printSuccess,
-} from "../utils/display.js";
+import { printInfo, printJson, printSuccess } from "../utils/display.js";
 import { resolveInputSource } from "../utils/input.js";
 import { resolvePromptObjectFromSource } from "../utils/prompt-source.js";
 import { executePromptObject } from "../services/execution/execute.js";
@@ -11,10 +7,17 @@ export function registerRunCommand(program) {
   program
     .command("run")
     .description("Execute a prompt using a local provider")
-    .argument("[input]", "Prompt text, PromptWash JSON, Prompt IR, or path to a file")
+    .argument(
+      "[input]",
+      "Prompt text, PromptWash JSON, Prompt IR, or path to a file",
+    )
     .option("-f, --file", "Treat input as a file path")
     .option("--provider <name>", "Execution provider", "ollama")
-    .option("--render-mode <mode>", "Render mode: generic|compact|openai|claude", "generic")
+    .option(
+      "--render-mode <mode>",
+      "Render mode: generic|compact|openai|claude",
+      "generic",
+    )
     .option("--save", "Persist execution artifact to .promptwash/runs", false)
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (input, options) => {

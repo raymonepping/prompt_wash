@@ -11,7 +11,10 @@ export function assertProviderResponse(result) {
     throw new Error("Provider response must include model");
   }
 
-  if (typeof result.latency_ms !== "number" || Number.isNaN(result.latency_ms)) {
+  if (
+    typeof result.latency_ms !== "number" ||
+    Number.isNaN(result.latency_ms)
+  ) {
     throw new Error("Provider response must include latency_ms");
   }
 }
