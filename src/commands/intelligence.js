@@ -1,8 +1,4 @@
-import {
-  printInfo,
-  printJson,
-  printSuccess,
-} from "../utils/display.js";
+import { printInfo, printJson, printSuccess } from "../utils/display.js";
 import { createValidationError } from "../utils/errors.js";
 import { buildPromptWashStats } from "../services/intelligence/stats.js";
 import { buildRunIntelligence } from "../services/intelligence/runs.js";
@@ -40,8 +36,12 @@ export function registerIntelligenceCommand(program) {
       printInfo(
         `Average rendered prompt tokens: ${stats.runs.average_rendered_prompt_tokens}`,
       );
-      printInfo(`Average response tokens: ${stats.runs.average_response_tokens}`);
-      printInfo(`Optimized artifacts: ${stats.optimization.optimized_artifact_count}`);
+      printInfo(
+        `Average response tokens: ${stats.runs.average_response_tokens}`,
+      );
+      printInfo(
+        `Optimized artifacts: ${stats.optimization.optimized_artifact_count}`,
+      );
       console.log("");
       console.log("Models:");
       if (stats.runs.models.length === 0) {

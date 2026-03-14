@@ -6,7 +6,9 @@ function average(values) {
     return 0;
   }
 
-  return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+  return Math.round(
+    values.reduce((sum, value) => sum + value, 0) / values.length,
+  );
 }
 
 function groupBy(items, selector) {
@@ -119,9 +121,10 @@ export async function buildModelIntelligence() {
     });
 
   const bestModel = models[0] ?? null;
-  const fastestModel = [...models].sort(
-    (left, right) => left.average_latency_ms - right.average_latency_ms,
-  )[0] ?? null;
+  const fastestModel =
+    [...models].sort(
+      (left, right) => left.average_latency_ms - right.average_latency_ms,
+    )[0] ?? null;
 
   return {
     total_runs: evaluatedRuns.length,
