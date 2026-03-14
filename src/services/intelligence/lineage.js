@@ -51,15 +51,19 @@ function groupNodesByDepth(record) {
 }
 
 function getLatestNode(record) {
-  return [...record.nodes]
-    .sort((left, right) => right.created_at.localeCompare(left.created_at))[0] ?? null;
+  return (
+    [...record.nodes].sort((left, right) =>
+      right.created_at.localeCompare(left.created_at),
+    )[0] ?? null
+  );
 }
 
 function detectOptimizedNodes(record) {
-  return record.nodes.filter((node) =>
-    /compact|optimized|optimize/i.test(node.artifact) ||
-    /compact|optimized|optimize/i.test(node.label ?? "") ||
-    /compact|optimized|optimize/i.test(node.notes ?? ""),
+  return record.nodes.filter(
+    (node) =>
+      /compact|optimized|optimize/i.test(node.artifact) ||
+      /compact|optimized|optimize/i.test(node.label ?? "") ||
+      /compact|optimized|optimize/i.test(node.notes ?? ""),
   );
 }
 
@@ -77,19 +81,13 @@ function matchRunsToNode(node, runArtifacts, family) {
     const fingerprint = artifact.prompt?.fingerprint ?? null;
 
     const matchedByLineage =
-      lineage &&
-      lineage.family === family &&
-      lineage.node_id === node.id;
+      lineage && lineage.family === family && lineage.node_id === node.id;
 
     const matchedByPath =
-      sourcePath &&
-      nodeArtifactPath &&
-      sourcePath === nodeArtifactPath;
+      sourcePath && nodeArtifactPath && sourcePath === nodeArtifactPath;
 
     const matchedByFingerprint =
-      node.fingerprint &&
-      fingerprint &&
-      node.fingerprint === fingerprint;
+      node.fingerprint && fingerprint && node.fingerprint === fingerprint;
 
     if (matchedByLineage || matchedByPath || matchedByFingerprint) {
       matched.push({

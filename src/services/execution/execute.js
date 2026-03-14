@@ -26,7 +26,9 @@ export async function executePromptObject(promptObject, options = {}) {
   };
 
   if (provider !== "ollama") {
-    throw new Error(`Unsupported execution provider for current phase: ${provider}`);
+    throw new Error(
+      `Unsupported execution provider for current phase: ${provider}`,
+    );
   }
 
   const renderedPrompt = adaptPrompt(promptObject, renderMode);
