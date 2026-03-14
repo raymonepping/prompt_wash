@@ -1,8 +1,4 @@
-import {
-  printInfo,
-  printJson,
-  printSuccess,
-} from "../utils/display.js";
+import { printInfo, printJson, printSuccess } from "../utils/display.js";
 import {
   listExperimentArtifacts,
   loadExperimentArtifact,
@@ -22,9 +18,8 @@ export function registerExperimentsCommand(program) {
     .action(async (options) => {
       const limit = Number.parseInt(options.limit, 10);
       const all = await listExperimentArtifacts();
-      const limited = Number.isInteger(limit) && limit > 0
-        ? all.slice(0, limit)
-        : all;
+      const limited =
+        Number.isInteger(limit) && limit > 0 ? all.slice(0, limit) : all;
 
       const result = {
         command: "experiments list",

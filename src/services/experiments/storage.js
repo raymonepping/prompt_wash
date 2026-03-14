@@ -2,9 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 import { createFileError, createValidationError } from "../../utils/errors.js";
-import {
-  validateExperimentArtifact,
-} from "./schema.js";
+import { validateExperimentArtifact } from "./schema.js";
 
 export const EXPERIMENTS_DIR = ".promptwash/experiments";
 
@@ -36,7 +34,10 @@ export async function saveExperimentArtifact(artifact) {
   const errors = validateExperimentArtifact(artifact);
 
   if (errors.length > 0) {
-    throw createValidationError("Cannot save invalid experiment artifact", errors);
+    throw createValidationError(
+      "Cannot save invalid experiment artifact",
+      errors,
+    );
   }
 
   await ensureExperimentsDir();
@@ -44,7 +45,11 @@ export async function saveExperimentArtifact(artifact) {
   const filePath = buildExperimentArtifactPath(artifact.experiment_id);
 
   try {
-    await fs.writeFile(filePath, `${JSON.stringify(artifact, null, 2)}\n`, "utf8");
+    await fs.writeFile(
+      filePath,
+      `${JSON.stringify(artifact, null, 2)}\n`,
+      "utf8",
+    );
   } catch (error) {
     throw createFileError(
       `Unable to write experiment artifact: ${filePath}`,
@@ -68,7 +73,10 @@ export async function loadExperimentArtifact(experimentId) {
     const errors = validateExperimentArtifact(artifact);
 
     if (errors.length > 0) {
-      throw createValidationError(`Invalid experiment artifact: ${filePath}`, errors);
+      throw createValidationError(
+        `Invalid experiment artifact: ${filePath}`,
+        errors,
+      );
     }
 
     return artifact;
