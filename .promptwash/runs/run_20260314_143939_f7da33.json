@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "run_id": "run_20260314_143939_f7da33",
+  "created_at": "2026-03-14T14:39:39.553Z",
+  "source": {
+    "type": "promptwash_json",
+    "path": "examples/vault.json",
+    "lineage": null
+  },
+  "prompt": {
+    "fingerprint": "pw_42d7f7c1",
+    "intent": "Explain Vault PKI.",
+    "audience": "executives",
+    "output_format": "markdown"
+  },
+  "execution": {
+    "provider": "ollama",
+    "model": "llama3:latest",
+    "render_mode": "openai",
+    "latency_ms": 7685
+  },
+  "input": {
+    "rendered_prompt": "Task:\nExplain Vault PKI.\n\nConstraints:\n- Do not use jargon.\n\nOutput format:\nmarkdown\n\nAudience:\nexecutives"
+  },
+  "output": {
+    "text": "**What is Vault PKI?**\n======================================================\n\nAs an executive, you may have heard of Public Key Infrastructure (PKI) and how it plays a crucial role in securing online transactions. But what exactly is Vault PKI?\n\nIn simple terms, Vault PKI is a modern way to manage digital certificates, which are essential for encrypting online communications. Imagine a secure locker where sensitive information can be safely stored and managed.\n\n**How does it work?**\n-------------------\n\nHere's a step-by-step explanation:\n\n1. **Certificate Request**: A user or an application asks for a digital certificate to establish trust with other parties.\n2. **Certificate Issuance**: Vault PKI generates the certificate, which includes the user's public key and identity information.\n3. **Certificate Revocation**: If the user's certificate is compromised or outdated, Vault PKI can revoke it to prevent unauthorized access.\n4. **Certificate Renewal**: Vault PKI can renew certificates automatically when they're about to expire, ensuring uninterrupted online transactions.\n\n**Benefits of Vault PKI**\n-------------------------\n\n1. **Simplified Management**: Vault PKI simplifies the management of digital certificates, making it easier to track and control access.\n2. **Improved Security**: By automating certificate issuance, revocation, and renewal, Vault PKI reduces the risk of security breaches.\n3. **Compliance**: Vault PKI helps organizations comply with industry regulations, such as PCI-DSS, HIPAA, and GDPR.\n\n**What does this mean for your organization?**\n------------------------------------------------\n\nBy adopting Vault PKI, you can:\n\n* Enhance online security and trust\n* Simplify certificate management and reduce administrative burdens\n* Improve compliance with industry regulations\n* Ensure uninterrupted business operations\n\nIn today's digital landscape, Vault PKI is a crucial investment in securing your organization's online presence."
+  },
+  "metadata": {
+    "success": true,
+    "error": null
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "run_id": "run_20260314_143931_07e936",
+  "created_at": "2026-03-14T14:39:31.866Z",
+  "source": {
+    "type": "promptwash_json",
+    "path": "examples/vault.json",
+    "lineage": null
+  },
+  "prompt": {
+    "fingerprint": "pw_42d7f7c1",
+    "intent": "Explain Vault PKI.",
+    "audience": "executives",
+    "output_format": "markdown"
+  },
+  "execution": {
+    "provider": "ollama",
+    "model": "llama3:latest",
+    "render_mode": "compact",
+    "latency_ms": 8285
+  },
+  "input": {
+    "rendered_prompt": "Explain Vault PKI. Constraints: Do not use jargon. Output: markdown Audience: executives"
+  },
+  "output": {
+    "text": "**What is Vault PKI?**\n======================================================\n\nAs an executive, you may have heard of Vault PKI, but what does it really do? Simply put, Vault PKI is a secure way to manage and issue digital certificates for your organization's devices, servers, and applications. Think of it like a digital ID card that proves identity online.\n\n**How Does It Work?**\n--------------------\n\nHere's how Vault PKI works:\n\n### Issuance\n\nWhen you need a new certificate (digital ID), Vault PKI creates one for you. This is like getting a new physical ID card. The certificate contains your organization's name, IP address, or other identifying information.\n\n### Storage\n\nVault PKI securely stores these digital certificates in a centralized location, making it easy to manage and track who has access to what.\n\n### Management\n\nAs the manager of Vault PKI, you can control who gets new certificates, how long they're valid for, and even revoke (take away) certificates if needed. This ensures that only authorized devices or applications can connect to your systems.\n\n**Benefits**\n-------------\n\nBy using Vault PKI, you get:\n\n* **Better Security**: Stronger authentication and encryption to prevent unauthorized access.\n* **Simplified Management**: Easy tracking of certificates and control over who has access.\n* **Compliance**: Helps meet regulatory requirements for identity and access management.\n* **Reduced Costs**: Automates certificate issuance and revocation, reducing administrative burdens.\n\n**Why is Vault PKI Important?**\n--------------------------------\n\nIn today's digital world, secure identity verification is crucial. Without it, your organization may be vulnerable to cyber threats or unauthorized access. By using Vault PKI, you can ensure that only authorized devices and applications connect to your systems, keeping your data safe and secure.\n\n**Conclusion**\n--------------\n\nVault PKI is a powerful tool for managing digital certificates in your organization. By understanding how it works and the benefits it provides, you can make informed decisions about implementing this crucial security measure."
+  },
+  "metadata": {
+    "success": true,
+    "error": null
+  }
+}

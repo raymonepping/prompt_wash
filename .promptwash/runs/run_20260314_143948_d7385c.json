@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "run_id": "run_20260314_143948_d7385c",
+  "created_at": "2026-03-14T14:39:48.232Z",
+  "source": {
+    "type": "promptwash_json",
+    "path": "examples/vault.json",
+    "lineage": null
+  },
+  "prompt": {
+    "fingerprint": "pw_42d7f7c1",
+    "intent": "Explain Vault PKI.",
+    "audience": "executives",
+    "output_format": "markdown"
+  },
+  "execution": {
+    "provider": "ollama",
+    "model": "llama3:latest",
+    "render_mode": "claude",
+    "latency_ms": 8676
+  },
+  "input": {
+    "rendered_prompt": "You are a careful assistant.\nRequest:\nExplain Vault PKI.\n\nConstraints:\n- Do not use jargon.\n\nDesired output:\nmarkdown\n\nAudience:\nexecutives"
+  },
+  "output": {
+    "text": "**Vault PKI: A Secure Identity Management Solution**\n======================================================\n\nAs an executive, you're likely familiar with the importance of securing your organization's digital identity. That's where Vault PKI comes in – a powerful tool that helps you manage and protect your organization's digital certificates.\n\n### What is Vault PKI?\n\nVault PKI (Public Key Infrastructure) is a comprehensive solution for managing digital identities and certificates. It enables your organization to securely issue, store, and revoke digital certificates, ensuring the integrity of your online interactions.\n\n### How does it work?\n\nHere's a simplified explanation:\n\n1. **Certificate Authority**: Think of Vault PKI as a trusted \" Certificate Authority\" (CA). Your organization becomes the CA, responsible for issuing and managing digital certificates.\n2. **Key Generation**: When you need a new certificate, Vault PKI generates a unique public-private key pair.\n3. **Certificate Issuance**: The CA (your organization) issues the digital certificate, binding it to a specific identity or device.\n4. **Certificate Management**: Vault PKI helps you manage and track all issued certificates, ensuring only authorized users can access sensitive information.\n\n### Benefits for Your Organization\n\n1. **Security**: Protect your organization's digital identity by controlling who has access to sensitive information.\n2. **Compliance**: Meet regulatory requirements for secure certificate management and identity verification.\n3. **Efficiency**: Streamline certificate issuance and revocation processes, reducing administrative burdens.\n4. **Auditability**: Keep a record of all issued certificates, ensuring transparency and accountability.\n\n### Why Choose Vault PKI?\n\n1. **Customization**: Tailor your certificate management solution to fit your organization's specific needs.\n2. **Scalability**: Grow with your organization, as Vault PKI supports large-scale deployments.\n3. **Integration**: Seamlessly integrate with existing systems and applications.\n\nIn summary, Vault PKI is a powerful tool for securing and managing digital identities, certificates, and access control. As an executive, it's essential to understand the value of this solution in protecting your organization's online presence."
+  },
+  "metadata": {
+    "success": true,
+    "error": null
+  }
+}

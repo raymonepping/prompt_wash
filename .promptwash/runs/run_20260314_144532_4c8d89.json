@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "run_id": "run_20260314_144532_4c8d89",
+  "created_at": "2026-03-14T14:45:32.401Z",
+  "source": {
+    "type": "promptwash_json",
+    "path": "examples/vault.json",
+    "lineage": null
+  },
+  "prompt": {
+    "fingerprint": "pw_42d7f7c1",
+    "intent": "Explain Vault PKI.",
+    "audience": "executives",
+    "output_format": "markdown"
+  },
+  "execution": {
+    "provider": "ollama",
+    "model": "llama3:latest",
+    "render_mode": "openai",
+    "latency_ms": 8349
+  },
+  "input": {
+    "rendered_prompt": "Task:\nExplain Vault PKI.\n\nConstraints:\n- Do not use jargon.\n\nOutput format:\nmarkdown\n\nAudience:\nexecutives"
+  },
+  "output": {
+    "text": "**What is Vault PKI?**\n======================================================\n\nAs an executive, you want to know how your organization can securely manage its digital identity. That's where Vault PKI comes in!\n\n**What is Digital Identity Management?**\n-----------------------------------\n\nDigital identity management refers to the process of creating and managing unique digital identities for individuals, devices, or services within your organization. This ensures that only authorized entities can access sensitive information and resources.\n\n**What is Vault PKI?**\n------------------\n\nVault PKI (Public Key Infrastructure) is a cloud-based service designed to securely manage digital identities. It provides a centralized platform for issuing, revoking, and managing digital certificates, which are used to authenticate and encrypt data.\n\n**How Does it Work?**\n-------------------\n\nHere's a simplified overview:\n\n1. **Certificate Authority**: Vault PKI acts as a trusted Certificate Authority (CA), issuing digital certificates to users, devices, or services within your organization.\n2. **Certificate Management**: The platform allows you to manage certificate lifecycles, including issuance, revocation, and renewal.\n3. **Key Pair Generation**: Vault PKI generates and manages public-private key pairs for each user or device, ensuring secure authentication and encryption.\n4. **Centralized Control**: You have complete control over the digital identity management process, with real-time visibility into certificate status and audits.\n\n**Benefits of Using Vault PKI**\n--------------------------------\n\n1. **Enhanced Security**: Vault PKI ensures that only authorized entities can access sensitive information and resources.\n2. **Simplified Management**: The platform streamlines digital identity management, reducing administrative burdens and costs.\n3. **Scalability**: As your organization grows, Vault PKI scales to meet your needs, providing a secure foundation for digital identity management.\n\n**In Summary**\n-------------\n\nVault PKI is a cloud-based service that simplifies and secures digital identity management. By using Vault PKI, you can ensure the integrity of your organization's digital identities, protect sensitive information, and streamline administrative processes."
+  },
+  "metadata": {
+    "success": true,
+    "error": null
+  }
+}

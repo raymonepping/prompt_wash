@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "run_id": "run_20260314_144524_9b38c1",
+  "created_at": "2026-03-14T14:45:24.048Z",
+  "source": {
+    "type": "promptwash_json",
+    "path": "examples/vault.json",
+    "lineage": null
+  },
+  "prompt": {
+    "fingerprint": "pw_42d7f7c1",
+    "intent": "Explain Vault PKI.",
+    "audience": "executives",
+    "output_format": "markdown"
+  },
+  "execution": {
+    "provider": "ollama",
+    "model": "llama3:latest",
+    "render_mode": "compact",
+    "latency_ms": 9409
+  },
+  "input": {
+    "rendered_prompt": "Explain Vault PKI. Constraints: Do not use jargon. Output: markdown Audience: executives"
+  },
+  "output": {
+    "text": "**What is Vault PKI?**\n=====================================================\n\nAs an executive, you may be wondering what Vault PKI is and how it can benefit your organization. Simply put, Vault PKI is a cloud-based platform that makes it easy to manage digital certificates, also known as public key infrastructure (PKI).\n\n**What are Digital Certificates?**\n--------------------------------\n\nDigital certificates are like digital IDs that prove the identity of individuals or organizations. They're used to secure online transactions and ensure the authenticity of websites, applications, and devices.\n\n**Why is Vault PKI Important?**\n-------------------------------\n\nIn today's digital landscape, managing digital certificates can be a complex and time-consuming task. Vault PKI simplifies this process by providing a centralized platform for issuing, revoking, and tracking digital certificates. This helps to:\n\n* **Improve security**: By automating the management of digital certificates, you can reduce the risk of errors or mismanagement that could compromise your organization's security.\n* **Increase efficiency**: Vault PKI streamlines the process of issuing and managing digital certificates, freeing up IT staff to focus on more strategic tasks.\n* **Enhance compliance**: By providing a centralized platform for certificate management, you can ensure compliance with regulatory requirements and industry standards.\n\n**Key Features of Vault PKI**\n-----------------------------\n\nHere are some key features that make Vault PKI an attractive solution:\n\n* **Centralized management**: All digital certificates are stored in a single location, making it easy to track and manage them.\n* **Automation**: Vault PKI automates the process of issuing, revoking, and tracking digital certificates, reducing manual errors and increasing efficiency.\n* **Integration**: Vault PKI integrates with existing IT systems and tools, such as your organization's identity management system.\n* **Scalability**: Vault PKI is designed to scale with your organization, making it easy to add or remove users and devices as needed.\n\n**Conclusion**\n=====================================================\n\nIn summary, Vault PKI is a cloud-based platform that simplifies the management of digital certificates. By providing a centralized platform for issuing, revoking, and tracking digital certificates, Vault PKI helps to improve security, increase efficiency, and enhance compliance. As an executive, you should consider implementing Vault PKI as part of your organization's overall cybersecurity strategy."
+  },
+  "metadata": {
+    "success": true,
+    "error": null
+  }
+}

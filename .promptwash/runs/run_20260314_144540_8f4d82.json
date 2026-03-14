@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "run_id": "run_20260314_144540_8f4d82",
+  "created_at": "2026-03-14T14:45:40.928Z",
+  "source": {
+    "type": "promptwash_json",
+    "path": "examples/vault.json",
+    "lineage": null
+  },
+  "prompt": {
+    "fingerprint": "pw_42d7f7c1",
+    "intent": "Explain Vault PKI.",
+    "audience": "executives",
+    "output_format": "markdown"
+  },
+  "execution": {
+    "provider": "ollama",
+    "model": "llama3:latest",
+    "render_mode": "claude",
+    "latency_ms": 8522
+  },
+  "input": {
+    "rendered_prompt": "You are a careful assistant.\nRequest:\nExplain Vault PKI.\n\nConstraints:\n- Do not use jargon.\n\nDesired output:\nmarkdown\n\nAudience:\nexecutives"
+  },
+  "output": {
+    "text": "**What is Vault PKI?**\n=====================================================\n\nAs an executive, you're likely familiar with the importance of securing sensitive information. Vault PKI (Public Key Infrastructure) is a crucial tool in achieving this goal. But what exactly is it?\n\n**In Simple Terms...**\n------------------------\n\nImagine you have a safe where you store valuable items. The safe has a unique key that only you and authorized people know. This key ensures that only those with the correct information can access the contents of the safe.\n\nSimilarly, Vault PKI is a digital \"safe\" that uses cryptographic keys to secure sensitive data, such as passwords, certificates, and other confidential information. It's designed to keep your organization's secrets safe from unauthorized access or misuse.\n\n**Key Components**\n-------------------\n\n1. **Certificate Authority (CA)**: The CA is like the \"keymaster\" who issues digital certificates to devices, services, or users. These certificates contain public keys that can be used for encryption and decryption.\n2. **Private Keys**: Each device, service, or user has a unique private key that's stored securely in Vault PKI. This private key is used to decrypt encrypted data and verify the identity of the holder.\n3. **Public Keys**: Public keys are the counterpart to private keys. They're publicly available and can be used for encryption, authentication, and other purposes.\n\n**Benefits**\n------------\n\n1. **Enhanced Security**: Vault PKI provides a secure way to manage sensitive information, reducing the risk of unauthorized access or data breaches.\n2. **Increased Efficiency**: By automating certificate management and revocation, you'll save time and resources that would otherwise be spent on manual processes.\n3. **Improved Compliance**: Implementing Vault PKI helps your organization meet regulatory requirements and industry standards for security and confidentiality.\n\n**In Conclusion**\n------------------\n\nVault PKI is a robust digital \"safe\" that protects sensitive information using cryptographic keys. By understanding the basics of Vault PKI, you'll be better equipped to make informed decisions about securing your organization's valuable assets."
+  },
+  "metadata": {
+    "success": true,
+    "error": null
+  }
+}

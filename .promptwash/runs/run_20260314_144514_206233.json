@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "run_id": "run_20260314_144514_206233",
+  "created_at": "2026-03-14T14:45:14.635Z",
+  "source": {
+    "type": "promptwash_json",
+    "path": "examples/vault.json",
+    "lineage": null
+  },
+  "prompt": {
+    "fingerprint": "pw_42d7f7c1",
+    "intent": "Explain Vault PKI.",
+    "audience": "executives",
+    "output_format": "markdown"
+  },
+  "execution": {
+    "provider": "ollama",
+    "model": "llama3:latest",
+    "render_mode": "generic",
+    "latency_ms": 7439
+  },
+  "input": {
+    "rendered_prompt": "Task:\nExplain Vault PKI.\n\nConstraints:\n- Do not use jargon.\n\nOutput format:\nmarkdown\n\nAudience:\nexecutives"
+  },
+  "output": {
+    "text": "**What is Vault PKI?**\n====================================================\n\nAs an executive, you may have heard of the importance of securing your organization's data and communication networks. One crucial aspect of this is ensuring that sensitive information remains confidential. This is where **Vault PKI** comes in.\n\n**PKI: Public Key Infrastructure**\n---------------------------------\n\nIn simple terms, a Public Key Infrastructure (PKI) is a system for creating, managing, and distributing digital certificates. These certificates are used to verify the identity of individuals or organizations when communicating over the internet.\n\n**What does Vault PKI do?**\n-------------------------\n\nVault PKI is a cloud-based service that provides a secure way to manage your organization's digital certificates. It allows you to:\n\n* **Create and manage certificates**: Generate new certificates, revoke old ones, and keep track of who has access to sensitive information.\n* **Secure authentication**: Verify the identity of users, devices, or services when they connect to your network or access sensitive data.\n* **Encrypt data**: Protect sensitive information by encrypting it with a digital certificate, ensuring only authorized individuals can access it.\n\n**Benefits of Vault PKI**\n-------------------------\n\nBy using Vault PKI, you can:\n\n* **Enhance security**: Strengthen the authentication and encryption processes for your organization's sensitive data and communication networks.\n* **Simplify management**: Streamline the creation, revocation, and management of digital certificates across your organization.\n* **Reduce costs**: Eliminate the need for in-house certificate management infrastructure, reducing IT expenses.\n\nIn summary, Vault PKI is a cloud-based service that enables secure authentication, encryption, and certificate management for your organization. By leveraging this technology, you can strengthen your security posture, simplify management processes, and reduce costs."
+  },
+  "metadata": {
+    "success": true,
+    "error": null
+  }
+}

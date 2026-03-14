@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "run_id": "run_20260314_143923_2db708",
+  "created_at": "2026-03-14T14:39:23.577Z",
+  "source": {
+    "type": "promptwash_json",
+    "path": "examples/vault.json",
+    "lineage": null
+  },
+  "prompt": {
+    "fingerprint": "pw_42d7f7c1",
+    "intent": "Explain Vault PKI.",
+    "audience": "executives",
+    "output_format": "markdown"
+  },
+  "execution": {
+    "provider": "ollama",
+    "model": "llama3:latest",
+    "render_mode": "generic",
+    "latency_ms": 6970
+  },
+  "input": {
+    "rendered_prompt": "Task:\nExplain Vault PKI.\n\nConstraints:\n- Do not use jargon.\n\nOutput format:\nmarkdown\n\nAudience:\nexecutives"
+  },
+  "output": {
+    "text": "**What is Vault PKI?**\n================================\n\nAs a business leader, you understand the importance of securing sensitive information and protecting your organization's digital assets. One crucial aspect of this is ensuring that data and applications are properly authenticated and encrypted. This is where Vault PKI comes in.\n\n**What does it do?**\n-------------------\n\nVault PKI (Public Key Infrastructure) is a solution that helps organizations securely manage public key infrastructure. In simple terms, it enables the creation, management, and revocation of digital certificates, which are used to authenticate identities and encrypt data.\n\n**How does it work?**\n--------------------\n\nHere's a simplified overview:\n\n1. **Certificate Creation**: Vault PKI generates digital certificates, which contain essential information about an individual or organization (like name, email, and public key).\n2. **Certificate Revocation**: If a certificate is compromised or no longer needed, Vault PKI revokes it to prevent unauthorized access.\n3. **Certificate Management**: The solution manages the entire lifecycle of certificates, including issuance, renewal, and revocation.\n\n**Benefits**\n-------------\n\nBy implementing Vault PKI, your organization can:\n\n* **Enhance Security**: Protect sensitive data and applications from unauthorized access\n* **Simplify Certificate Management**: Automate certificate creation, revocation, and management processes\n* **Improve Compliance**: Meet regulatory requirements for secure identity verification and encryption\n\n**In Summary**\n---------------\n\nVault PKI is a powerful solution that helps organizations securely manage public key infrastructure. By understanding what Vault PKI does and how it works, you can make informed decisions about implementing this technology to protect your organization's digital assets."
+  },
+  "metadata": {
+    "success": true,
+    "error": null
+  }
+}

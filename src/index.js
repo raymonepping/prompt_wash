@@ -20,6 +20,7 @@ import { registerEvaluateCommand } from "./commands/evaluate.js";
 import { registerCompareRunsCommand } from "./commands/compare-runs.js";
 import { registerIntelligenceCommand } from "./commands/intelligence.js";
 import { registerExperimentCommand } from "./commands/experiment.js";
+import { registerExperimentsCommand } from "./commands/experiments.js";
 
 export async function runCli(argv = process.argv) {
   const program = new Command();
@@ -52,6 +53,7 @@ export async function runCli(argv = process.argv) {
   registerCompareRunsCommand(program);
   registerIntelligenceCommand(program);
   registerExperimentCommand(program);
+  registerExperimentsCommand(program);
 
   await program.parseAsync(argv);
 }
