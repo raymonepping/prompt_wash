@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "run_id": "run_20260314_141831_544804",
+  "created_at": "2026-03-14T14:18:31.538Z",
+  "source": {
+    "type": "promptwash_json",
+    "path": "examples/vault.compact.json",
+    "lineage": {
+      "family": "vault-pki",
+      "node_id": "vault-pki.e"
+    }
+  },
+  "prompt": {
+    "fingerprint": null,
+    "intent": "Explain Vault PKI.",
+    "audience": "executives",
+    "output_format": "markdown"
+  },
+  "execution": {
+    "provider": "ollama",
+    "model": "llama3:latest",
+    "render_mode": "generic",
+    "latency_ms": 11785
+  },
+  "input": {
+    "rendered_prompt": "Task:\nExplain Vault PKI.\n\nConstraints:\n- Do not use jargon.\n\nOutput format:\nmarkdown\n\nAudience:\nexecutives"
+  },
+  "output": {
+    "text": "**Vault PKI: A Secure Way to Manage Digital Identities**\n============================================================\n\nAs a busy executive, you understand the importance of protecting sensitive information and ensuring the integrity of your organization's digital presence. One way to achieve this is by using Public Key Infrastructure (PKI), specifically Vault PKI.\n\n### What is Vault PKI?\n\nVault PKI is a secure system that helps manage digital identities, making it easier for individuals or organizations to prove who they are online. It's like having a digital passport, where you can verify your identity and access restricted areas safely.\n\n### How does it work?\n\nHere's a simplified explanation:\n\n1. **Certificate Authority (CA)**: A trusted entity that issues digital certificates, verifying the identity of an individual or organization.\n2. **Public Key**: A unique pair of cryptographic keys: one public (shared) and one private (kept secret).\n3. **Digital Certificate**: A digital document containing the public key and other identifying information, such as name and affiliation.\n4. **Vault**: A secure repository for storing and managing these digital certificates.\n\nWhen someone wants to access a restricted area or service online, they present their digital certificate to the Vault. The Vault verifies the certificate's authenticity using its built-in CA, ensuring that the individual is who they claim to be. If verified, the Vault grants access to the restricted area or service.\n\n### Benefits\n\nBy implementing Vault PKI, your organization can:\n\n* **Enhance security**: Verify identities and prevent unauthorized access\n* **Streamline processes**: Automate certificate management and reduce administrative burdens\n* **Increase transparency**: Ensure that all digital interactions are traceable and accountable\n\nIn today's interconnected world, it's crucial to protect the integrity of digital identities. Vault PKI provides a robust and scalable solution for organizations seeking to safeguard their online presence and maintain trust with stakeholders.\n\n**Conclusion**\n----------------\n\nVault PKI is a powerful tool for managing digital identities and ensuring secure online interactions. By implementing this technology, your organization can strengthen its security posture, streamline processes, and increase transparency."
+  },
+  "metadata": {
+    "success": true,
+    "error": null
+  }
+}

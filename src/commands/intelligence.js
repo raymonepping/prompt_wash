@@ -1,9 +1,14 @@
-import { printInfo, printJson, printSuccess } from "../utils/display.js";
+import {
+  printInfo,
+  printJson,
+  printSuccess,
+} from "../utils/display.js";
 import { createValidationError } from "../utils/errors.js";
 import { buildPromptWashStats } from "../services/intelligence/stats.js";
 import { buildRunIntelligence } from "../services/intelligence/runs.js";
 import { buildOptimizationIntelligence } from "../services/intelligence/optimization.js";
 import { buildLineageIntelligence } from "../services/intelligence/lineage.js";
+import { buildModelIntelligence } from "../services/intelligence/models.js";
 
 export function registerIntelligenceCommand(program) {
   const intelligence = program
@@ -35,12 +40,8 @@ export function registerIntelligenceCommand(program) {
       printInfo(
         `Average rendered prompt tokens: ${stats.runs.average_rendered_prompt_tokens}`,
       );
-      printInfo(
-        `Average response tokens: ${stats.runs.average_response_tokens}`,
-      );
-      printInfo(
-        `Optimized artifacts: ${stats.optimization.optimized_artifact_count}`,
-      );
+      printInfo(`Average response tokens: ${stats.runs.average_response_tokens}`);
+      printInfo(`Optimized artifacts: ${stats.optimization.optimized_artifact_count}`);
       console.log("");
       console.log("Models:");
       if (stats.runs.models.length === 0) {
@@ -197,6 +198,68 @@ export function registerIntelligenceCommand(program) {
       } else {
         for (const item of data.execution_coverage.covered) {
           console.log(`- ${item.node_id}: ${item.runs.join(", ")}`);
+        }
+      }
+    });
+
+  intelligence
+    .command("models")
+    .description("Show model-level intelligence across evaluated runs")
+    .option("-o, --output <format>", "Output format: text|json", "text")
+    .action(async (options) => {
+      const data = await buildModelIntelligence();
+
+      const result = {
+        command: "intelligence models",
+        models: data,
+      };
+
+      if (options.output === "json") {
+        printJson(result);
+        return;
+      }
+
+      printSuccess("Model intelligence loaded");
+      printInfo(`Total runs: ${data.total_runs}`);
+      printInfo(`Total models: ${data.total_models}`);
+      printInfo(`Total providers: ${data.total_providers}`);
+      if (data.best_model) {
+        printInfo(
+          `Best model: ${data.best_model.model} (${data.best_model.average_score})`,
+        );
+      }
+      if (data.fastest_model) {
+        printInfo(
+          `Fastest model: ${data.fastest_model.model} (${data.fastest_model.average_latency_ms} ms)`,
+        );
+      }
+
+      console.log("");
+      console.log("Models:");
+      if (data.models.length === 0) {
+        console.log("(none)");
+      } else {
+        for (const model of data.models) {
+          console.log(
+            `- ${model.model}: runs=${model.runs}, avg_score=${model.average_score}, avg_latency=${model.average_latency_ms} ms`,
+          );
+          if (model.best_run) {
+            console.log(
+              `  best_run=${model.best_run.run_id}, best_score=${model.best_run.overall_score}`,
+            );
+          }
+        }
+      }
+
+      console.log("");
+      console.log("Providers:");
+      if (data.providers.length === 0) {
+        console.log("(none)");
+      } else {
+        for (const provider of data.providers) {
+          console.log(
+            `- ${provider.provider}: runs=${provider.runs}, avg_score=${provider.average_score}, avg_latency=${provider.average_latency_ms} ms`,
+          );
         }
       }
     });
