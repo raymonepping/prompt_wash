@@ -1,0 +1,38 @@
+{
+  "command": "optimize",
+  "source": "promptwash_json",
+  "path": "examples/vault.json",
+  "write_path": "reports/vault-optimize.json",
+  "result": {
+    "source_prompt": {
+      "fingerprint": "pw_42d7f7c1",
+      "intent": "Explain Vault PKI.",
+      "audience": "executives",
+      "output_format": "markdown"
+    },
+    "optimization": {
+      "original_mode": "generic",
+      "optimized_mode": "compact",
+      "original_prompt": "Task:\nExplain Vault PKI.\n\nConstraints:\n- Do not use jargon.\n\nOutput format:\nmarkdown\n\nAudience:\nexecutives",
+      "optimized_prompt": "Explain Vault PKI. Constraints: Do not use jargon. Output: markdown Audience: executives",
+      "token_comparison": {
+        "original_tokens": 27,
+        "optimized_tokens": 22,
+        "saved_tokens": 5,
+        "saved_percent": 19
+      },
+      "semantic_drift_risk": "low",
+      "missing_signals": [],
+      "recommendations": [
+        "Use the compact variant to save 5 tokens (19%).",
+        "Compact optimization appears safe for normal use."
+      ]
+    },
+    "variants": {
+      "generic": "Task:\nExplain Vault PKI.\n\nConstraints:\n- Do not use jargon.\n\nOutput format:\nmarkdown\n\nAudience:\nexecutives",
+      "compact": "Explain Vault PKI. Constraints: Do not use jargon. Output: markdown Audience: executives",
+      "openai": "Task:\nExplain Vault PKI.\n\nConstraints:\n- Do not use jargon.\n\nOutput format:\nmarkdown\n\nAudience:\nexecutives",
+      "claude": "You are a careful assistant.\nRequest:\nExplain Vault PKI.\n\nConstraints:\n- Do not use jargon.\n\nDesired output:\nmarkdown\n\nAudience:\nexecutives"
+    }
+  }
+}

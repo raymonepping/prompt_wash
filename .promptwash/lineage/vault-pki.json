@@ -38,6 +38,33 @@
       "label": "",
       "notes": "",
       "fingerprint": "pw_faa4ef2d"
+    },
+    {
+      "id": "vault-pki.c",
+      "parent": "vault-pki",
+      "artifact": "examples/vault.compact.json",
+      "created_at": "2026-03-13T21:09:07.435Z",
+      "label": "compact",
+      "notes": "Deterministic compact optimization",
+      "fingerprint": "pw_fc3da3a6"
+    },
+    {
+      "id": "vault-pki.d",
+      "parent": "vault-pki",
+      "artifact": "examples/vault.compact.json",
+      "created_at": "2026-03-13T21:09:28.268Z",
+      "label": "",
+      "notes": "",
+      "fingerprint": "pw_fc3da3a6"
+    },
+    {
+      "id": "vault-pki.e",
+      "parent": "vault-pki",
+      "artifact": "examples/vault.compact.json",
+      "created_at": "2026-03-13T21:15:37.070Z",
+      "label": "compact-structured",
+      "notes": "Structured compact optimization",
+      "fingerprint": null
     }
   ]
 }
