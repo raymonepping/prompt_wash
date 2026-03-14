@@ -3,7 +3,9 @@ import { evaluateRunArtifact } from "../evaluation/evaluate.js";
 
 function summarizeVariantResult(variant, execution, evaluation) {
   const renderedPrompt = execution.artifact.input?.rendered_prompt ?? "";
-  const renderedPromptTokens = renderedPrompt.split(/\s+/).filter(Boolean).length;
+  const renderedPromptTokens = renderedPrompt
+    .split(/\s+/)
+    .filter(Boolean).length;
 
   return {
     variant,
@@ -63,7 +65,8 @@ function buildRankings(runSummaries) {
   const bestOverall = sortByOverall(runSummaries)[0] ?? null;
   const fastest = sortByLatency(runSummaries)[0] ?? null;
   const smallestPrompt = sortByPromptTokens(runSummaries)[0] ?? null;
-  const bestConstraintAdherence = sortByConstraintAdherence(runSummaries)[0] ?? null;
+  const bestConstraintAdherence =
+    sortByConstraintAdherence(runSummaries)[0] ?? null;
 
   return {
     best_overall: bestOverall
@@ -112,9 +115,7 @@ function buildRecommendations(runSummaries, rankings) {
   }
 
   if (rankings.fastest) {
-    recommendations.push(
-      `${rankings.fastest.variant} is the fastest variant.`,
-    );
+    recommendations.push(`${rankings.fastest.variant} is the fastest variant.`);
   }
 
   if (rankings.smallest_prompt) {

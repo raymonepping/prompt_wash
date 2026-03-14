@@ -50,7 +50,13 @@ function renderMarkdown(result) {
 
   lines.push("## Rankings");
   lines.push("");
-  lines.push(renderRanking("Best overall", result.rankings.best_overall, "overall_score"));
+  lines.push(
+    renderRanking(
+      "Best overall",
+      result.rankings.best_overall,
+      "overall_score",
+    ),
+  );
   lines.push(renderRanking("Fastest", result.rankings.fastest, "latency_ms"));
   lines.push(
     renderRanking(
