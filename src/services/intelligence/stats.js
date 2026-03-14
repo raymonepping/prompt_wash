@@ -1,12 +1,17 @@
 import { scanRepository } from "../repo/scan.js";
-import { listExecutionArtifacts, loadAllExecutionArtifacts } from "../execution/storage.js";
+import {
+  listExecutionArtifacts,
+  loadAllExecutionArtifacts,
+} from "../execution/storage.js";
 
 function average(values) {
   if (!values.length) {
     return 0;
   }
 
-  return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+  return Math.round(
+    values.reduce((sum, value) => sum + value, 0) / values.length,
+  );
 }
 
 function averagePercent(values) {
@@ -68,8 +73,12 @@ function summarizeOptimizedArtifacts(scan) {
 function estimateOptimizationSavings(scan) {
   const candidates = scan.prompt_candidates ?? [];
 
-  const compactFiles = candidates.filter((filePath) => /compact|optimized/i.test(filePath));
-  const baselineFiles = candidates.filter((filePath) => !/compact|optimized/i.test(filePath));
+  const compactFiles = candidates.filter((filePath) =>
+    /compact|optimized/i.test(filePath),
+  );
+  const baselineFiles = candidates.filter(
+    (filePath) => !/compact|optimized/i.test(filePath),
+  );
 
   if (compactFiles.length === 0 || baselineFiles.length === 0) {
     return {
@@ -109,7 +118,8 @@ export async function buildPromptWashStats() {
       root: scan.root,
       prompt_candidates: scan.prompt_candidates.length,
       lineage_families: scan.lineage_families.length,
-      configured_prompt_folders: scan.project_manifest?.manifest?.prompt_folders ?? [],
+      configured_prompt_folders:
+        scan.project_manifest?.manifest?.prompt_folders ?? [],
       prompt_discovery_mode: scan.prompt_discovery?.strict_prompt_folders
         ? "strict"
         : "fallback_enabled",

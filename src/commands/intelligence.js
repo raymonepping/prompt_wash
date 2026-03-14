@@ -1,8 +1,4 @@
-import {
-  printInfo,
-  printJson,
-  printSuccess,
-} from "../utils/display.js";
+import { printInfo, printJson, printSuccess } from "../utils/display.js";
 import { buildPromptWashStats } from "../services/intelligence/stats.js";
 import { buildRunIntelligence } from "../services/intelligence/runs.js";
 import { buildOptimizationIntelligence } from "../services/intelligence/optimization.js";
@@ -34,9 +30,15 @@ export function registerIntelligenceCommand(program) {
       printInfo(`Lineage families: ${stats.repository.lineage_families}`);
       printInfo(`Total runs: ${stats.runs.total_runs}`);
       printInfo(`Average latency: ${stats.runs.average_latency_ms} ms`);
-      printInfo(`Average rendered prompt tokens: ${stats.runs.average_rendered_prompt_tokens}`);
-      printInfo(`Average response tokens: ${stats.runs.average_response_tokens}`);
-      printInfo(`Optimized artifacts: ${stats.optimization.optimized_artifact_count}`);
+      printInfo(
+        `Average rendered prompt tokens: ${stats.runs.average_rendered_prompt_tokens}`,
+      );
+      printInfo(
+        `Average response tokens: ${stats.runs.average_response_tokens}`,
+      );
+      printInfo(
+        `Optimized artifacts: ${stats.optimization.optimized_artifact_count}`,
+      );
       console.log("");
       console.log("Models:");
       if (stats.runs.models.length === 0) {
@@ -70,10 +72,14 @@ export function registerIntelligenceCommand(program) {
       printInfo(`Average score: ${data.average_score}`);
       printInfo(`Average latency: ${data.average_latency_ms} ms`);
       if (data.strongest_run) {
-        printInfo(`Strongest run: ${data.strongest_run.run_id} (${data.strongest_run.overall_score})`);
+        printInfo(
+          `Strongest run: ${data.strongest_run.run_id} (${data.strongest_run.overall_score})`,
+        );
       }
       if (data.fastest_run) {
-        printInfo(`Fastest run: ${data.fastest_run.run_id} (${data.fastest_run.latency_ms} ms)`);
+        printInfo(
+          `Fastest run: ${data.fastest_run.run_id} (${data.fastest_run.latency_ms} ms)`,
+        );
       }
 
       console.log("");

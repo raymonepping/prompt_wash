@@ -6,7 +6,9 @@ function average(values) {
     return 0;
   }
 
-  return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+  return Math.round(
+    values.reduce((sum, value) => sum + value, 0) / values.length,
+  );
 }
 
 function groupBy(items, selector) {
@@ -52,7 +54,9 @@ export async function buildRunIntelligence() {
     }))
     .sort((left, right) => right.average_score - left.average_score);
 
-  const providers = [...groupBy(evaluatedRuns, (item) => item.provider).entries()]
+  const providers = [
+    ...groupBy(evaluatedRuns, (item) => item.provider).entries(),
+  ]
     .map(([provider, items]) => ({
       provider,
       runs: items.length,
@@ -61,13 +65,15 @@ export async function buildRunIntelligence() {
     }))
     .sort((left, right) => right.average_score - left.average_score);
 
-  const strongestRun = [...evaluatedRuns].sort(
-    (left, right) => right.overall_score - left.overall_score,
-  )[0] ?? null;
+  const strongestRun =
+    [...evaluatedRuns].sort(
+      (left, right) => right.overall_score - left.overall_score,
+    )[0] ?? null;
 
-  const fastestRun = [...evaluatedRuns].sort(
-    (left, right) => left.latency_ms - right.latency_ms,
-  )[0] ?? null;
+  const fastestRun =
+    [...evaluatedRuns].sort(
+      (left, right) => left.latency_ms - right.latency_ms,
+    )[0] ?? null;
 
   return {
     total_runs: evaluatedRuns.length,
