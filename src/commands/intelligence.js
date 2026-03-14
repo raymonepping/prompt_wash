@@ -1,7 +1,13 @@
-import { printInfo, printJson, printSuccess } from "../utils/display.js";
+import {
+  printInfo,
+  printJson,
+  printSuccess,
+} from "../utils/display.js";
+import { createValidationError } from "../utils/errors.js";
 import { buildPromptWashStats } from "../services/intelligence/stats.js";
 import { buildRunIntelligence } from "../services/intelligence/runs.js";
 import { buildOptimizationIntelligence } from "../services/intelligence/optimization.js";
+import { buildLineageIntelligence } from "../services/intelligence/lineage.js";
 
 export function registerIntelligenceCommand(program) {
   const intelligence = program
@@ -33,12 +39,8 @@ export function registerIntelligenceCommand(program) {
       printInfo(
         `Average rendered prompt tokens: ${stats.runs.average_rendered_prompt_tokens}`,
       );
-      printInfo(
-        `Average response tokens: ${stats.runs.average_response_tokens}`,
-      );
-      printInfo(
-        `Optimized artifacts: ${stats.optimization.optimized_artifact_count}`,
-      );
+      printInfo(`Average response tokens: ${stats.runs.average_response_tokens}`);
+      printInfo(`Optimized artifacts: ${stats.optimization.optimized_artifact_count}`);
       console.log("");
       console.log("Models:");
       if (stats.runs.models.length === 0) {
@@ -127,5 +129,75 @@ export function registerIntelligenceCommand(program) {
       }
       console.log("");
       console.log(`Note: ${data.note}`);
+    });
+
+  intelligence
+    .command("lineage")
+    .description("Show lineage-specific intelligence for a prompt family")
+    .argument("<family>", "Lineage family name")
+    .option("-o, --output <format>", "Output format: text|json", "text")
+    .action(async (family, options) => {
+      const data = await buildLineageIntelligence(family);
+
+      if (!data) {
+        throw createValidationError(`Lineage family not found: ${family}`);
+      }
+
+      const result = {
+        command: "intelligence lineage",
+        lineage: data,
+      };
+
+      if (options.output === "json") {
+        printJson(result);
+        return;
+      }
+
+      printSuccess("Lineage intelligence loaded");
+      printInfo(`Family: ${data.family}`);
+      printInfo(`Root: ${data.root}`);
+      printInfo(`Total nodes: ${data.total_nodes}`);
+      printInfo(`Max depth: ${data.max_depth}`);
+      if (data.latest_node) {
+        printInfo(`Latest node: ${data.latest_node.id}`);
+      }
+      printInfo(
+        `Execution coverage: ${data.execution_coverage.covered_count}/${data.total_nodes}`,
+      );
+      if (data.best_evaluated_node) {
+        printInfo(
+          `Best evaluated node: ${data.best_evaluated_node.node_id} (${data.best_evaluated_node.overall_score})`,
+        );
+      }
+
+      console.log("");
+      console.log("Nodes by depth:");
+      if (data.nodes_by_depth.length === 0) {
+        console.log("(none)");
+      } else {
+        for (const item of data.nodes_by_depth) {
+          console.log(`- depth ${item.depth}: ${item.count} node(s)`);
+        }
+      }
+
+      console.log("");
+      console.log("Optimized nodes:");
+      if (data.optimized_nodes.length === 0) {
+        console.log("(none)");
+      } else {
+        for (const node of data.optimized_nodes) {
+          console.log(`- ${node.id}: ${node.artifact}`);
+        }
+      }
+
+      console.log("");
+      console.log("Execution coverage:");
+      if (data.execution_coverage.covered.length === 0) {
+        console.log("(none)");
+      } else {
+        for (const item of data.execution_coverage.covered) {
+          console.log(`- ${item.node_id}: ${item.runs.join(", ")}`);
+        }
+      }
     });
 }
