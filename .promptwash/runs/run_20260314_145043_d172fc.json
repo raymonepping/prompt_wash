@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "run_id": "run_20260314_145043_d172fc",
+  "created_at": "2026-03-14T14:50:43.533Z",
+  "source": {
+    "type": "promptwash_json",
+    "path": "examples/vault.json",
+    "lineage": null
+  },
+  "prompt": {
+    "fingerprint": "pw_42d7f7c1",
+    "intent": "Explain Vault PKI.",
+    "audience": "executives",
+    "output_format": "markdown"
+  },
+  "execution": {
+    "provider": "ollama",
+    "model": "llama3:latest",
+    "render_mode": "openai",
+    "latency_ms": 8813
+  },
+  "input": {
+    "rendered_prompt": "Task:\nExplain Vault PKI.\n\nConstraints:\n- Do not use jargon.\n\nOutput format:\nmarkdown\n\nAudience:\nexecutives"
+  },
+  "output": {
+    "text": "**What is Vault PKI?**\n======================================================\n\nAs a business leader, you want to ensure that your organization's sensitive information and systems are secure. One way to achieve this is by using Public Key Infrastructure (PKI). Think of it like a digital safety deposit box where you store and manage cryptographic keys.\n\n**How does it work?**\n------------------------\n\nVault PKI is a cloud-based service that helps you generate, distribute, and manage digital certificates. These certificates are like digital IDs that prove your identity online. They're used to encrypt and decrypt data, authenticate users, and ensure the integrity of online transactions.\n\nImagine you have a secure folder where you store important documents. You want to share those documents with someone else, but only if they have the right password. In this case, the password is like a digital certificate that proves their identity. Vault PKI helps you create and manage these certificates, making it easier to keep your online transactions safe.\n\n**Key Benefits**\n-----------------\n\n* **Simplified Certificate Management**: With Vault PKI, you can easily generate, renew, and revoke digital certificates.\n* **Increased Security**: By controlling the issuance and management of certificates, you can reduce the risk of unauthorized access or misuse.\n* **Scalability**: Vault PKI is a cloud-based service that grows with your organization. You don't need to worry about maintaining infrastructure or scaling your certificate authority.\n\n**Why Choose Vault PKI?**\n-------------------------\n\n* **Proven Track Record**: Vault PKI has been used by large enterprises and organizations for years, demonstrating its reliability and scalability.\n* **Compliance**: Vault PKI helps you meet compliance requirements for regulatory bodies like HIPAA, PCI-DSS, and GDPR.\n* **Expertise**: The team behind Vault PKI is composed of experienced security professionals who understand the importance of securing your organization's digital assets.\n\nIn summary, Vault PKI is a cloud-based service that helps organizations generate, distribute, and manage digital certificates. By simplifying certificate management, increasing security, and providing scalability, Vault PKI can help you keep your online transactions safe and compliant with regulatory requirements."
+  },
+  "metadata": {
+    "success": true,
+    "error": null
+  }
+}

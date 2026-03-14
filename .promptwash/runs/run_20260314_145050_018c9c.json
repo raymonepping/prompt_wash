@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "run_id": "run_20260314_145050_018c9c",
+  "created_at": "2026-03-14T14:50:50.982Z",
+  "source": {
+    "type": "promptwash_json",
+    "path": "examples/vault.json",
+    "lineage": null
+  },
+  "prompt": {
+    "fingerprint": "pw_42d7f7c1",
+    "intent": "Explain Vault PKI.",
+    "audience": "executives",
+    "output_format": "markdown"
+  },
+  "execution": {
+    "provider": "ollama",
+    "model": "llama3:latest",
+    "render_mode": "claude",
+    "latency_ms": 7445
+  },
+  "input": {
+    "rendered_prompt": "You are a careful assistant.\nRequest:\nExplain Vault PKI.\n\nConstraints:\n- Do not use jargon.\n\nDesired output:\nmarkdown\n\nAudience:\nexecutives"
+  },
+  "output": {
+    "text": "**What is Vault PKI?**\n======================================================\n\nAs an executive, you want to know how your organization's sensitive information stays secure. That's where Vault PKI comes in! In simple terms, Vault PKI (Public Key Infrastructure) is a system that helps keep your digital secrets safe.\n\n**How does it work?**\n-------------------\n\nThink of Vault PKI like a digital lockbox. It's a platform that manages and secures the keys used to encrypt and decrypt sensitive information, such as:\n\n* **Digital certificates**: Like a virtual ID card, these prove identity and ownership.\n* **Private keys**: These are the \"keys\" to unlocking encrypted data.\n\nHere's how it works:\n\n1. **Certificate Authority (CA)**: A trusted third-party that issues digital certificates.\n2. **Certificate Revocation List (CRL)**: A list of revoked or expired certificates.\n3. **Key Management Service (KMS)**: A secure storage for private keys.\n\nWhen you need to access sensitive information, Vault PKI:\n\n1. Verifies the identity of the requestor with a digital certificate.\n2. Checks if the requested data is encrypted and has the correct decryption key.\n3. Grabs the relevant private key from the KMS.\n4. Decrypts the data using the private key.\n\n**Benefits**\n------------\n\nBy using Vault PKI, your organization enjoys:\n\n* **Improved security**: Reduces risk of unauthorized access to sensitive information.\n* **Compliance**: Meets regulatory requirements for secure data handling.\n* **Simplified management**: Streamlines key and certificate management.\n\nIn summary, Vault PKI is a powerful tool that safeguards your digital secrets by securely managing keys and certificates. This ensures only authorized individuals can access sensitive information, keeping your organization's data protected."
+  },
+  "metadata": {
+    "success": true,
+    "error": null
+  }
+}

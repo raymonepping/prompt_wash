@@ -1,0 +1,324 @@
+{
+  "version": 1,
+  "experiment_id": "exp_20260314_145050_60583b",
+  "created_at": "2026-03-14T14:50:50.984Z",
+  "source": {
+    "type": "promptwash_json",
+    "path": "examples/vault.json",
+    "lineage": null
+  },
+  "provider": "ollama",
+  "variants": [
+    "generic",
+    "compact",
+    "openai",
+    "claude"
+  ],
+  "runs": [
+    {
+      "variant": "generic",
+      "run_id": "run_20260314_145027_57830b",
+      "saved_path": ".promptwash/runs/run_20260314_145027_57830b.json",
+      "provider": "ollama",
+      "model": "llama3:latest",
+      "render_mode": "generic",
+      "latency_ms": 8063,
+      "rendered_prompt_tokens": 15,
+      "fingerprint": "pw_42d7f7c1",
+      "overall_score": 94,
+      "overall_level": "excellent",
+      "dimensions": {
+        "clarity": {
+          "score": 100,
+          "notes": [],
+          "metrics": {
+            "sentence_count": 22,
+            "average_sentence_length": 13
+          }
+        },
+        "structure": {
+          "score": 100,
+          "notes": [],
+          "metrics": {
+            "paragraph_count": 8,
+            "markdown_signals": {
+              "headings": 0,
+              "bullets": 0,
+              "numbered": 7,
+              "emphasis": 11
+            }
+          }
+        },
+        "constraint_adherence": {
+          "score": 76,
+          "notes": [
+            "Jargon-sensitive terms detected despite the prompt requesting simpler language: public key infrastructure, ca, pki."
+          ],
+          "metrics": {
+            "checks": [
+              {
+                "constraint": "Do not use jargon",
+                "matched": false,
+                "details": [
+                  "public key infrastructure",
+                  "ca",
+                  "pki"
+                ]
+              }
+            ]
+          }
+        },
+        "audience_fit": {
+          "score": 100,
+          "notes": [],
+          "metrics": {
+            "audience": "executives"
+          }
+        }
+      },
+      "recommendations": [
+        "Tighten output against explicit prompt constraints."
+      ]
+    },
+    {
+      "variant": "compact",
+      "run_id": "run_20260314_145034_bc49aa",
+      "saved_path": ".promptwash/runs/run_20260314_145034_bc49aa.json",
+      "provider": "ollama",
+      "model": "llama3:latest",
+      "render_mode": "compact",
+      "latency_ms": 7447,
+      "rendered_prompt_tokens": 12,
+      "fingerprint": "pw_42d7f7c1",
+      "overall_score": 87,
+      "overall_level": "excellent",
+      "dimensions": {
+        "clarity": {
+          "score": 100,
+          "notes": [],
+          "metrics": {
+            "sentence_count": 20,
+            "average_sentence_length": 14
+          }
+        },
+        "structure": {
+          "score": 100,
+          "notes": [],
+          "metrics": {
+            "paragraph_count": 15,
+            "markdown_signals": {
+              "headings": 4,
+              "bullets": 4,
+              "numbered": 6,
+              "emphasis": 4
+            }
+          }
+        },
+        "constraint_adherence": {
+          "score": 60,
+          "notes": [
+            "Jargon-sensitive terms detected despite the prompt requesting simpler language: certificate authority, public key infrastructure, revocation, ca, pki."
+          ],
+          "metrics": {
+            "checks": [
+              {
+                "constraint": "Do not use jargon",
+                "matched": false,
+                "details": [
+                  "certificate authority",
+                  "public key infrastructure",
+                  "revocation",
+                  "ca",
+                  "pki"
+                ]
+              }
+            ]
+          }
+        },
+        "audience_fit": {
+          "score": 86,
+          "notes": [
+            "Some terminology may be too technical for an executive audience: revocation list, certificate authority."
+          ],
+          "metrics": {
+            "audience": "executives"
+          }
+        }
+      },
+      "recommendations": [
+        "Tighten output against explicit prompt constraints."
+      ]
+    },
+    {
+      "variant": "openai",
+      "run_id": "run_20260314_145043_d172fc",
+      "saved_path": ".promptwash/runs/run_20260314_145043_d172fc.json",
+      "provider": "ollama",
+      "model": "llama3:latest",
+      "render_mode": "openai",
+      "latency_ms": 8813,
+      "rendered_prompt_tokens": 15,
+      "fingerprint": "pw_42d7f7c1",
+      "overall_score": 87,
+      "overall_level": "excellent",
+      "dimensions": {
+        "clarity": {
+          "score": 100,
+          "notes": [],
+          "metrics": {
+            "sentence_count": 19,
+            "average_sentence_length": 17
+          }
+        },
+        "structure": {
+          "score": 100,
+          "notes": [],
+          "metrics": {
+            "paragraph_count": 10,
+            "markdown_signals": {
+              "headings": 0,
+              "bullets": 6,
+              "numbered": 0,
+              "emphasis": 10
+            }
+          }
+        },
+        "constraint_adherence": {
+          "score": 60,
+          "notes": [
+            "Jargon-sensitive terms detected despite the prompt requesting simpler language: certificate authority, public key infrastructure, cryptographic, ca, pki."
+          ],
+          "metrics": {
+            "checks": [
+              {
+                "constraint": "Do not use jargon",
+                "matched": false,
+                "details": [
+                  "certificate authority",
+                  "public key infrastructure",
+                  "cryptographic",
+                  "ca",
+                  "pki"
+                ]
+              }
+            ]
+          }
+        },
+        "audience_fit": {
+          "score": 86,
+          "notes": [
+            "Some terminology may be too technical for an executive audience: cryptographic, certificate authority."
+          ],
+          "metrics": {
+            "audience": "executives"
+          }
+        }
+      },
+      "recommendations": [
+        "Tighten output against explicit prompt constraints."
+      ]
+    },
+    {
+      "variant": "claude",
+      "run_id": "run_20260314_145050_018c9c",
+      "saved_path": ".promptwash/runs/run_20260314_145050_018c9c.json",
+      "provider": "ollama",
+      "model": "llama3:latest",
+      "render_mode": "claude",
+      "latency_ms": 7445,
+      "rendered_prompt_tokens": 20,
+      "fingerprint": "pw_42d7f7c1",
+      "overall_score": 87,
+      "overall_level": "excellent",
+      "dimensions": {
+        "clarity": {
+          "score": 100,
+          "notes": [],
+          "metrics": {
+            "sentence_count": 25,
+            "average_sentence_length": 10
+          }
+        },
+        "structure": {
+          "score": 100,
+          "notes": [],
+          "metrics": {
+            "paragraph_count": 13,
+            "markdown_signals": {
+              "headings": 0,
+              "bullets": 5,
+              "numbered": 7,
+              "emphasis": 11
+            }
+          }
+        },
+        "constraint_adherence": {
+          "score": 60,
+          "notes": [
+            "Jargon-sensitive terms detected despite the prompt requesting simpler language: certificate authority, public key infrastructure, revocation, ca, pki."
+          ],
+          "metrics": {
+            "checks": [
+              {
+                "constraint": "Do not use jargon",
+                "matched": false,
+                "details": [
+                  "certificate authority",
+                  "public key infrastructure",
+                  "revocation",
+                  "ca",
+                  "pki"
+                ]
+              }
+            ]
+          }
+        },
+        "audience_fit": {
+          "score": 86,
+          "notes": [
+            "Some terminology may be too technical for an executive audience: revocation list, certificate authority."
+          ],
+          "metrics": {
+            "audience": "executives"
+          }
+        }
+      },
+      "recommendations": [
+        "Tighten output against explicit prompt constraints."
+      ]
+    }
+  ],
+  "rankings": {
+    "best_overall": {
+      "variant": "generic",
+      "run_id": "run_20260314_145027_57830b",
+      "overall_score": 94,
+      "latency_ms": 8063
+    },
+    "fastest": {
+      "variant": "claude",
+      "run_id": "run_20260314_145050_018c9c",
+      "latency_ms": 7445,
+      "overall_score": 87
+    },
+    "smallest_prompt": {
+      "variant": "compact",
+      "run_id": "run_20260314_145034_bc49aa",
+      "rendered_prompt_tokens": 12,
+      "overall_score": 87
+    },
+    "best_constraint_adherence": {
+      "variant": "generic",
+      "run_id": "run_20260314_145027_57830b",
+      "constraint_adherence": 76,
+      "overall_score": 94
+    }
+  },
+  "recommendations": [
+    "generic is the strongest overall variant in this experiment.",
+    "claude is the fastest variant.",
+    "compact uses the smallest rendered prompt.",
+    "generic performs best on explicit constraint adherence."
+  ],
+  "winner": "generic"
+}
