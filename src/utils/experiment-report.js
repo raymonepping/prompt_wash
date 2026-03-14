@@ -41,8 +41,12 @@ function renderMarkdown(result) {
   lines.push("## Comparison");
   lines.push("");
   lines.push(`- Latency winner: ${result.comparison.winners.latency_ms}`);
-  lines.push(`- Overall score winner: ${result.comparison.winners.overall_score}`);
-  lines.push(`- Constraint adherence winner: ${result.comparison.winners.constraint_adherence}`);
+  lines.push(
+    `- Overall score winner: ${result.comparison.winners.overall_score}`,
+  );
+  lines.push(
+    `- Constraint adherence winner: ${result.comparison.winners.constraint_adherence}`,
+  );
   lines.push("");
 
   lines.push("## Recommendations");

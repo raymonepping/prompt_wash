@@ -1,8 +1,4 @@
-import {
-  printInfo,
-  printJson,
-  printSuccess,
-} from "../utils/display.js";
+import { printInfo, printJson, printSuccess } from "../utils/display.js";
 import { resolveInputSource, writeFileUtf8 } from "../utils/input.js";
 import { resolvePromptObjectFromSource } from "../utils/prompt-source.js";
 import { runPromptExperiment } from "../services/experiments/run-experiment.js";
@@ -15,11 +11,17 @@ export function registerExperimentCommand(program) {
   program
     .command("experiment")
     .description("Run a local experiment across prompt variants")
-    .argument("[input]", "Prompt text, PromptWash JSON, Prompt IR, or path to a file")
+    .argument(
+      "[input]",
+      "Prompt text, PromptWash JSON, Prompt IR, or path to a file",
+    )
     .option("-f, --file", "Treat input as a file path")
     .option("--provider <name>", "Execution provider", "ollama")
     .option("--save-runs", "Persist experiment run artifacts", false)
-    .option("--report <path>", "Write a JSON or Markdown experiment report to a file")
+    .option(
+      "--report <path>",
+      "Write a JSON or Markdown experiment report to a file",
+    )
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (input, options) => {
       const resolved = await resolveInputSource(input, options);
@@ -70,7 +72,9 @@ export function registerExperimentCommand(program) {
       console.log("");
       console.log("Runs:");
       for (const run of result.runs) {
-        console.log(`- ${run.variant}: score=${run.overall_score}, latency=${run.latency_ms} ms, run_id=${run.run_id}`);
+        console.log(
+          `- ${run.variant}: score=${run.overall_score}, latency=${run.latency_ms} ms, run_id=${run.run_id}`,
+        );
       }
 
       console.log("");
