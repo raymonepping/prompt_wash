@@ -12,6 +12,14 @@ function detectReportFormat(pathValue) {
   return "json";
 }
 
+function renderRanking(label, item, metricName) {
+  if (!item) {
+    return `- ${label}: n/a`;
+  }
+
+  return `- ${label}: ${item.variant} (${metricName}: ${item[metricName]})`;
+}
+
 function renderMarkdown(result) {
   const lines = [];
 
@@ -31,6 +39,8 @@ function renderMarkdown(result) {
     lines.push("");
     lines.push(`- Run ID: ${run.run_id}`);
     lines.push(`- Model: ${run.model}`);
+    lines.push(`- Render mode: ${run.render_mode}`);
+    lines.push(`- Rendered prompt tokens: ${run.rendered_prompt_tokens}`);
     lines.push(`- Latency: ${run.latency_ms} ms`);
     lines.push(`- Overall score: ${run.overall_score}`);
     lines.push(`- Overall level: ${run.overall_level}`);
@@ -38,21 +48,34 @@ function renderMarkdown(result) {
     lines.push("");
   }
 
-  lines.push("## Comparison");
+  lines.push("## Rankings");
   lines.push("");
-  lines.push(`- Latency winner: ${result.comparison.winners.latency_ms}`);
+  lines.push(renderRanking("Best overall", result.rankings.best_overall, "overall_score"));
+  lines.push(renderRanking("Fastest", result.rankings.fastest, "latency_ms"));
   lines.push(
-    `- Overall score winner: ${result.comparison.winners.overall_score}`,
+    renderRanking(
+      "Smallest prompt",
+      result.rankings.smallest_prompt,
+      "rendered_prompt_tokens",
+    ),
   );
   lines.push(
-    `- Constraint adherence winner: ${result.comparison.winners.constraint_adherence}`,
+    renderRanking(
+      "Best constraint adherence",
+      result.rankings.best_constraint_adherence,
+      "constraint_adherence",
+    ),
   );
   lines.push("");
 
   lines.push("## Recommendations");
   lines.push("");
-  for (const recommendation of result.comparison.recommendations) {
-    lines.push(`- ${recommendation}`);
+  if (result.recommendations.length === 0) {
+    lines.push("(none)");
+  } else {
+    for (const recommendation of result.recommendations) {
+      lines.push(`- ${recommendation}`);
+    }
   }
   lines.push("");
 

@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "run_id": "run_20260314_143410_3858cb",
+  "created_at": "2026-03-14T14:34:10.293Z",
+  "source": {
+    "type": "promptwash_json",
+    "path": "examples/vault.json",
+    "lineage": null
+  },
+  "prompt": {
+    "fingerprint": "pw_42d7f7c1",
+    "intent": "Explain Vault PKI.",
+    "audience": "executives",
+    "output_format": "markdown"
+  },
+  "execution": {
+    "provider": "ollama",
+    "model": "llama3:latest",
+    "render_mode": "generic",
+    "latency_ms": 6726
+  },
+  "input": {
+    "rendered_prompt": "Task:\nExplain Vault PKI.\n\nConstraints:\n- Do not use jargon.\n\nOutput format:\nmarkdown\n\nAudience:\nexecutives"
+  },
+  "output": {
+    "text": "**What is Vault PKI?**\n=====================================================\n\nVault PKI (Public Key Infrastructure) is a software solution that helps organizations securely manage and issue digital certificates. These certificates are used to authenticate identities and verify the authenticity of online transactions.\n\n**How does it work?**\n--------------------\n\nThink of digital certificates like traditional IDs, but for computers and devices. They contain information about the owner's identity, such as their name and contact details. Just like how you need a government-issued ID to prove your identity, digital certificates are used to establish trust online.\n\nVault PKI helps organizations create, manage, and revoke these digital certificates in a secure and efficient manner. It's like having a specialized department that issues IDs for the digital world.\n\n**Key features:**\n-----------------\n\n* **Certificate Management**: Vault PKI allows you to create, issue, renew, and revoke digital certificates.\n* **Key Generation**: It generates public-private key pairs, which are used to encrypt and decrypt data.\n* **Certificate Revocation**: In case of a security breach or certificate compromise, Vault PKI can quickly revoke the certificate to prevent further damage.\n\n**Benefits:**\n--------------\n\nBy using Vault PKI, organizations can:\n\n* Ensure secure online transactions and communication\n* Establish trust with customers and partners\n* Comply with regulatory requirements for digital identity management\n* Reduce costs associated with managing multiple certificate authorities\n\nIn summary, Vault PKI is a powerful tool that helps organizations manage digital certificates in a secure and efficient manner. It's essential for establishing trust online and ensuring the integrity of digital transactions."
+  },
+  "metadata": {
+    "success": true,
+    "error": null
+  }
+}
