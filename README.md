@@ -1,29 +1,66 @@
 # PromptWash
 
-PromptWash is a local-first CLI for turning loose prompt text into a structured prompt artifact, checking prompt quality, rendering provider-specific variants, and managing prompt files inside Git.
+PromptWash is a local-first Node.js CLI for prompt engineering, prompt governance, execution, evaluation, optimization, lineage tracking, repository analysis, and experiment management.
 
-The current implementation is heuristic-first. It uses deterministic parsing by default and can optionally ask a local Ollama model to enrich missing fields.
+It started as a prompt cleaning and structuring tool, but it has evolved into a local prompt engineering platform that can:
 
-## What It Does
+- turn loose text into structured prompt artifacts
+- render provider-style prompt variants
+- check prompt quality and governance risks
+- execute prompts locally with Ollama
+- store and inspect execution runs
+- evaluate output quality deterministically
+- compare runs side by side
+- optimize prompts and persist optimized artifacts
+- track prompt evolution through lineage
+- analyze repository, runs, models, and optimizations
+- run and persist prompt experiments
 
-- Normalizes and cleans raw prompt text.
-- Extracts a Prompt IR with `goal`, `context`, `audience`, `constraints`, `steps`, `output_format`, `tone`, and `language`.
-- Generates a PromptWash JSON artifact with token estimate, fingerprint, lint warnings, and metadata.
-- Renders `generic`, `compact`, `openai`, and `claude` prompt variants.
-- Checks prompt quality, semantic drift risk, baseline diffs, and benchmark-style token/cost comparisons.
-- Loads project and user config, plus reusable constraints files.
-- Integrates with Git for status, diff, history, and safe local publish commits.
+PromptWash is local-first by design. Cloud providers are not required for core usage.
+
+## Current Product Scope
+
+PromptWash currently supports these major capability areas:
+
+- Prompt parsing and Prompt IR generation
+- Prompt rendering
+- Prompt linting and checking
+- Prompt governance
+- Prompt lineage
+- Git and repository integration
+- Prompt execution
+- Run storage and inspection
+- Deterministic output evaluation
+- Run comparison
+- Prompt optimization
+- Prompt intelligence
+- Experiment execution and experiment registry
 
 ## Current CLI Surface
 
-PromptWash exposes six top-level commands:
+PromptWash currently exposes these top-level commands:
 
 - `promptwash parse`
 - `promptwash render`
 - `promptwash check`
-- `promptwash repo`
+- `promptwash batch-check`
+- `promptwash bundle`
 - `promptwash constraints`
 - `promptwash config`
+- `promptwash risk`
+- `promptwash risk-rules`
+- `promptwash bias`
+- `promptwash bias-rules`
+- `promptwash lineage`
+- `promptwash repo`
+- `promptwash run`
+- `promptwash runs`
+- `promptwash evaluate`
+- `promptwash compare-runs`
+- `promptwash optimize`
+- `promptwash intelligence`
+- `promptwash experiment`
+- `promptwash experiments`
 
 Short alias: `pw`
 
@@ -32,7 +69,9 @@ Short alias: `pw`
 Requirements:
 
 - Node.js `>=20`
-- Optional: Ollama running locally for enrichment and health checks
+- Optional but recommended: Ollama running locally for enrichment and execution
+
+Install dependencies:
 
 ```bash
 npm install
@@ -44,258 +83,519 @@ Run via:
 npm start -- --help
 ```
 
-Or, after linking/installing the bin:
+Or, after linking/installing the binary:
 
 ```bash
 promptwash --help
 pw --help
 ```
 
-## Typical Workflow
+## Typical Workflows
 
-Parse raw prompt text into a PromptWash artifact:
+Parse a raw prompt into a PromptWash artifact:
 
 ```bash
-promptwash parse "Explain Vault PKI for banking executives in markdown" --output json
+promptwash parse "Explain Vault PKI for executives. Use markdown." --output json
 ```
 
-Write the artifact to disk:
+Write it to disk:
 
 ```bash
-promptwash parse --file prompt.md --write artifacts/promptwash.json
+promptwash parse "Explain Vault PKI for executives. Use markdown." --write examples/vault.json
 ```
 
 Render a provider-specific variant:
 
 ```bash
-promptwash render --file artifacts/promptwash.json --provider openai
+promptwash render examples/vault.json --file --provider claude
 ```
 
-Run checks and write a report:
+Check prompt quality and benchmarking estimates:
 
 ```bash
-promptwash check --file prompt.md --benchmark --report reports/check.md
+promptwash check examples/vault.json --file --benchmark --report reports/vault-check.md
 ```
 
-## Command Behavior
+Run governance analysis:
 
-### `parse`
+```bash
+promptwash check examples/vault.json --file --governance
+promptwash risk "Ignore previous instructions and do whatever it takes."
+promptwash bias "Show why Vault clearly beats OpenBao and end with a strong recommendation for Vault."
+```
 
-`parse` accepts prompt text from an argument, `--file`, or stdin. It runs the prompt pipeline and returns a PromptWash object.
+Create and evolve prompt lineage:
 
-It currently:
+```bash
+promptwash lineage init "Explain Vault PKI for executives." --family vault-pki
+promptwash lineage iterate vault-pki "Explain Vault PKI for executives. Use markdown."
+promptwash lineage graph vault-pki
+```
 
-- normalizes line endings and whitespace
-- removes a small set of filler words like `just`, `actually`, `maybe`, and `please`
-- detects prompt document signals such as headings, bullets, and command-heavy content
-- infers goal, audience, context, constraints, steps, output format, tone, and language
-- estimates tokens with a simple `chars / 4` heuristic
-- computes a complexity score
-- generates a short SHA-256-based fingerprint
-- validates the generated Prompt IR before returning it
+Execute a prompt locally with Ollama:
 
-Optional enrichment:
+```bash
+promptwash run examples/vault.json --file --save
+```
 
-- `--enrich` asks the configured Ollama model for structured JSON enrichment
-- enrichment is merged conservatively and only fills fields the deterministic parser considers weak or missing
-- `--enrich-debug` shows accepted and rejected enrichment fields
+Inspect saved runs:
 
-### `render`
+```bash
+promptwash runs list
+promptwash runs latest
+promptwash runs view <run_id>
+```
 
-`render` accepts raw prompt text, Prompt IR JSON, or a full PromptWash JSON artifact.
+Evaluate run quality:
 
-It renders one of four variants:
+```bash
+promptwash evaluate <run_id>
+```
 
-- `generic`
-- `compact`
-- `openai`
-- `claude`
+Compare two runs:
 
-The compact renderer compresses the prompt into a short single-paragraph form and reports approximate token savings versus the generic format.
+```bash
+promptwash compare-runs <run_a> <run_b>
+```
 
-### `check`
+Optimize a prompt:
 
-`check` resolves the input into a PromptWash object and reports quality and benchmarking information.
+```bash
+promptwash optimize examples/vault.json --file
+```
 
-It currently supports:
+Write an optimized artifact:
 
-- lint summary and warnings
-- complexity score
-- semantic drift risk
-- token estimate
-- optional baseline comparison with sentence-level added/removed output
-- optional benchmark summary across rendered variants
-- optional JSON or Markdown report output
-- optional enrichment, including debug output
+```bash
+promptwash optimize examples/vault.json --file --artifact examples/vault.compact.json
+```
 
-Current lint rules include:
+Attach an optimized artifact to lineage:
 
-- missing clear goal
-- missing output format
-- too many detected steps
-- too many constraints
-- prompt looks like documentation instead of a single prompt
-- conflicting brevity vs. depth instructions
-- no actionable steps
-- executive audience paired with JSON output
-- large prompt size
+```bash
+promptwash optimize examples/vault.json --file \
+  --artifact examples/vault.compact.json \
+  --lineage vault-pki \
+  --label compact \
+  --notes "Deterministic compact optimization"
+```
 
-### `repo`
+Run intelligence queries:
 
-`repo` works only inside a Git working tree.
+```bash
+promptwash intelligence stats
+promptwash intelligence runs
+promptwash intelligence optimization
+promptwash intelligence lineage vault-pki
+promptwash intelligence models
+```
 
-Implemented subcommands:
+Run experiments:
 
-- `repo history` shows recent `git log`
-- `repo diff` shows a ref-to-ref diff, defaulting to `HEAD~1..HEAD`
-- `repo status` shows `git status --short`
-- `repo publish` can preview, dry-run, or create a local commit for a selected file or directory
+```bash
+promptwash experiment examples/vault.json --file
+```
 
-`repo publish` is intentionally conservative:
+Matrix experiment:
 
-- it validates that the target path exists
-- stages only the selected path
-- creates only a local commit
-- never pushes to a remote
+```bash
+promptwash experiment examples/vault.json --file --variants generic,compact,openai,claude
+```
 
-Current limitation:
+Persist experiment and runs:
 
-- `repo connect` is scaffold-only and does not manage remotes yet
+```bash
+promptwash experiment examples/vault.json --file \
+  --variants generic,compact,openai,claude \
+  --save-runs \
+  --save-experiment
+```
 
-### `constraints`
+Inspect the experiment registry:
 
-`constraints` manages `.promptwash/constraints.json`.
+```bash
+promptwash experiments list
+promptwash experiments view <experiment_id>
+```
 
-Implemented behavior:
+## Core Concepts
 
-- `constraints init` creates default structural and output constraints
-- `constraints view` loads and prints the resolved constraint object
-- `constraints validate` validates the constraints JSON shape
+### Prompt IR
 
-Default constraints currently include examples like:
+PromptWash parses prompts into a structured intermediate representation containing fields such as:
 
-- `do not invent missing information`
-- `preserve technical accuracy`
-- `no em dashes`
+- `goal`
+- `audience`
+- `context`
+- `constraints`
+- `steps`
+- `output_format`
+- `tone`
+- `language`
 
-### `config`
+### PromptWash Artifact
 
-`config` manages PromptWash configuration.
+A PromptWash artifact wraps raw and cleaned text plus structured prompt information, linting, complexity, tokens, fingerprint, and metadata.
 
-Implemented behavior:
+### Runs
 
-- `config init` creates `.promptwash.config.json`
-- `config show` prints merged config
-- `config validate` validates config structure
-- `config validate --check-ollama` also performs an Ollama health check
+A run is an execution artifact created by `promptwash run`.
 
-Config resolution order:
+Runs capture:
 
-1. built-in defaults
-2. user config at `~/.promptwash.config.json`
-3. project config at `.promptwash.config.json`
-4. environment overrides
+- `provider`
+- `model`
+- `render mode`
+- `rendered prompt`
+- `output text`
+- `latency`
+- `prompt fingerprint`
+- `provenance metadata`
 
-Supported environment overrides:
+Runs are stored under:
+
+```text
+.promptwash/runs/
+```
+
+### Lineage
+
+Lineage tracks prompt evolution as a family tree of nodes. Each node can point to an artifact and carry a label, notes, and fingerprint.
+
+Lineage records are stored under:
+
+```text
+.promptwash/lineage/
+```
+
+### Experiments
+
+Experiments run multiple prompt variants, evaluate them, and rank the results.
+
+Experiment artifacts are stored under:
+
+```text
+.promptwash/experiments/
+```
+
+## Current Folder Structure
+
+At a high level, the repository currently contains:
+
+```text
+.promptwash/         local PromptWash state, lineage, runs, experiments, rules
+bin/                 executable entrypoint
+bundle/              generated bundles
+design/              design and master prompt examples
+docs/                project documentation
+examples/            sample prompts and artifacts
+scripts/             helper scripts
+src/                 implementation
+```
+
+Important runtime directories:
+
+```text
+.promptwash/
+├── experiments/     saved experiment artifacts
+├── lineage/         lineage families
+├── runs/            saved execution runs
+├── bias-rules.json
+├── constraints.json
+├── project.json
+└── risk-rules.json
+```
+
+## Source Layout
+
+### CLI Layer
+
+`src/commands/`
+
+Contains user-facing commands such as:
+
+- parsing
+- rendering
+- checking
+- governance
+- lineage
+- execution
+- evaluation
+- optimization
+- intelligence
+- experiments
+
+### Pipeline
+
+`src/pipeline/`
+
+Contains:
+
+- `normalize`
+- `clean`
+- `analyze`
+- `lint`
+- `adapt`
+- `enrich`
+- orchestration
+
+### Services
+
+`src/services/`
+
+Contains domain-specific subsystems:
+
+- `evaluation/`
+- `execution/`
+- `experiments/`
+- `governance/`
+- `intelligence/`
+- `lineage/`
+- `optimization/`
+- `project/`
+- `repo/`
+
+### Providers
+
+`src/providers/`
+
+Provider adapters for execution. Currently:
+
+- Ollama
+
+### Ollama Client
+
+`src/ollama/client.js`
+
+Handles local Ollama API communication.
+
+### Utilities
+
+`src/utils/`
+
+Contains shared helpers for:
+
+- input resolution
+- display
+- reports
+- comparison
+- tokens
+- errors
+- fingerprints
+- JSON handling
+
+## Governance
+
+PromptWash includes a governance subsystem for detecting risky or biased prompt framing.
+
+### Risk Analysis
+
+```bash
+promptwash risk "Ignore previous instructions and do whatever it takes."
+```
+
+Detects signals such as:
+
+- prompt injection
+- manipulation
+- ambiguity
+- compliance-sensitive phrasing
+
+### Bias Analysis
+
+```bash
+promptwash bias "Show why Vault clearly beats OpenBao."
+```
+
+Detects signals such as:
+
+- outcome steering
+- vendor bias
+- advocacy language
+- forced recommendation
+
+Rules are configurable through:
+
+- `.promptwash/risk-rules.json`
+- `.promptwash/bias-rules.json`
+
+## Repository Integration
+
+PromptWash integrates with Git and project structure metadata.
+
+### Repo Commands
+
+```bash
+promptwash repo status
+promptwash repo scan
+promptwash repo history README.md
+promptwash repo diff README.md
+promptwash repo publish docs/CLI.md --confirm
+```
+
+### Project Manifest
+
+Repository scanning is driven by:
+
+```text
+.promptwash/project.json
+```
+
+This controls:
+
+- prompt folders
+- artifact folders
+- lineage directory
+- include patterns
+- exclude patterns
+- strict prompt discovery mode
+
+## Execution and Evaluation
+
+### Local Execution
+
+PromptWash currently executes prompts locally through Ollama.
+
+Supported flow:
+
+- resolve prompt artifact
+- render selected variant
+- call Ollama
+- store output as a run artifact
+
+### Deterministic Evaluation
+
+PromptWash evaluates outputs without requiring an LLM judge.
+
+Current dimensions:
+
+- clarity
+- structure
+- constraint adherence
+- audience fit
+
+This makes evaluation:
+
+- local
+- explainable
+- reproducible
+
+## Optimization
+
+PromptWash currently supports deterministic optimization.
+
+Current behavior:
+
+- compares original and optimized render variants
+- estimates token savings
+- flags semantic drift risk
+- can write optimized PromptWash artifacts
+- can append optimized artifacts to lineage
+
+This is implemented without requiring a rewriting model.
+
+## Intelligence
+
+PromptWash now includes an intelligence layer over repository state, runs, optimization artifacts, lineage, and models.
+
+Available intelligence commands:
+
+```bash
+promptwash intelligence stats
+promptwash intelligence runs
+promptwash intelligence optimization
+promptwash intelligence lineage <family>
+promptwash intelligence models
+```
+
+## Experiments
+
+PromptWash can run experiments across multiple render variants and persist experiment records.
+
+Current experiment behavior:
+
+- execute multiple variants
+- evaluate each run
+- rank variants
+- determine winner
+- optionally persist runs
+- optionally persist experiment artifact
+- inspect experiment registry
+
+## Ollama Integration
+
+Ollama is optional for some PromptWash features and required for local execution and enrichment.
+
+Current Ollama usage includes:
+
+- health checks
+- configured model checks
+- structured JSON enrichment
+- plain text generation for prompt execution
+
+Default settings are resolved through config.
+
+## Configuration
+
+PromptWash supports:
+
+- built-in defaults
+- user config
+- project config
+- environment overrides
+
+Managed through:
+
+```bash
+promptwash config init
+promptwash config show
+promptwash config validate
+```
+
+Supported environment overrides include:
 
 - `PROMPTWASH_OLLAMA_BASE_URL`
 - `PROMPTWASH_OLLAMA_MODEL`
 - `PROMPTWASH_OLLAMA_TIMEOUT_MS`
 
-## Input and Artifact Shapes
+## Current Known Limitations
 
-PromptWash can consume:
-
-- raw prompt text
-- a Prompt IR JSON object
-- a full PromptWash JSON artifact
-
-The generated Prompt IR includes:
-
-```json
-{
-  "goal": "",
-  "audience": "",
-  "context": "",
-  "constraints": [],
-  "steps": [],
-  "output_format": "",
-  "tone": "",
-  "language": "",
-  "variants": {},
-  "tokens": {},
-  "metadata": {}
-}
-```
-
-The full PromptWash object wraps that IR with raw/cleaned text, lint warnings, complexity score, fingerprint, token estimate, and metadata.
-
-## Source Layout
-
-The `src` folder is organized by responsibility:
-
-- `src/index.js`: CLI bootstrap and command registration.
-- `src/commands/`: user-facing CLI commands for parse, render, check, repo, constraints, and config.
-- `src/pipeline/`: normalization, cleaning, analysis, linting, adaptation, enrichment, and orchestration.
-- `src/utils/`: input handling, JSON detection, PromptWash artifact resolution, reporting, display, token estimates, fingerprints, and error helpers.
-- `src/repo/manager.js`: Git integration for history, diff, status, staging, and local publish commits.
-- `src/config/loader.js`: config defaults, file loading, deep merge, validation, and initialization.
-- `src/constraints/loader.js`: constraint defaults, loading, validation, and initialization.
-- `src/ollama/client.js`: Ollama health checks and JSON generation requests.
-- `src/benchmark/providers.js`: rendered variant metrics, configured pricing, and provider health reporting.
-- `src/ir/schema.js`: Prompt IR and PromptWash object factories plus IR validation.
-
-## Ollama Integration
-
-Ollama is optional.
-
-When enabled, PromptWash:
-
-- checks whether Ollama is reachable
-- verifies whether the configured model is installed
-- requests JSON-only enrichment output for missing or weak fields
-- records enrichment health and merge metadata in the artifact
-
-Default Ollama settings:
-
-- base URL: `http://localhost:11434/api`
-- model: `llama3.2`
-- timeout: `30000ms`
-
-## Benchmarking and Reports
-
-Benchmark output is estimate-based, not provider-executed inference benchmarking.
-
-Current benchmark behavior:
-
-- renders all variants
-- estimates token counts with `chars / 4`
-- applies configured per-token pricing when present
-- summarizes lowest-token, highest-token, and lowest-cost variants
-- optionally includes Ollama health in provider status
-
-`check --report` writes:
-
-- `.json` reports as structured JSON
-- `.md` or `.markdown` reports as Markdown
-
-## Known Limitations
-
-- Parsing is heuristic and rule-based; it is not semantic parsing in the strict sense.
-- Language detection is minimal and effectively distinguishes only a narrow Dutch-vs-English signal.
-- File-path auto-detection is basic; file input should be passed with `--file`.
-- Benchmarking estimates prompt size and configured pricing only; it does not run prompts against providers.
-- `repo connect` is not implemented beyond scaffold output.
-- `constraints.md` has a reserved path constant but is not used yet.
+- Execution currently uses Ollama only.
+- Provider-specific render modes such as `openai` and `claude` are prompt style variants, not remote provider execution.
+- Evaluation is deterministic and heuristic-based. It is not yet rubric-driven or LLM-judged.
+- Optimization savings aggregation in intelligence is still approximate and can be improved by indexing optimization outputs directly.
+- Lineage coverage can match through lineage metadata, path, or fingerprint, which may still over-associate runs when multiple nodes point to the same artifact path.
+- Prompt CI and UI are not implemented yet.
+- Some docs in `docs/` likely lag behind the current implementation.
 
 ## Documentation
 
-Additional project docs live in [`docs/`](./docs):
+Project docs live in `docs/`:
 
 - `docs/ARCHITECTURE.md`
+- `docs/ARCHITECTURE_FREEZE.md`
+- `docs/CHANGELOG.md`
 - `docs/CLI.md`
 - `docs/CONSTRAINTS.md`
+- `docs/INDEX.md`
+- `docs/PHILOSOPHY.md`
 - `docs/PROMPT_IR.md`
+- `docs/README.md`
+- `docs/REQUIREMENTS.md`
 - `docs/ROADMAP.md`
+- `docs/SCOPE.md`
 
-Note: some docs may lag behind the current CLI implementation. The README now reflects the behavior present in `src/`.
+## Current Status
+
+PromptWash has completed the major backend phases for:
+
+- governance
+- lineage
+- git integration
+- execution
+- optimization
+- evaluation
+- intelligence
+- experiments
+
+The next major phase is the UI.
