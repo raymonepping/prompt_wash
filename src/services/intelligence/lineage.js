@@ -51,58 +51,80 @@ function groupNodesByDepth(record) {
 }
 
 function getLatestNode(record) {
-  return (
-    [...record.nodes].sort((left, right) =>
-      right.created_at.localeCompare(left.created_at),
-    )[0] ?? null
-  );
+  return [...record.nodes]
+    .sort((left, right) => right.created_at.localeCompare(left.created_at))[0] ?? null;
 }
 
 function detectOptimizedNodes(record) {
-  return record.nodes.filter(
-    (node) =>
-      /compact|optimized|optimize/i.test(node.artifact) ||
-      /compact|optimized|optimize/i.test(node.label ?? "") ||
-      /compact|optimized|optimize/i.test(node.notes ?? ""),
+  return record.nodes.filter((node) =>
+    /compact|optimized|optimize/i.test(node.artifact) ||
+    /compact|optimized|optimize/i.test(node.label ?? "") ||
+    /compact|optimized|optimize/i.test(node.notes ?? ""),
   );
 }
 
-function indexRunsByFingerprint(runArtifacts) {
-  const map = new Map();
-
-  for (const artifact of runArtifacts) {
-    const fingerprint = artifact.prompt?.fingerprint ?? null;
-    if (!fingerprint) {
-      continue;
-    }
-
-    if (!map.has(fingerprint)) {
-      map.set(fingerprint, []);
-    }
-
-    map.get(fingerprint).push(artifact);
-  }
-
-  return map;
+function normalizePath(value) {
+  return typeof value === "string" ? value.trim() : "";
 }
 
-function summarizeCoverage(record, runIndex) {
+function matchRunsToNode(node, runArtifacts, family) {
+  const matched = [];
+
+  for (const artifact of runArtifacts) {
+    const lineage = artifact.source?.lineage ?? null;
+    const sourcePath = normalizePath(artifact.source?.path ?? "");
+    const nodeArtifactPath = normalizePath(node.artifact ?? "");
+    const fingerprint = artifact.prompt?.fingerprint ?? null;
+
+    const matchedByLineage =
+      lineage &&
+      lineage.family === family &&
+      lineage.node_id === node.id;
+
+    const matchedByPath =
+      sourcePath &&
+      nodeArtifactPath &&
+      sourcePath === nodeArtifactPath;
+
+    const matchedByFingerprint =
+      node.fingerprint &&
+      fingerprint &&
+      node.fingerprint === fingerprint;
+
+    if (matchedByLineage || matchedByPath || matchedByFingerprint) {
+      matched.push({
+        run_id: artifact.run_id,
+        matched_by: matchedByLineage
+          ? "lineage"
+          : matchedByPath
+            ? "path"
+            : "fingerprint",
+        artifact,
+      });
+    }
+  }
+
+  return matched;
+}
+
+function summarizeCoverage(record, runArtifacts) {
   const covered = [];
   const uncovered = [];
 
   for (const node of record.nodes) {
-    const fingerprint = node.fingerprint ?? null;
+    const matches = matchRunsToNode(node, runArtifacts, record.family);
 
-    if (fingerprint && runIndex.has(fingerprint)) {
+    if (matches.length > 0) {
       covered.push({
         node_id: node.id,
-        fingerprint,
-        runs: runIndex.get(fingerprint).map((artifact) => artifact.run_id),
+        fingerprint: node.fingerprint ?? null,
+        runs: matches.map((item) => item.run_id),
+        matched_by: [...new Set(matches.map((item) => item.matched_by))],
       });
     } else {
       uncovered.push({
         node_id: node.id,
-        fingerprint,
+        fingerprint: node.fingerprint ?? null,
       });
     }
   }
@@ -115,21 +137,19 @@ function summarizeCoverage(record, runIndex) {
   };
 }
 
-function findBestEvaluatedNode(record, runIndex) {
+function findBestEvaluatedNode(record, runArtifacts) {
   let best = null;
 
   for (const node of record.nodes) {
-    const fingerprint = node.fingerprint ?? null;
-    if (!fingerprint || !runIndex.has(fingerprint)) {
-      continue;
-    }
+    const matches = matchRunsToNode(node, runArtifacts, record.family);
 
-    for (const artifact of runIndex.get(fingerprint)) {
-      const evaluation = evaluateRunArtifact(artifact);
+    for (const match of matches) {
+      const evaluation = evaluateRunArtifact(match.artifact);
       const candidate = {
         node_id: node.id,
-        fingerprint,
-        run_id: artifact.run_id,
+        fingerprint: node.fingerprint ?? null,
+        run_id: match.run_id,
+        matched_by: match.matched_by,
         overall_score: evaluation.overall_score,
         overall_level: evaluation.overall_level,
       };
@@ -151,12 +171,11 @@ export async function buildLineageIntelligence(family) {
   }
 
   const runArtifacts = await loadAllExecutionArtifacts();
-  const runIndex = indexRunsByFingerprint(runArtifacts);
   const depthGroups = groupNodesByDepth(record);
   const latestNode = getLatestNode(record);
   const optimizedNodes = detectOptimizedNodes(record);
-  const coverage = summarizeCoverage(record, runIndex);
-  const bestEvaluatedNode = findBestEvaluatedNode(record, runIndex);
+  const coverage = summarizeCoverage(record, runArtifacts);
+  const bestEvaluatedNode = findBestEvaluatedNode(record, runArtifacts);
 
   return {
     family: record.family,

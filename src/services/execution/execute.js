@@ -8,9 +8,8 @@ function buildRunId() {
   const timestamp = now
     .toISOString()
     .replace(/[-:]/g, "")
-    .replace(/\.\d+Z$/, "Z")
-    .replace("T", "_")
-    .replace("Z", "");
+    .replace(/\.\d+Z$/, "")
+    .replace("T", "_");
 
   const suffix = Math.random().toString(16).slice(2, 8);
   return `run_${timestamp}_${suffix}`;
@@ -23,10 +22,11 @@ export async function executePromptObject(promptObject, options = {}) {
   const source = options.source ?? {
     type: "argument",
     path: null,
+    lineage: null,
   };
 
   if (provider !== "ollama") {
-    throw new Error(`Unsupported execution provider for Step 1: ${provider}`);
+    throw new Error(`Unsupported execution provider for current phase: ${provider}`);
   }
 
   const renderedPrompt = adaptPrompt(promptObject, renderMode);
@@ -34,7 +34,11 @@ export async function executePromptObject(promptObject, options = {}) {
 
   const artifact = createExecutionArtifact({
     runId: buildRunId(),
-    source,
+    source: {
+      type: source.type ?? "argument",
+      path: source.path ?? null,
+      lineage: source.lineage ?? null,
+    },
     prompt: {
       fingerprint: promptObject.fingerprint ?? null,
       intent: promptObject.intent ?? "",

@@ -1,4 +1,4 @@
-export const EXECUTION_ARTIFACT_VERSION = 1;
+export const EXECUTION_ARTIFACT_VERSION = 2;
 
 function isObject(value) {
   return value && typeof value === "object" && !Array.isArray(value);
@@ -49,6 +49,27 @@ export function validateExecutionArtifact(artifact) {
 
   if (!isObject(artifact.source)) {
     errors.push("source must be an object");
+  } else if (
+    artifact.source.lineage !== undefined &&
+    artifact.source.lineage !== null
+  ) {
+    if (!isObject(artifact.source.lineage)) {
+      errors.push("source.lineage must be an object when present");
+    } else {
+      if (
+        typeof artifact.source.lineage.family !== "string" ||
+        !artifact.source.lineage.family.trim()
+      ) {
+        errors.push("source.lineage.family must be a non-empty string");
+      }
+
+      if (
+        typeof artifact.source.lineage.node_id !== "string" ||
+        !artifact.source.lineage.node_id.trim()
+      ) {
+        errors.push("source.lineage.node_id must be a non-empty string");
+      }
+    }
   }
 
   if (!isObject(artifact.prompt)) {
