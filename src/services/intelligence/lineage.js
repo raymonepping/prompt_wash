@@ -51,15 +51,19 @@ function groupNodesByDepth(record) {
 }
 
 function getLatestNode(record) {
-  return [...record.nodes]
-    .sort((left, right) => right.created_at.localeCompare(left.created_at))[0] ?? null;
+  return (
+    [...record.nodes].sort((left, right) =>
+      right.created_at.localeCompare(left.created_at),
+    )[0] ?? null
+  );
 }
 
 function detectOptimizedNodes(record) {
-  return record.nodes.filter((node) =>
-    /compact|optimized|optimize/i.test(node.artifact) ||
-    /compact|optimized|optimize/i.test(node.label ?? "") ||
-    /compact|optimized|optimize/i.test(node.notes ?? ""),
+  return record.nodes.filter(
+    (node) =>
+      /compact|optimized|optimize/i.test(node.artifact) ||
+      /compact|optimized|optimize/i.test(node.label ?? "") ||
+      /compact|optimized|optimize/i.test(node.notes ?? ""),
   );
 }
 
@@ -167,7 +171,8 @@ export async function buildLineageIntelligence(family) {
           fingerprint: latestNode.fingerprint,
         }
       : null,
-    max_depth: depthGroups.length === 0 ? 0 : depthGroups[depthGroups.length - 1].depth,
+    max_depth:
+      depthGroups.length === 0 ? 0 : depthGroups[depthGroups.length - 1].depth,
     nodes_by_depth: depthGroups,
     optimized_nodes: optimizedNodes.map((node) => ({
       id: node.id,
