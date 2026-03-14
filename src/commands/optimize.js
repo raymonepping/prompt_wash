@@ -8,7 +8,10 @@ import { resolveInputSource, writeFileUtf8 } from "../utils/input.js";
 import { resolvePromptObjectFromSource } from "../utils/prompt-source.js";
 import { optimizePromptObject } from "../services/optimization/optimize.js";
 import { buildOptimizedPromptArtifactFromSource } from "../services/optimization/artifact.js";
-import { loadLineageRecord, appendLineageNode } from "../services/lineage/storage.js";
+import {
+  loadLineageRecord,
+  appendLineageNode,
+} from "../services/lineage/storage.js";
 import { createLineageNode } from "../services/lineage/schema.js";
 import { nextChildNodeId } from "../services/lineage/naming.js";
 import { createValidationError } from "../utils/errors.js";
@@ -17,7 +20,10 @@ export function registerOptimizeCommand(program) {
   program
     .command("optimize")
     .description("Optimize a prompt deterministically for lower token usage")
-    .argument("[input]", "Prompt text, PromptWash JSON, Prompt IR, or path to a file")
+    .argument(
+      "[input]",
+      "Prompt text, PromptWash JSON, Prompt IR, or path to a file",
+    )
     .option("-f, --file", "Treat input as a file path")
     .option(
       "--original-mode <mode>",
@@ -30,8 +36,14 @@ export function registerOptimizeCommand(program) {
       "compact",
     )
     .option("--write <path>", "Write optimization result to a JSON file")
-    .option("--artifact <path>", "Write optimized PromptWash artifact to a file")
-    .option("--lineage <family>", "Append optimized artifact to an existing lineage family")
+    .option(
+      "--artifact <path>",
+      "Write optimized PromptWash artifact to a file",
+    )
+    .option(
+      "--lineage <family>",
+      "Append optimized artifact to an existing lineage family",
+    )
     .option("--parent <nodeId>", "Optional lineage parent node id")
     .option("--label <value>", "Optional lineage label for optimized node", "")
     .option("--notes <value>", "Optional lineage notes for optimized node", "")
@@ -78,7 +90,9 @@ export function registerOptimizeCommand(program) {
 
         const record = await loadLineageRecord(options.lineage);
         if (!record) {
-          throw createValidationError(`Lineage family not found: ${options.lineage}`);
+          throw createValidationError(
+            `Lineage family not found: ${options.lineage}`,
+          );
         }
 
         const parentId = options.parent ?? record.root;
@@ -114,7 +128,10 @@ export function registerOptimizeCommand(program) {
       };
 
       if (options.write) {
-        await writeFileUtf8(options.write, `${JSON.stringify(result, null, 2)}\n`);
+        await writeFileUtf8(
+          options.write,
+          `${JSON.stringify(result, null, 2)}\n`,
+        );
       }
 
       if (options.output === "json") {

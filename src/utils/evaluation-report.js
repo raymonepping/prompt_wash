@@ -73,7 +73,11 @@ function renderEvaluationMarkdown(runArtifact, evaluation) {
   return `${lines.join("\n")}\n`;
 }
 
-export function renderEvaluationReport(runArtifact, evaluation, format = "json") {
+export function renderEvaluationReport(
+  runArtifact,
+  evaluation,
+  format = "json",
+) {
   if (format === "json") {
     return `${JSON.stringify({ run: runArtifact, evaluation }, null, 2)}\n`;
   }

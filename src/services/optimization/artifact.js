@@ -60,17 +60,17 @@ export function buildOptimizedPromptArtifactFromSource(
         optimizationResult.optimization.token_comparison.original_tokens,
       optimized_tokens:
         optimizationResult.optimization.token_comparison.optimized_tokens,
-      saved_tokens: optimizationResult.optimization.token_comparison.saved_tokens,
+      saved_tokens:
+        optimizationResult.optimization.token_comparison.saved_tokens,
       saved_percent:
         optimizationResult.optimization.token_comparison.saved_percent,
-      semantic_drift_risk:
-        optimizationResult.optimization.semantic_drift_risk,
+      semantic_drift_risk: optimizationResult.optimization.semantic_drift_risk,
       missing_signals: optimizationResult.optimization.missing_signals ?? [],
     },
   };
 
   artifact.fingerprint = options.preserveFingerprint
-    ? promptObject.fingerprint ?? artifact.fingerprint
+    ? (promptObject.fingerprint ?? artifact.fingerprint)
     : null;
 
   return artifact;

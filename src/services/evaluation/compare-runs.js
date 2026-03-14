@@ -54,7 +54,10 @@ function buildDeltas(left, right) {
 
 function buildWinners(left, right) {
   return {
-    latency_ms: compareLowerIsBetter(left.latency_ms ?? 0, right.latency_ms ?? 0),
+    latency_ms: compareLowerIsBetter(
+      left.latency_ms ?? 0,
+      right.latency_ms ?? 0,
+    ),
     rendered_prompt_tokens: compareLowerIsBetter(
       left.rendered_prompt_tokens ?? 0,
       right.rendered_prompt_tokens ?? 0,
@@ -90,9 +93,13 @@ function buildRecommendations(left, right, winners) {
   }
 
   if (winners.overall_score === "left") {
-    recommendations.push(`${left.run_id} has the stronger overall evaluation score.`);
+    recommendations.push(
+      `${left.run_id} has the stronger overall evaluation score.`,
+    );
   } else if (winners.overall_score === "right") {
-    recommendations.push(`${right.run_id} has the stronger overall evaluation score.`);
+    recommendations.push(
+      `${right.run_id} has the stronger overall evaluation score.`,
+    );
   }
 
   if (winners.latency_ms === "left") {
@@ -102,7 +109,9 @@ function buildRecommendations(left, right, winners) {
   }
 
   if (recommendations.length === 0) {
-    recommendations.push("The two runs are effectively tied on the current comparison dimensions.");
+    recommendations.push(
+      "The two runs are effectively tied on the current comparison dimensions.",
+    );
   }
 
   return recommendations;

@@ -40,7 +40,9 @@ function scoreClarity(text) {
 
   if (averageSentenceLength > 28) {
     score -= 25;
-    notes.push("Average sentence length is long, which may reduce readability.");
+    notes.push(
+      "Average sentence length is long, which may reduce readability.",
+    );
   } else if (averageSentenceLength > 22) {
     score -= 10;
     notes.push("Average sentence length is slightly long.");
@@ -82,7 +84,9 @@ function scoreStructure(text, expectedFormat = "") {
 
     if (markdownSignalCount === 0) {
       score -= 40;
-      notes.push("Expected markdown output, but few or no markdown signals were detected.");
+      notes.push(
+        "Expected markdown output, but few or no markdown signals were detected.",
+      );
     } else if (markdownSignalCount < 3) {
       score -= 15;
       notes.push("Markdown output is present but structurally light.");
@@ -194,7 +198,9 @@ function scoreAudienceFit(runArtifact) {
 
     if (businessMatches.length === 0) {
       score -= 15;
-      notes.push("Response could better connect the explanation to executive priorities.");
+      notes.push(
+        "Response could better connect the explanation to executive priorities.",
+      );
     }
   }
 
@@ -212,7 +218,9 @@ function averageScores(scores) {
     return 0;
   }
 
-  return Math.round(scores.reduce((sum, value) => sum + value, 0) / scores.length);
+  return Math.round(
+    scores.reduce((sum, value) => sum + value, 0) / scores.length,
+  );
 }
 
 function scoreToLevel(score) {
@@ -250,11 +258,15 @@ export function evaluateRunArtifact(runArtifact) {
   const recommendations = [];
 
   if (clarity.score < 80) {
-    recommendations.push("Shorten or simplify sentences to improve readability.");
+    recommendations.push(
+      "Shorten or simplify sentences to improve readability.",
+    );
   }
 
   if (structure.score < 80) {
-    recommendations.push("Improve formatting and visible structure for easier scanning.");
+    recommendations.push(
+      "Improve formatting and visible structure for easier scanning.",
+    );
   }
 
   if (constraint_adherence.score < 80) {
@@ -262,11 +274,15 @@ export function evaluateRunArtifact(runArtifact) {
   }
 
   if (audience_fit.score < 80) {
-    recommendations.push("Tune the language and framing more explicitly for the target audience.");
+    recommendations.push(
+      "Tune the language and framing more explicitly for the target audience.",
+    );
   }
 
   if (recommendations.length === 0) {
-    recommendations.push("This run appears strong across the current deterministic evaluation dimensions.");
+    recommendations.push(
+      "This run appears strong across the current deterministic evaluation dimensions.",
+    );
   }
 
   return {

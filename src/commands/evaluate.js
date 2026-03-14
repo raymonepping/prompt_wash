@@ -18,7 +18,10 @@ export function registerEvaluateCommand(program) {
     .command("evaluate")
     .description("Evaluate a saved execution run deterministically")
     .argument("<runId>", "Execution run id")
-    .option("--report <path>", "Write a JSON or Markdown evaluation report to a file")
+    .option(
+      "--report <path>",
+      "Write a JSON or Markdown evaluation report to a file",
+    )
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (runId, options) => {
       const runArtifact = await loadExecutionArtifact(runId);

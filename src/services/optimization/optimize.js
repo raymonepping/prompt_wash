@@ -93,18 +93,22 @@ export function optimizePromptObject(promptObject, options = {}) {
         original_tokens:
           originalMode === "generic"
             ? compactScore.generic_tokens
-            : variants[originalMode]?.split(/\s+/).filter(Boolean).length ?? 0,
+            : (variants[originalMode]?.split(/\s+/).filter(Boolean).length ??
+              0),
         optimized_tokens:
           optimizedMode === "compact"
             ? compactScore.compact_tokens
-            : variants[optimizedMode]?.split(/\s+/).filter(Boolean).length ?? 0,
+            : (variants[optimizedMode]?.split(/\s+/).filter(Boolean).length ??
+              0),
         saved_tokens:
           originalMode === "generic" && optimizedMode === "compact"
             ? compactScore.saved_tokens
             : Math.max(
                 0,
-                (variants[originalMode]?.split(/\s+/).filter(Boolean).length ?? 0) -
-                  (variants[optimizedMode]?.split(/\s+/).filter(Boolean).length ?? 0),
+                (variants[originalMode]?.split(/\s+/).filter(Boolean).length ??
+                  0) -
+                  (variants[optimizedMode]?.split(/\s+/).filter(Boolean)
+                    .length ?? 0),
               ),
         saved_percent:
           originalMode === "generic" && optimizedMode === "compact"

@@ -1,8 +1,4 @@
-import {
-  printInfo,
-  printJson,
-  printSuccess,
-} from "../utils/display.js";
+import { printInfo, printJson, printSuccess } from "../utils/display.js";
 import { writeFileUtf8 } from "../utils/input.js";
 import { createValidationError } from "../utils/errors.js";
 import { loadExecutionArtifact } from "../services/execution/storage.js";
@@ -18,7 +14,10 @@ export function registerCompareRunsCommand(program) {
     .description("Compare two saved execution runs")
     .argument("<leftRunId>", "Left execution run id")
     .argument("<rightRunId>", "Right execution run id")
-    .option("--report <path>", "Write a JSON or Markdown comparison report to a file")
+    .option(
+      "--report <path>",
+      "Write a JSON or Markdown comparison report to a file",
+    )
     .option("-o, --output <format>", "Output format: text|json", "text")
     .action(async (leftRunId, rightRunId, options) => {
       const leftArtifact = await loadExecutionArtifact(leftRunId);
@@ -35,8 +34,13 @@ export function registerCompareRunsCommand(program) {
       const comparison = compareRunArtifacts(leftArtifact, rightArtifact);
 
       if (options.report) {
-        const reportFormat = getRunComparisonReportFormatFromPath(options.report);
-        const reportContent = renderRunComparisonReport(comparison, reportFormat);
+        const reportFormat = getRunComparisonReportFormatFromPath(
+          options.report,
+        );
+        const reportContent = renderRunComparisonReport(
+          comparison,
+          reportFormat,
+        );
         await writeFileUtf8(options.report, reportContent);
       }
 
