@@ -44,10 +44,10 @@ function buildDeterministicPromptObject(raw, cleaned, options = {}) {
   ir.audience = detectAudience(cleaned);
 
   const detectedContext = detectContext(cleaned);
-ir.context =
-  instructionClassification.context.length > 0
-    ? instructionClassification.context.join(" ")
-    : "";
+  ir.context =
+    instructionClassification.context.length > 0
+      ? instructionClassification.context.join(" ")
+      : "";
 
   const detectedConstraints = detectConstraints(cleaned);
   ir.constraints =
@@ -60,11 +60,13 @@ ir.context =
         )
       : detectedConstraints;
 
-const detectedSteps = detectSteps(cleaned);
-ir.steps =
-  detectedSteps.length > 0
-    ? detectedSteps
-    : instructionClassification.unknown.filter((clause) => looksLikeStep(clause));
+  const detectedSteps = detectSteps(cleaned);
+  ir.steps =
+    detectedSteps.length > 0
+      ? detectedSteps
+      : instructionClassification.unknown.filter((clause) =>
+          looksLikeStep(clause),
+        );
   ir.output_format = detectOutputFormat(cleaned);
 
   const detectedTone = detectTone(cleaned);
