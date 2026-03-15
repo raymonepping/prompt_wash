@@ -69,7 +69,10 @@ function injectSplitMarkers(text) {
     .replace(/\balso\b/gi, " | ")
     .replace(/\bprovide me\b/gi, " | provide me")
     .replace(/\bbe as\b/gi, " | be as")
-    .replace(/\bbe\b(?=\s+(specific|concise|brief|detailed|honest|professional|casual|neutral|critical|direct|opinionated))/gi, " | be")
+    .replace(
+      /\bbe\b(?=\s+(specific|concise|brief|detailed|honest|professional|casual|neutral|critical|direct|opinionated))/gi,
+      " | be",
+    )
     .replace(/\bkeep it\b/gi, " | keep it")
     .replace(/\bfavor\b/gi, " | favor")
     .replace(/\bprefer\b/gi, " | prefer")
@@ -129,10 +132,10 @@ export function classifyInstructions(text) {
   for (const clause of clauses) {
     const classified = classifyClause(clause);
 
-if (classified.type === "goal" && !result.goal) {
-  result.goal = trimGoalClause(classified.value);
-  continue;
-}
+    if (classified.type === "goal" && !result.goal) {
+      result.goal = trimGoalClause(classified.value);
+      continue;
+    }
 
     if (classified.type === "constraint") {
       result.constraints.push(classified.value);
