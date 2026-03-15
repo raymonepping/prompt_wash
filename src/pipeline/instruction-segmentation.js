@@ -96,7 +96,7 @@ function injectSplitMarkers(text) {
     .replace(/\buse\b(?=\s+an analogy)/gi, " | use")
     .replace(/\bbrutally honest\b/gi, " | brutally honest")
     .replace(/\bhonest\b/gi, " | honest")
-    .replace(/\bfavor\b/gi, " | favor");    
+    .replace(/\bfavor\b/gi, " | favor");
 }
 
 export function segmentPromptIntoClauses(text) {
