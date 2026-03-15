@@ -60,11 +60,27 @@ const CONTEXT_PATTERNS = [
   /\bfor engineers?\b/i,
 ];
 
+const STEP_LIKE_PATTERNS = [
+  /^(explain|describe|compare|list|summarize|analyze|show|include|use|provide)\b/i,
+];
+
+export function looksLikeStep(clause) {
+  return STEP_LIKE_PATTERNS.some((pattern) => pattern.test(clause));
+}
+
+function trimGoalClause(clause) {
+  return clause
+    .replace(/\bprovide me as much detail as possible\b.*$/i, "")
+    .replace(/\bbe as specific as possible\b.*$/i, "")
+    .replace(/\bbrutally honest\b.*$/i, "")
+    .replace(/\bfavor\b.*$/i, "")
+    .trim();
+}
+
 function injectSplitMarkers(text) {
   return text
     .replace(/\s+-\s+/g, " | ")
     .replace(/\s*;\s*/g, " | ")
-    .replace(/\band\b/gi, " | ")
     .replace(/\bbut\b/gi, " | ")
     .replace(/\balso\b/gi, " | ")
     .replace(/\bprovide me\b/gi, " | provide me")

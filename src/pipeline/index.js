@@ -19,6 +19,10 @@ import {
   classifySentences,
 } from "./analyze.js";
 import { enrichPromptObject } from "./enrich.js";
+import {
+  classifyInstructions,
+  looksLikeStep,
+} from "./instruction-segmentation.js";
 
 function trimGoalClause(clause) {
   return clause
@@ -40,11 +44,10 @@ function buildDeterministicPromptObject(raw, cleaned, options = {}) {
   ir.audience = detectAudience(cleaned);
 
   const detectedContext = detectContext(cleaned);
-  const detectedContext = detectContext(cleaned);
-  ir.context =
-    instructionClassification.context.length > 0
-      ? instructionClassification.context.join(" ")
-      : detectedContext;
+ir.context =
+  instructionClassification.context.length > 0
+    ? instructionClassification.context.join(" ")
+    : "";
 
   const detectedConstraints = detectConstraints(cleaned);
   ir.constraints =
@@ -57,13 +60,11 @@ function buildDeterministicPromptObject(raw, cleaned, options = {}) {
         )
       : detectedConstraints;
 
-  const detectedSteps = detectSteps(cleaned);
-  ir.steps =
-    detectedSteps.length > 0
-      ? detectedSteps
-      : instructionClassification.unknown.filter(
-          (clause) => clause !== ir.goal,
-        );
+const detectedSteps = detectSteps(cleaned);
+ir.steps =
+  detectedSteps.length > 0
+    ? detectedSteps
+    : instructionClassification.unknown.filter((clause) => looksLikeStep(clause));
   ir.output_format = detectOutputFormat(cleaned);
 
   const detectedTone = detectTone(cleaned);
