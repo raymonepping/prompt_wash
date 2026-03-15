@@ -1,3 +1,4 @@
+import { classifyInstructions } from "./instruction-segmentation.js";
 import { createEmptyPromptIr, createEmptyPromptObject } from "../ir/schema.js";
 import { createFingerprint } from "../utils/fingerprint.js";
 import { estimateTokens } from "../utils/tokens.js";
@@ -23,14 +24,41 @@ function buildDeterministicPromptObject(raw, cleaned, options = {}) {
   const documentSignals = detectDocumentSignals(cleaned);
   const sentenceClassification = classifySentences(cleaned);
 
+  const instructionClassification = classifyInstructions(cleaned);
+
   const ir = createEmptyPromptIr();
-  ir.goal = detectGoal(cleaned);
+  ir.goal = instructionClassification.goal || detectGoal(cleaned);
   ir.audience = detectAudience(cleaned);
-  ir.context = detectContext(cleaned);
-  ir.constraints = detectConstraints(cleaned);
-  ir.steps = detectSteps(cleaned);
+
+  const detectedContext = detectContext(cleaned);
+  ir.context =
+    instructionClassification.context.length > 0
+      ? instructionClassification.context.join(" ")
+      : detectedContext;
+
+  const detectedConstraints = detectConstraints(cleaned);
+  ir.constraints =
+    instructionClassification.constraints.length > 0
+      ? Array.from(
+          new Set([...instructionClassification.constraints, ...detectedConstraints]),
+        )
+      : detectedConstraints;
+
+    const detectedSteps = detectSteps(cleaned);
+  ir.steps =
+    detectedSteps.length > 0
+      ? detectedSteps
+      : instructionClassification.unknown.filter(
+          (clause) => clause !== ir.goal,
+        );
   ir.output_format = detectOutputFormat(cleaned);
-  ir.tone = detectTone(cleaned);
+
+  const detectedTone = detectTone(cleaned);
+  ir.tone =
+    instructionClassification.tone.length > 0
+      ? instructionClassification.tone.join(", ")
+      : detectedTone;
+
   ir.language = detectLanguage(cleaned);
   ir.tokens = {
     input: estimateTokens(cleaned),
@@ -65,6 +93,11 @@ function buildDeterministicPromptObject(raw, cleaned, options = {}) {
     path: options.path ?? null,
     document_signals: documentSignals,
     sentence_classification: sentenceClassification,
+    instruction_classification: instructionClassification,
+    bias_request: {
+      detected: instructionClassification.bias.length > 0,
+      directives: instructionClassification.bias,
+    },
     enrichment: {
       requested: false,
       succeeded: false,
