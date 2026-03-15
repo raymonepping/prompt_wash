@@ -14,6 +14,7 @@ const GOAL_VERBS = [
 const CONSTRAINT_PATTERNS = [
   /as much detail as possible/i,
   /in as much detail as possible/i,
+  /provide me as much detail as possible/i,
   /be as specific as possible/i,
   /be specific/i,
   /step by step/i,
@@ -59,13 +60,21 @@ const CONTEXT_PATTERNS = [
   /\bfor engineers?\b/i,
 ];
 
-function normalizeClauses(text) {
+function injectSplitMarkers(text) {
   return text
-    .replace(/\s+-\s+/g, ", ")
-    .replace(/\s*;\s*/g, ", ")
-    .replace(/\band\b/gi, ",")
-    .replace(/\bbut\b/gi, ",")
-    .replace(/\balso\b/gi, ",");
+    .replace(/\s+-\s+/g, " | ")
+    .replace(/\s*;\s*/g, " | ")
+    .replace(/\band\b/gi, " | ")
+    .replace(/\bbut\b/gi, " | ")
+    .replace(/\balso\b/gi, " | ")
+    .replace(/\bprovide me\b/gi, " | provide me")
+    .replace(/\bbe as\b/gi, " | be as")
+    .replace(/\bbe\b(?=\s+(specific|concise|brief|detailed|honest|professional|casual|neutral|critical|direct|opinionated))/gi, " | be")
+    .replace(/\bkeep it\b/gi, " | keep it")
+    .replace(/\bfavor\b/gi, " | favor")
+    .replace(/\bprefer\b/gi, " | prefer")
+    .replace(/\binclude\b/gi, " | include")
+    .replace(/\buse\b(?=\s+an analogy)/gi, " | use");
 }
 
 export function segmentPromptIntoClauses(text) {
@@ -73,8 +82,8 @@ export function segmentPromptIntoClauses(text) {
     return [];
   }
 
-  return normalizeClauses(text)
-    .split(/[.,\n]/)
+  return injectSplitMarkers(text)
+    .split(/[|.,\n]/)
     .map((clause) => clause.trim())
     .filter(Boolean);
 }
@@ -120,10 +129,10 @@ export function classifyInstructions(text) {
   for (const clause of clauses) {
     const classified = classifyClause(clause);
 
-    if (classified.type === "goal" && !result.goal) {
-      result.goal = classified.value;
-      continue;
-    }
+if (classified.type === "goal" && !result.goal) {
+  result.goal = trimGoalClause(classified.value);
+  continue;
+}
 
     if (classified.type === "constraint") {
       result.constraints.push(classified.value);

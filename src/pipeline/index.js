@@ -20,6 +20,15 @@ import {
 } from "./analyze.js";
 import { enrichPromptObject } from "./enrich.js";
 
+function trimGoalClause(clause) {
+  return clause
+    .replace(/\bprovide me as much detail as possible\b.*$/i, "")
+    .replace(/\bbe as specific as possible\b.*$/i, "")
+    .replace(/\bbrutally honest\b.*$/i, "")
+    .replace(/\bfavor\b.*$/i, "")
+    .trim();
+}
+
 function buildDeterministicPromptObject(raw, cleaned, options = {}) {
   const documentSignals = detectDocumentSignals(cleaned);
   const sentenceClassification = classifySentences(cleaned);
@@ -30,6 +39,7 @@ function buildDeterministicPromptObject(raw, cleaned, options = {}) {
   ir.goal = instructionClassification.goal || detectGoal(cleaned);
   ir.audience = detectAudience(cleaned);
 
+  const detectedContext = detectContext(cleaned);
   const detectedContext = detectContext(cleaned);
   ir.context =
     instructionClassification.context.length > 0
