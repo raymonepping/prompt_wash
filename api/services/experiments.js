@@ -18,7 +18,11 @@ export async function fetchExperimentById(id) {
   return { experiment: JSON.parse(raw) };
 }
 
-export async function executeExperiment({ prompt, variants = [], model = null }) {
+export async function executeExperiment({
+  prompt,
+  variants = [],
+  model = null,
+}) {
   return {
     message: "Experiment route wired successfully",
     input: {

@@ -40,11 +40,14 @@ function buildDeterministicPromptObject(raw, cleaned, options = {}) {
   ir.constraints =
     instructionClassification.constraints.length > 0
       ? Array.from(
-          new Set([...instructionClassification.constraints, ...detectedConstraints]),
+          new Set([
+            ...instructionClassification.constraints,
+            ...detectedConstraints,
+          ]),
         )
       : detectedConstraints;
 
-    const detectedSteps = detectSteps(cleaned);
+  const detectedSteps = detectSteps(cleaned);
   ir.steps =
     detectedSteps.length > 0
       ? detectedSteps

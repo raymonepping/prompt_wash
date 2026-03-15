@@ -1,8 +1,8 @@
-import { segmentPrompt } from "./segmentPrompt.js"
-import { classifyClause } from "./classifyClause.js"
+import { segmentPrompt } from "./segmentPrompt.js";
+import { classifyClause } from "./classifyClause.js";
 
 export function classifyInstructions(prompt) {
-  const clauses = segmentPrompt(prompt)
+  const clauses = segmentPrompt(prompt);
 
   const result = {
     goal: null,
@@ -10,23 +10,23 @@ export function classifyInstructions(prompt) {
     tone: [],
     bias: [],
     context: [],
-  }
+  };
 
   for (const clause of clauses) {
-    const c = classifyClause(clause)
+    const c = classifyClause(clause);
 
     if (c.type === "goal" && !result.goal) {
-      result.goal = c.value
+      result.goal = c.value;
     } else if (c.type === "constraint") {
-      result.constraints.push(c.value)
+      result.constraints.push(c.value);
     } else if (c.type === "tone") {
-      result.tone.push(c.value)
+      result.tone.push(c.value);
     } else if (c.type === "bias") {
-      result.bias.push(c.value)
+      result.bias.push(c.value);
     } else {
-      result.context.push(c.value)
+      result.context.push(c.value);
     }
   }
 
-  return result
+  return result;
 }

@@ -1,5 +1,5 @@
 export function segmentPrompt(text) {
-  if (!text) return []
+  if (!text) return [];
 
   return text
     .replace(/\band\b/gi, ",")
@@ -7,5 +7,5 @@ export function segmentPrompt(text) {
     .replace(/\balso\b/gi, ",")
     .split(/[.,]/)
     .map((c) => c.trim())
-    .filter(Boolean)
+    .filter(Boolean);
 }
