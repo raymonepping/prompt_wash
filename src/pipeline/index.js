@@ -1,4 +1,7 @@
-import { classifyInstructions } from "./instruction-segmentation.js";
+import {
+  classifyInstructions,
+  looksLikeStep,
+} from "./instruction-segmentation.js";
 import { createEmptyPromptIr, createEmptyPromptObject } from "../ir/schema.js";
 import { createFingerprint } from "../utils/fingerprint.js";
 import { estimateTokens } from "../utils/tokens.js";
@@ -19,10 +22,6 @@ import {
   classifySentences,
 } from "./analyze.js";
 import { enrichPromptObject } from "./enrich.js";
-import {
-  classifyInstructions,
-  looksLikeStep,
-} from "./instruction-segmentation.js";
 
 function trimGoalClause(clause) {
   return clause

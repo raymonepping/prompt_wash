@@ -93,7 +93,10 @@ function injectSplitMarkers(text) {
     .replace(/\bfavor\b/gi, " | favor")
     .replace(/\bprefer\b/gi, " | prefer")
     .replace(/\binclude\b/gi, " | include")
-    .replace(/\buse\b(?=\s+an analogy)/gi, " | use");
+    .replace(/\buse\b(?=\s+an analogy)/gi, " | use")
+    .replace(/\bbrutally honest\b/gi, " | brutally honest")
+    .replace(/\bhonest\b/gi, " | honest")
+    .replace(/\bfavor\b/gi, " | favor");    
 }
 
 export function segmentPromptIntoClauses(text) {
