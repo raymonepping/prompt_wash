@@ -68,13 +68,22 @@ export function looksLikeStep(clause) {
   return STEP_LIKE_PATTERNS.some((pattern) => pattern.test(clause));
 }
 
-function trimGoalClause(clause) {
+function cleanClause(clause) {
   return clause
-    .replace(/\bprovide me as much detail as possible\b.*$/i, "")
-    .replace(/\bbe as specific as possible\b.*$/i, "")
-    .replace(/\bbrutally honest\b.*$/i, "")
-    .replace(/\bfavor\b.*$/i, "")
+    .replace(/\s+/g, " ")
+    .replace(/\b(and|but|also)\s*$/i, "")
     .trim();
+}
+
+function trimGoalClause(clause) {
+  return cleanClause(
+    clause
+      .replace(/\bprovide me as much detail as possible\b.*$/i, "")
+      .replace(/\bbe as specific as possible\b.*$/i, "")
+      .replace(/\bbrutally honest\b.*$/i, "")
+      .replace(/\bhonest\b.*$/i, "")
+      .replace(/\bfavor\b.*$/i, ""),
+  );
 }
 
 function injectSplitMarkers(text) {
@@ -86,17 +95,15 @@ function injectSplitMarkers(text) {
     .replace(/\bprovide me\b/gi, " | provide me")
     .replace(/\bbe as\b/gi, " | be as")
     .replace(
-      /\bbe\b(?=\s+(specific|concise|brief|detailed|honest|professional|casual|neutral|critical|direct|opinionated))/gi,
+      /\bbe\b(?=\s+(specific|concise|brief|detailed|professional|casual|neutral|critical|direct|opinionated))/gi,
       " | be",
     )
     .replace(/\bkeep it\b/gi, " | keep it")
-    .replace(/\bfavor\b/gi, " | favor")
-    .replace(/\bprefer\b/gi, " | prefer")
     .replace(/\binclude\b/gi, " | include")
     .replace(/\buse\b(?=\s+an analogy)/gi, " | use")
     .replace(/\bbrutally honest\b/gi, " | brutally honest")
-    .replace(/\bhonest\b/gi, " | honest")
-    .replace(/\bfavor\b/gi, " | favor");
+    .replace(/\bfavor\b/gi, " | favor")
+    .replace(/\bprefer\b/gi, " | prefer");
 }
 
 export function segmentPromptIntoClauses(text) {
@@ -106,7 +113,7 @@ export function segmentPromptIntoClauses(text) {
 
   return injectSplitMarkers(text)
     .split(/[|.,\n]/)
-    .map((clause) => clause.trim())
+    .map((clause) => cleanClause(clause))
     .filter(Boolean);
 }
 
@@ -157,26 +164,26 @@ export function classifyInstructions(text) {
     }
 
     if (classified.type === "constraint") {
-      result.constraints.push(classified.value);
+      result.constraints.push(cleanClause(classified.value));
       continue;
     }
 
     if (classified.type === "tone") {
-      result.tone.push(classified.value);
+      result.tone.push(cleanClause(classified.value));
       continue;
     }
 
     if (classified.type === "bias") {
-      result.bias.push(classified.value);
+      result.bias.push(cleanClause(classified.value));
       continue;
     }
 
     if (classified.type === "context") {
-      result.context.push(classified.value);
+      result.context.push(cleanClause(classified.value));
       continue;
     }
 
-    result.unknown.push(classified.value);
+    result.unknown.push(cleanClause(classified.value));
   }
 
   return result;
