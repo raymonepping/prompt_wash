@@ -1,66 +1,77 @@
-import { Panel } from "../components/ui/Panel";
 import { useWorkspaceStore } from "../store/workspaceStore";
 
-export function InsightsPanel() {
-  const data = useWorkspaceStore((state) => state.data);
-  const isLoading = useWorkspaceStore((state) => state.isLoading);
-  const error = useWorkspaceStore((state) => state.error);
-
+function Card({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: string;
+  color: string;
+}) {
   return (
-    <Panel title="Insights" className="h-full">
-      {isLoading && <p className="text-sm text-white/50">Analyzing…</p>}
-      {error && <p className="text-sm text-red-300">{error}</p>}
+    <div className={`rounded-xl border px-3 py-2 text-sm ${color}`}>
+      <div className="text-[10px] uppercase tracking-widest text-zinc-500">
+        {label}
+      </div>
 
-      {!data && !isLoading && !error ? (
-        <p className="text-sm text-white/50">Start typing to see analysis.</p>
-      ) : data ? (
-        <div className="space-y-3 text-sm">
-          <Card title="Lint" value={`${data.lint.length} warning(s)`} />
-          <Card
-            title="Risk Score"
-            value={
-              typeof data.risk === "object" && data.risk && "risk_level" in data.risk
-                ? String((data.risk as { risk_level: string }).risk_level)
-                : "n/a"
-            }
-          />
-          <Card
-            title="Bias Score"
-            value={
-              typeof data.bias === "object" && data.bias && "bias_level" in data.bias
-                ? String((data.bias as { bias_level: string }).bias_level)
-                : "n/a"
-            }
-          />
-          <Card
-            title="Token Estimate"
-            value={
-              typeof data.tokens === "object" && data.tokens && "input" in data.tokens
-                ? String((data.tokens as { input: number }).input)
-                : "n/a"
-            }
-          />
-          <Card
-            title="Complexity"
-            value={
-              typeof data.complexity === "object" && data.complexity && "score" in data.complexity
-                ? String((data.complexity as { score: number }).score)
-                : "n/a"
-            }
-          />
-        </div>
-      ) : null}
-    </Panel>
+      <div className="mt-1 font-medium text-zinc-100">{value}</div>
+    </div>
   );
 }
 
-function Card({ title, value }: { title: string; value: string }) {
+export function InsightsPanel() {
+  const insights = useWorkspaceStore((state) => state.insights);
+  const tokens = useWorkspaceStore((state) => state.tokens);
+  const analysisStatus = useWorkspaceStore((state) => state.analysisStatus);
+
+  if (analysisStatus === "idle" || analysisStatus === "typing") {
+    return <div className="p-4 text-sm text-zinc-500">Start typing to analyze.</div>;
+  }
+
   return (
-    <div className="rounded-xl border border-white/10 bg-black/20 p-3">
-      <div className="text-xs font-medium uppercase tracking-wide text-white/45">
-        {title}
+    <div className="p-3">
+      <div className="grid grid-cols-1 gap-3">
+      <Card
+        label="Lint"
+        value={insights.lint.length ? `${insights.lint.length} warnings` : "No warnings"}
+        color="bg-emerald-500/10 border-emerald-500/20"
+      />
+
+      <Card
+        label="Risk Score"
+        value={`${insights.risk.score}`}
+        color="bg-amber-500/10 border-amber-500/20"
+      />
+
+      <Card
+        label="Bias Score"
+        value={`${insights.bias.score}`}
+        color="bg-amber-500/10 border-amber-500/20"
+      />
+
+      <Card
+        label="Token Estimate"
+        value={`${tokens.input ?? 0}`}
+        color="bg-sky-500/10 border-sky-500/20"
+      />
+
+      <Card
+        label="Complexity"
+        value={insights.complexity.level}
+        color="bg-teal-500/10 border-teal-500/20"
+      />
+
+      <Card
+        label="Optimization"
+        value={
+          insights.optimization.suggestions.length
+            ? `${insights.optimization.suggestions.length} suggestions`
+            : "No suggestions"
+        }
+        color="bg-sky-500/10 border-sky-500/20"
+      />
       </div>
-      <div className="mt-1 text-white/90">{value}</div>
     </div>
   );
 }

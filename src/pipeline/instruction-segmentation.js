@@ -9,6 +9,19 @@ const GOAL_VERBS = [
   "outline",
   "show",
   "give",
+  "write",
+  "create",
+  "generate",
+  "review",
+  "refactor",
+  "translate",
+  "return",
+  "what",
+  "how",
+  "why",
+  "when",
+  "where",
+  "who",
 ];
 
 const CONSTRAINT_PATTERNS = [
@@ -25,6 +38,20 @@ const CONSTRAINT_PATTERNS = [
   /include examples?/i,
   /use an analogy/i,
   /with an analogy/i,
+];
+
+const OUTPUT_PATTERNS = [
+  /\bjson\b/i,
+  /\bmarkdown\b/i,
+  /\btable\b/i,
+  /\bsummary\b/i,
+  /\bbullet(?:ed)? list\b/i,
+  /\bbullet points?\b/i,
+  /\bbullets?\b/i,
+  /\b\d+\s+bullets?\b/i,
+  /\b\d+\s+bullet points?\b/i,
+  /\bnumbered list\b/i,
+  /\blist of \d+\b/i,
 ];
 
 const TONE_PATTERNS = [
@@ -61,7 +88,7 @@ const CONTEXT_PATTERNS = [
 ];
 
 const STEP_LIKE_PATTERNS = [
-  /^(explain|describe|compare|list|summarize|analyze|show|include|use|provide)\b/i,
+  /^(explain|describe|compare|list|summarize|analyze|show|include|use|provide|write|create|generate|review|refactor|translate|return|what|how|why|when|where|who)\b/i,
 ];
 
 export function looksLikeStep(clause) {
@@ -71,6 +98,7 @@ export function looksLikeStep(clause) {
 function cleanClause(clause) {
   return clause
     .replace(/\s+/g, " ")
+    .replace(/[.,;]+$/g, "")
     .replace(/\b(and|but|also)\s*$/i, "")
     .trim();
 }
@@ -92,6 +120,10 @@ function injectSplitMarkers(text) {
     .replace(/\s*;\s*/g, " | ")
     .replace(/\bbut\b/gi, " | ")
     .replace(/\balso\b/gi, " | ")
+    .replace(
+      /\b(return|give me|give|provide)\b(?=\s+(?:\d+\s+bullets?\b|\d+\s+bullet points?\b|bullets?\b|bullet(?:ed)? list\b|bullet points?\b|numbered list\b|json\b|markdown\b|table\b|summary\b))/gi,
+      " | $1",
+    )
     .replace(/\bprovide me\b/gi, " | provide me")
     .replace(/\bbe as\b/gi, " | be as")
     .replace(
@@ -112,7 +144,7 @@ export function segmentPromptIntoClauses(text) {
   }
 
   return injectSplitMarkers(text)
-    .split(/[|.,\n]/)
+    .split(/[|.\n]/)
     .map((clause) => cleanClause(clause))
     .filter(Boolean);
 }
@@ -120,12 +152,12 @@ export function segmentPromptIntoClauses(text) {
 export function classifyClause(clause) {
   const lower = clause.toLowerCase();
 
-  if (GOAL_VERBS.some((verb) => lower.startsWith(verb))) {
-    return { type: "goal", value: clause };
-  }
-
   if (BIAS_PATTERNS.some((pattern) => pattern.test(clause))) {
     return { type: "bias", value: clause };
+  }
+
+  if (OUTPUT_PATTERNS.some((pattern) => pattern.test(clause))) {
+    return { type: "output", value: clause };
   }
 
   if (CONSTRAINT_PATTERNS.some((pattern) => pattern.test(clause))) {
@@ -140,6 +172,10 @@ export function classifyClause(clause) {
     return { type: "context", value: clause };
   }
 
+  if (GOAL_VERBS.some((verb) => lower.startsWith(verb))) {
+    return { type: "goal", value: clause };
+  }
+
   return { type: "unknown", value: clause };
 }
 
@@ -148,43 +184,62 @@ export function classifyInstructions(text) {
 
   const result = {
     goal: null,
+    additionalGoals: [],
     constraints: [],
+    outputInstructions: [],
     tone: [],
     bias: [],
+    biasSignals: [],
     context: [],
     unknown: [],
   };
 
   for (const clause of clauses) {
     const classified = classifyClause(clause);
+    const cleaned = cleanClause(classified.value);
 
-    if (classified.type === "goal" && !result.goal) {
-      result.goal = trimGoalClause(classified.value);
+    if (/\b(favor|prefer|recommend)\b/i.test(cleaned)) {
+      result.biasSignals.push("outcome_steering");
+    }
+
+    if (classified.type === "goal") {
+      if (!result.goal) {
+        result.goal = trimGoalClause(cleaned);
+      } else {
+        result.additionalGoals.push(cleaned);
+      }
       continue;
     }
 
     if (classified.type === "constraint") {
-      result.constraints.push(cleanClause(classified.value));
+      result.constraints.push(cleaned);
+      continue;
+    }
+
+    if (classified.type === "output") {
+      result.outputInstructions.push(cleaned);
       continue;
     }
 
     if (classified.type === "tone") {
-      result.tone.push(cleanClause(classified.value));
+      result.tone.push(cleaned);
       continue;
     }
 
     if (classified.type === "bias") {
-      result.bias.push(cleanClause(classified.value));
+      result.bias.push(cleaned);
       continue;
     }
 
     if (classified.type === "context") {
-      result.context.push(cleanClause(classified.value));
+      result.context.push(cleaned);
       continue;
     }
 
-    result.unknown.push(cleanClause(classified.value));
+    result.unknown.push(cleaned);
   }
+
+  result.biasSignals = [...new Set(result.biasSignals)];
 
   return result;
 }

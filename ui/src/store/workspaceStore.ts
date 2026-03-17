@@ -1,118 +1,103 @@
 import { create } from "zustand";
-import { analyzeWorkspace, runWorkspace, type RunResponseData } from "../api/workspaceApi";
-import type { WorkspaceStateData } from "../types/workspace";
 
-interface WorkspaceStore {
-  rawInput: string;
-  data: WorkspaceStateData | null;
-  previousData: WorkspaceStateData | null;
-  isLoading: boolean;
-  isRunning: boolean;
-  error: string | null;
-  runError: string | null;
-  runResult: RunResponseData | null;
-  activeVariant: string;
-  copyMessage: string | null;
-  setRawInput: (value: string) => void;
-  setActiveVariant: (value: string) => void;
-  analyze: (value: string) => Promise<void>;
-  runPrompt: (renderMode?: string) => Promise<void>;
-  copyPrompt: () => Promise<void>;
-  clearCopyMessage: () => void;
+import { workspaceApi } from "../api/workspaceApi";
+import {
+  EMPTY_INSIGHTS,
+  EMPTY_PROMPT_IR,
+  EMPTY_VARIANTS,
+  type WorkspaceStore,
+} from "../types/workspace";
+
+function createPromptId(): string {
+  return `pw_${Math.random().toString(16).slice(2, 10)}`;
 }
 
 export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
   rawInput: "",
-  data: null,
-  previousData: null,
-  isLoading: false,
-  isRunning: false,
-  error: null,
-  runError: null,
-  runResult: null,
+  normalizedPrompt: "",
+  structuredPrompt: EMPTY_PROMPT_IR,
+  variants: EMPTY_VARIANTS,
+  insights: EMPTY_INSIGHTS,
+  tokens: {
+    input: 0,
+    compact: 0,
+  },
+  execution: null,
+  metadata: {},
   activeVariant: "generic",
-  copyMessage: null,
+  analysisStatus: "idle",
+  errorMessage: null,
+  lastAnalyzedAt: null,
+  promptId: createPromptId(),
 
-  setRawInput: (value) => set({ rawInput: value }),
-  setActiveVariant: (value) => set({ activeVariant: value }),
-  clearCopyMessage: () => set({ copyMessage: null }),
+  setRawInput: (value) => {
+    const nextStatus = value.trim().length === 0 ? "idle" : "typing";
 
-  analyze: async (value) => {
-    if (!value.trim()) {
-      set({
-        previousData: get().data,
-        data: null,
-        error: null,
-        isLoading: false,
-      });
-      return;
-    }
-
-    set({ isLoading: true, error: null });
-
-    try {
-      const nextData = await analyzeWorkspace(value);
-      set((state) => ({
-        previousData: state.data,
-        data: nextData,
-        isLoading: false,
-        error: null,
-      }));
-    } catch (error) {
-      set({
-        isLoading: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
+    set({
+      rawInput: value,
+      analysisStatus: nextStatus,
+      errorMessage: null,
+    });
   },
 
-  runPrompt: async (renderMode = "generic") => {
-    const rawInput = get().rawInput;
+  setActiveVariant: (variant) => {
+    set({ activeVariant: variant });
+  },
+
+  clearError: () => {
+    set({ errorMessage: null });
+  },
+
+  analyzePrompt: async (rawInputOverride?: string) => {
+    const rawInput = rawInputOverride ?? get().rawInput;
 
     if (!rawInput.trim()) {
-      set({ runError: "Nothing to run yet.", runResult: null });
+      set({
+        normalizedPrompt: "",
+        structuredPrompt: EMPTY_PROMPT_IR,
+        variants: EMPTY_VARIANTS,
+        insights: EMPTY_INSIGHTS,
+        tokens: { input: 0, compact: 0 },
+        execution: null,
+        metadata: {},
+        analysisStatus: "idle",
+        errorMessage: null,
+      });
       return;
     }
 
-    set({ isRunning: true, runError: null });
+    set({
+      analysisStatus: "analyzing",
+      errorMessage: null,
+    });
 
     try {
-      const result = await runWorkspace(rawInput, renderMode);
+      const response = await workspaceApi.analyzePrompt({
+        raw_input: rawInput,
+      });
+
+      if (response.status !== "success") {
+        throw new Error(response.error || "Unknown analyze error");
+      }
+
       set({
-        isRunning: false,
-        runError: null,
-        runResult: result,
+        rawInput: response.data.raw_input,
+        normalizedPrompt: response.data.normalized_prompt,
+        structuredPrompt: response.data.structured_prompt,
+        variants: response.data.variants,
+        insights: response.data.insights,
+        tokens: response.data.tokens,
+        execution: response.data.execution,
+        metadata: response.data.metadata,
+        analysisStatus: "parsed",
+        errorMessage: null,
+        lastAnalyzedAt: new Date().toISOString(),
       });
     } catch (error) {
       set({
-        isRunning: false,
-        runError: error instanceof Error ? error.message : "Unknown error",
+        analysisStatus: "error",
+        errorMessage: error instanceof Error ? error.message : "Analyze failed",
       });
-    }
-  },
-
-  copyPrompt: async () => {
-    const { data, activeVariant } = get();
-    const text = data?.variants?.[activeVariant] ?? data?.variants?.generic ?? "";
-
-    if (!text) {
-      set({ copyMessage: "Nothing to copy yet." });
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(text);
-      set({ copyMessage: `Copied ${activeVariant} prompt.` });
-
-      window.setTimeout(() => {
-        get().clearCopyMessage();
-      }, 1800);
-    } catch {
-      set({ copyMessage: "Clipboard copy failed." });
-
-      window.setTimeout(() => {
-        get().clearCopyMessage();
-      }, 1800);
     }
   },
 }));

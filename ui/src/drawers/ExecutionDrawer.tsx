@@ -1,71 +1,56 @@
-import { Panel } from "../components/ui/Panel";
-import { Button } from "../components/ui/Button";
 import { useWorkspaceStore } from "../store/workspaceStore";
 
 export function ExecutionDrawer() {
-  const runPrompt = useWorkspaceStore((state) => state.runPrompt);
-  const isRunning = useWorkspaceStore((state) => state.isRunning);
-  const runError = useWorkspaceStore((state) => state.runError);
-  const runResult = useWorkspaceStore((state) => state.runResult);
-
-  const outputText = runResult?.artifact?.output?.text ?? "";
-  const evaluation = runResult?.evaluation;
-  const overallScore = evaluation?.overall_score;
-  const overallLevel = evaluation?.overall_level;
+  const execution = useWorkspaceStore((state) => state.execution);
+  const activeVariant = useWorkspaceStore((state) => state.activeVariant);
+  const analysisStatus = useWorkspaceStore((state) => state.analysisStatus);
+  const analyzePrompt = useWorkspaceStore((state) => state.analyzePrompt);
 
   return (
-    <Panel
-      title={
-        <div className="flex items-center justify-between gap-3">
-          <span>Execution Results</span>
-          <Button
-            onClick={() => void runPrompt("generic")}
-            disabled={isRunning}
-            className="px-3 py-1.5 text-xs"
-          >
-            {isRunning ? "Running…" : "Run Prompt"}
-          </Button>
-        </div>
-      }
-    >
-      {runError && <p className="mb-3 text-sm text-red-300">{runError}</p>}
+    <div className="flex h-full flex-col">
+      <div className="flex items-center justify-between border-b border-white/10 px-3 py-3">
+        <span className="text-sm font-medium text-zinc-100">Execution Results</span>
 
-      {!runResult ? (
-        <p className="text-sm text-white/50">No run yet. Press Run to execute.</p>
-      ) : (
-        <div className="space-y-4">
-          <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-            <div className="mb-2 text-xs font-medium uppercase tracking-wide text-white/45">
-              Model Output
+        <button
+          type="button"
+          onClick={() => void analyzePrompt()}
+          className="inline-flex h-8 items-center rounded-md bg-sky-500 px-3 text-xs font-medium text-white transition hover:bg-sky-400"
+        >
+          {analysisStatus === "analyzing" ? "Running..." : `Run ${activeVariant}`}
+        </button>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-auto p-3 text-sm text-zinc-300">
+        {!execution && (
+          <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 text-zinc-500">
+            <div>No run yet.</div>
+            <div className="mt-1">Execute a prompt variant to see results.</div>
+          </div>
+        )}
+
+        {execution && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3 text-sm text-zinc-300">
+                Model: {execution.model}
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3 text-sm text-zinc-300">
+                Provider: {execution.provider}
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3 text-sm text-zinc-300">
+                Input Tokens: {execution.input_tokens}
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3 text-sm text-zinc-300">
+                Output Tokens: {execution.output_tokens}
+              </div>
             </div>
-            <pre className="whitespace-pre-wrap font-mono text-xs text-white/90">
-              {outputText || "(no output returned)"}
+
+            <pre className="rounded-xl border border-white/10 bg-[#0b0e14] p-4 font-mono text-sm text-zinc-200 whitespace-pre-wrap">
+              {execution.result}
             </pre>
           </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Metric label="Overall Score" value={overallScore ?? "n/a"} />
-            <Metric label="Level" value={overallLevel ?? "n/a"} />
-          </div>
-        </div>
-      )}
-    </Panel>
-  );
-}
-
-function Metric({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number;
-}) {
-  return (
-    <div className="rounded-xl border border-white/10 bg-black/20 p-3">
-      <div className="text-xs font-medium uppercase tracking-wide text-white/45">
-        {label}
+        )}
       </div>
-      <div className="mt-1 text-white/90">{String(value)}</div>
     </div>
   );
 }

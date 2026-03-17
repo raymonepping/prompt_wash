@@ -53,12 +53,17 @@ function looksLikeOutputInstruction(text) {
     /\bmarkdown\b/i.test(text) ||
     /\btable\b/i.test(text) ||
     /\bbullet(?:ed)? list\b/i.test(text) ||
+    /\bbullet points?\b/i.test(text) ||
+    /\bbullets?\b/i.test(text) ||
+    /\b\d+\s+bullets?\b/i.test(text) ||
+    /\b\d+\s+bullet points?\b/i.test(text) ||
+    /\bnumbered list\b/i.test(text) ||
     /\bsummary\b/i.test(text)
   );
 }
 
 function looksLikeTaskSentence(text) {
-  return /^(explain|write|summarize|compare|generate|create|list|describe|analyze|review|refactor|translate)\b/i.test(
+  return /^(explain|write|summarize|compare|generate|create|list|describe|analyze|review|refactor|translate|tell|show|give|return|what|how|why|when|where|who)\b/i.test(
     text,
   );
 }
@@ -113,12 +118,20 @@ export function detectAudience(text) {
 export function detectTone(text) {
   const lower = text.toLowerCase();
 
+  if (/\bbrutally honest\b/.test(lower)) {
+    return "brutally honest";
+  }
+
   if (/\bformal\b|\bprofessional\b|\bexecutive\b/.test(lower)) {
     return "professional";
   }
 
   if (/\bfriendly\b|\bcasual\b/.test(lower)) {
     return "friendly";
+  }
+
+  if (/\bhonest\b/.test(lower)) {
+    return "honest";
   }
 
   return "neutral";
@@ -149,8 +162,18 @@ export function detectOutputFormat(text) {
     return "markdown";
   }
 
-  if (/\bbullet(?:ed)? list\b/.test(lower)) {
+  if (
+    /\bbullet(?:ed)? list\b/.test(lower) ||
+    /\bbullet points?\b/.test(lower) ||
+    /\bbullets?\b/.test(lower) ||
+    /\b\d+\s+bullets?\b/.test(lower) ||
+    /\b\d+\s+bullet points?\b/.test(lower)
+  ) {
     return "bullet_list";
+  }
+
+  if (/\bnumbered list\b/.test(lower)) {
+    return "numbered_list";
   }
 
   if (/\btable\b/.test(lower)) {
@@ -256,11 +279,7 @@ export function detectSteps(text) {
   }
 
   const classification = classifySentences(text);
-  const ordered = [
-    ...classification.tasks,
-    ...classification.constraints,
-    ...classification.outputInstructions,
-  ];
+  const ordered = [...classification.tasks.slice(1), ...classification.constraints];
 
   return [...new Set(ordered)];
 }
