@@ -128,16 +128,8 @@ function collectStepCandidates(detectedSteps, instructionClassification) {
 
   const combined =
     detectedSteps.length > 0
-      ? [
-          ...detectedSteps,
-          ...additionalGoals,
-          ...inferredFromOutput,
-        ]
-      : [
-          ...additionalGoals,
-          ...unknownSteps,
-          ...inferredFromOutput,
-        ];
+      ? [...detectedSteps, ...additionalGoals, ...inferredFromOutput]
+      : [...additionalGoals, ...unknownSteps, ...inferredFromOutput];
 
   const deduped = dedupe(combined);
 
@@ -226,12 +218,12 @@ function buildDeterministicPromptObject(raw, cleaned, options = {}) {
     sentence_classification: sentenceClassification,
     instruction_classification: instructionClassification,
     bias_request: {
-  detected:
-    instructionClassification.bias.length > 0 ||
-    (instructionClassification.biasSignals?.length ?? 0) > 0,
-  directives: instructionClassification.bias,
-  signals: instructionClassification.biasSignals ?? [],
-},
+      detected:
+        instructionClassification.bias.length > 0 ||
+        (instructionClassification.biasSignals?.length ?? 0) > 0,
+      directives: instructionClassification.bias,
+      signals: instructionClassification.biasSignals ?? [],
+    },
     enrichment: {
       requested: false,
       succeeded: false,

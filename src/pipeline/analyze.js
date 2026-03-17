@@ -279,7 +279,10 @@ export function detectSteps(text) {
   }
 
   const classification = classifySentences(text);
-  const ordered = [...classification.tasks.slice(1), ...classification.constraints];
+  const ordered = [
+    ...classification.tasks.slice(1),
+    ...classification.constraints,
+  ];
 
   return [...new Set(ordered)];
 }
