@@ -278,18 +278,18 @@ export function classifyInstructions(text) {
   const clauses = segmentPromptIntoClauses(text);
 
   const result = {
-  goal: null,
-  additionalGoals: [],
-  constraints: [],
-  outputInstructions: [],
-  tone: [],
-  bias: [],
-  biasSignals: [],
-  context: [],
-  audience: [],
-  comparison: [],
-  unknown: [],
-};
+    goal: null,
+    additionalGoals: [],
+    constraints: [],
+    outputInstructions: [],
+    tone: [],
+    bias: [],
+    biasSignals: [],
+    context: [],
+    audience: [],
+    comparison: [],
+    unknown: [],
+  };
 
   for (const clause of clauses) {
     const classified = classifyClause(clause);
