@@ -27,14 +27,26 @@ function dedupe(values) {
 }
 
 function resolveAudience(cleaned, instructionClassification) {
-  const directAudience = instructionClassification.audience ?? [];
-  const joined = directAudience.join(" ").toLowerCase();
+  const audienceClauses = instructionClassification.audience ?? [];
+  const constraintClauses = instructionClassification.constraints ?? [];
 
-  if (/\bceo\b|\bcxo\b|\bexecutive\b|\bleadership\b/.test(joined)) {
+  const joined = [...audienceClauses, ...constraintClauses].join(" ").toLowerCase();
+
+  const hasExecutiveSignals =
+    /\bceo\b|\bcxo\b|\bexecutive\b|\bleadership\b/.test(joined);
+
+  const hasDeveloperSignals =
+    /\bengineer\b|\bdeveloper\b/.test(joined);
+
+  if (hasExecutiveSignals && hasDeveloperSignals) {
+    return "mixed";
+  }
+
+  if (hasExecutiveSignals) {
     return "executives";
   }
 
-  if (/\bengineer\b|\bdeveloper\b/.test(joined)) {
+  if (hasDeveloperSignals) {
     return "developers";
   }
 
@@ -176,29 +188,7 @@ function collectStepCandidates(detectedSteps, instructionClassification) {
     (clause) => !isOutputInstruction(clause),
   );
 
-  const comparisonSteps = (instructionClassification.comparison || []).map(
-    (clause) => {
-      const lower = clause.toLowerCase();
-
-      if (
-        lower.includes("differences") &&
-        lower.includes("vault") &&
-        lower.includes("openbao")
-      ) {
-        return "Explain the differences between Vault and OpenBao";
-      }
-
-      if (lower.includes("why vault is better")) {
-        return "Explain why Vault is considered better";
-      }
-
-      if (lower.includes("why vault is stronger")) {
-        return "Explain why Vault is considered stronger";
-      }
-
-      return clause;
-    },
-  );
+  const comparisonSteps = instructionClassification.comparison || [];
 
   const unknownSteps = instructionClassification.unknown.filter(
     (clause) =>

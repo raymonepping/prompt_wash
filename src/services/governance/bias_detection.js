@@ -165,12 +165,14 @@ export async function analyzePromptBias(promptObject) {
       biasRequest.signals.includes("outcome_steering")) ||
     comparisonRequest.detected === true;
 
-  const metadataBiasMatches = [
-    ...(Array.isArray(biasRequest.directives) ? biasRequest.directives : []),
-    ...(Array.isArray(comparisonRequest.directives)
-      ? comparisonRequest.directives
-      : []),
-  ];
+const metadataBiasMatches = [
+  ...(Array.isArray(biasRequest.directives) ? biasRequest.directives : []),
+  ...(Array.isArray(comparisonRequest.directives)
+    ? comparisonRequest.directives
+    : []),
+].filter((value) =>
+  /\b(favor|prefer|better|stronger|worse|weaker|recommend)\b/i.test(value)
+);
 
   const results = {
     outcome_steering: {

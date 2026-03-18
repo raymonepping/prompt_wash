@@ -153,7 +153,7 @@ function normalizeComparisonClause(clause) {
     lower.includes("vault") &&
     lower.includes("openbao")
   ) {
-    return "Tell me the differences between hashicorp vault and openbao";
+    return "Explain the differences between Vault and OpenBao";
   }
 
   if (lower.includes("why vault is better")) {
@@ -161,6 +161,14 @@ function normalizeComparisonClause(clause) {
   }
 
   if (lower.includes("why vault is stronger")) {
+    return "Explain why Vault is considered stronger";
+  }
+
+  if (lower === "vault is better") {
+    return "Explain why Vault is considered better";
+  }
+
+  if (lower === "vault is stronger") {
     return "Explain why Vault is considered stronger";
   }
 
@@ -268,12 +276,12 @@ export function classifyClause(clause) {
     return { type: "bias", value: clause };
   }
 
-  if (AUDIENCE_PATTERNS.some((pattern) => pattern.test(clause))) {
-    return { type: "audience", value: clause };
-  }
-
   if (COMPARISON_PATTERNS.some((pattern) => pattern.test(clause))) {
     return { type: "comparison", value: clause };
+  }
+
+  if (AUDIENCE_PATTERNS.some((pattern) => pattern.test(clause))) {
+    return { type: "audience", value: clause };
   }
 
   if (OUTPUT_PATTERNS.some((pattern) => pattern.test(clause))) {
