@@ -299,15 +299,20 @@ function deriveGoalFromClassification(instructionClassification, cleaned) {
     return instructionClassification.goal;
   }
 
-  if ((instructionClassification.comparison?.length ?? 0) > 0) {
-    return instructionClassification.comparison[0];
-  }
-
-  if ((instructionClassification.additionalGoals?.length ?? 0) > 0) {
+  if (instructionClassification.additionalGoals?.length > 0) {
     return instructionClassification.additionalGoals[0];
   }
 
-  return detectGoal(cleaned);
+  const detectedGoal = detectGoal(cleaned);
+  if (detectedGoal) {
+    return detectedGoal;
+  }
+
+  if (instructionClassification.comparison?.length > 0) {
+    return instructionClassification.comparison[0];
+  }
+
+  return "";
 }
 
 function buildDeterministicPromptObject(raw, cleaned, options = {}) {
