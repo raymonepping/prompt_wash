@@ -1,5 +1,5 @@
 export const DEFAULT_BIAS_RULES = {
-  version: 1,
+  version: 2,
   categories: {
     outcome_steering: {
       weight: 35,
@@ -11,9 +11,9 @@ export const DEFAULT_BIAS_RULES = {
         "make the case that",
         "explain why",
         "justify why",
-        "why x is better",
-        "why x is stronger",
-        "why x is worse",
+        { type: "regex", value: "\\bwhy\\s+[^\\n.?!]{0,80}\\s+is\\s+better\\b", flags: "i" },
+        { type: "regex", value: "\\bwhy\\s+[^\\n.?!]{0,80}\\s+is\\s+stronger\\b", flags: "i" },
+        { type: "regex", value: "\\bwhy\\s+[^\\n.?!]{0,80}\\s+is\\s+worse\\b", flags: "i" },
       ],
     },
     vendor_bias: {
@@ -26,6 +26,8 @@ export const DEFAULT_BIAS_RULES = {
         "clearly beats",
         "clearly better than",
         "wins against",
+        { type: "regex", value: "\\b(vault|openbao)\\s+is\\s+better\\s+than\\s+(vault|openbao)\\b", flags: "i" },
+        { type: "regex", value: "\\b(vault|openbao)\\s+is\\s+superior\\s+to\\s+(vault|openbao)\\b", flags: "i" },
       ],
     },
     advocacy_language: {

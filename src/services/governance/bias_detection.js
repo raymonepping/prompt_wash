@@ -1,19 +1,65 @@
 import { resolveBiasRules } from "./bias_loader.js";
 
-function includesPattern(text, pattern) {
-  return text.includes(pattern.toLowerCase());
+function normalizePatternEntry(entry) {
+  if (typeof entry === "string") {
+    return {
+      type: "literal",
+      value: entry.toLowerCase(),
+    };
+  }
+
+  if (
+    entry &&
+    typeof entry === "object" &&
+    entry.type === "regex" &&
+    typeof entry.value === "string"
+  ) {
+    return {
+      type: "regex",
+      value: entry.value,
+      flags: typeof entry.flags === "string" ? entry.flags : "i",
+    };
+  }
+
+  return null;
+}
+
+function matchPattern(text, entry) {
+  const normalized = normalizePatternEntry(entry);
+
+  if (!normalized) {
+    return null;
+  }
+
+  if (normalized.type === "literal") {
+    return text.includes(normalized.value) ? normalized.value : null;
+  }
+
+  try {
+    const regex = new RegExp(normalized.value, normalized.flags);
+    const match = text.match(regex);
+    return match ? match[0] : null;
+  } catch {
+    return null;
+  }
 }
 
 function normalizeText(promptObject) {
+  const instructionClassification =
+    promptObject?.metadata?.instruction_classification ?? {};
+  const biasRequest = promptObject?.metadata?.bias_request ?? {};
+  const comparisonRequest = promptObject?.metadata?.comparison_request ?? {};
+
   const parts = [
     promptObject?.raw ?? "",
     promptObject?.cleaned ?? "",
     promptObject?.intent ?? "",
     promptObject?.ir?.goal ?? "",
     ...(promptObject?.constraints ?? []),
-    // Intentionally exclude derived IR steps from bias scanning.
-    // They may contain normalization language like "clearly"
-    // that should not trigger governance rules.
+    ...(instructionClassification.comparison ?? []),
+    ...(instructionClassification.bias ?? []),
+    ...(biasRequest.directives ?? []),
+    ...(comparisonRequest.directives ?? []),
   ];
 
   return parts.join("\n").toLowerCase();
@@ -29,7 +75,9 @@ function evaluatePatternCategory(text, category) {
   }
 
   const patterns = Array.isArray(category.patterns) ? category.patterns : [];
-  const matches = patterns.filter((pattern) => includesPattern(text, pattern));
+  const matches = patterns
+    .map((pattern) => matchPattern(text, pattern))
+    .filter(Boolean);
 
   return {
     matched: matches.length > 0,
@@ -97,6 +145,7 @@ export async function analyzePromptBias(promptObject) {
   const categories = rules.categories ?? {};
   const text = normalizeText(promptObject);
   const biasRequest = promptObject?.metadata?.bias_request ?? {};
+  const comparisonRequest = promptObject?.metadata?.comparison_request ?? {};
 
   const patternResults = {
     outcome_steering: evaluatePatternCategory(
@@ -115,12 +164,16 @@ export async function analyzePromptBias(promptObject) {
   };
 
   const metadataOutcomeSteering =
-    Array.isArray(biasRequest.signals) &&
-    biasRequest.signals.includes("outcome_steering");
+    (Array.isArray(biasRequest.signals) &&
+      biasRequest.signals.includes("outcome_steering")) ||
+    comparisonRequest.detected === true;
 
-  const metadataBiasMatches = Array.isArray(biasRequest.directives)
-    ? biasRequest.directives
-    : [];
+  const metadataBiasMatches = [
+    ...(Array.isArray(biasRequest.directives) ? biasRequest.directives : []),
+    ...(Array.isArray(comparisonRequest.directives)
+      ? comparisonRequest.directives
+      : []),
+  ];
 
   const results = {
     outcome_steering: {
@@ -159,9 +212,9 @@ export async function analyzePromptBias(promptObject) {
     },
     matches: {
       outcome_steering: [...new Set(results.outcome_steering.matches)],
-      vendor_bias: results.vendor_bias.matches,
-      advocacy_language: results.advocacy_language.matches,
-      forced_recommendation: results.forced_recommendation.matches,
+      vendor_bias: [...new Set(results.vendor_bias.matches)],
+      advocacy_language: [...new Set(results.advocacy_language.matches)],
+      forced_recommendation: [...new Set(results.forced_recommendation.matches)],
     },
     recommendations: [],
     rules_version: rules.version,

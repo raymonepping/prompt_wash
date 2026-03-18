@@ -353,6 +353,10 @@ function buildDeterministicPromptObject(raw, cleaned, options = {}) {
       directives: instructionClassification.bias,
       signals: instructionClassification.biasSignals ?? [],
     },
+    comparison_request: {
+      detected: (instructionClassification.comparison?.length ?? 0) > 0,
+      directives: instructionClassification.comparison ?? [],
+    },    
     enrichment: {
       requested: false,
       succeeded: false,
