@@ -302,14 +302,15 @@ export function detectGoal(text) {
     return classification.tasks[0];
   }
 
-  const firstSentence = splitSentences(text)[0];const firstSentence = splitSentences(text)[0] ?? text.trim();
+  const firstSentence = splitSentences(text)[0];
+  const firstSentence = splitSentences(text)[0] ?? text.trim();
 
-return firstSentence
-  .replace(/\bprovide me as much detail as possible\b.*$/i, "")
-  .replace(/\bbe as specific as possible\b.*$/i, "")
-  .replace(/\bbrutally honest\b.*$/i, "")
-  .replace(/\bfavor\b.*$/i, "")
-  .trim();
+  return firstSentence
+    .replace(/\bprovide me as much detail as possible\b.*$/i, "")
+    .replace(/\bbe as specific as possible\b.*$/i, "")
+    .replace(/\bbrutally honest\b.*$/i, "")
+    .replace(/\bfavor\b.*$/i, "")
+    .trim();
 }
 
 export function detectContext(text) {

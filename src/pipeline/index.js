@@ -217,22 +217,22 @@ function collectStepCandidates(detectedSteps, instructionClassification) {
   );
 
   const combined =
-  detectedSteps.length > 0
-    ? [
-        ...detectedSteps,
-        ...additionalGoals,
-        ...comparisonSteps,
-        ...inferredFromOutput,
-        ...inferredFromUnknown,
-        ...unknownSteps,
-      ]
-    : [
-        ...additionalGoals,
-        ...comparisonSteps,
-        ...unknownSteps,
-        ...inferredFromOutput,
-        ...inferredFromUnknown,
-      ];
+    detectedSteps.length > 0
+      ? [
+          ...detectedSteps,
+          ...additionalGoals,
+          ...comparisonSteps,
+          ...inferredFromOutput,
+          ...inferredFromUnknown,
+          ...unknownSteps,
+        ]
+      : [
+          ...additionalGoals,
+          ...comparisonSteps,
+          ...unknownSteps,
+          ...inferredFromOutput,
+          ...inferredFromUnknown,
+        ];
 
   const deduped = dedupe(
     combined.filter(
@@ -274,21 +274,21 @@ function buildDeterministicPromptObject(raw, cleaned, options = {}) {
   const instructionClassification = classifyInstructions(cleaned);
 
   const ir = createEmptyPromptIr();
-function deriveGoalFromClassification(instructionClassification, cleaned) {
-  if (instructionClassification.goal) {
-    return instructionClassification.goal;
-  }
+  function deriveGoalFromClassification(instructionClassification, cleaned) {
+    if (instructionClassification.goal) {
+      return instructionClassification.goal;
+    }
 
-  if (instructionClassification.comparison?.length > 0) {
-    return instructionClassification.comparison[0];
-  }
+    if (instructionClassification.comparison?.length > 0) {
+      return instructionClassification.comparison[0];
+    }
 
-  if (instructionClassification.additionalGoals?.length > 0) {
-    return instructionClassification.additionalGoals[0];
-  }
+    if (instructionClassification.additionalGoals?.length > 0) {
+      return instructionClassification.additionalGoals[0];
+    }
 
-  return detectGoal(cleaned);
-}  
+    return detectGoal(cleaned);
+  }
   ir.goal = deriveGoalFromClassification(instructionClassification, cleaned);
   ir.audience = resolveAudience(cleaned, instructionClassification);
 

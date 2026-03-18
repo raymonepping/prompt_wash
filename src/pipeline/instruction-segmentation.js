@@ -328,10 +328,10 @@ export function classifyInstructions(text) {
       result.biasSignals.push("outcome_steering");
     }
 
-if (classified.type === "comparison") {
-  result.comparison.push(normalizeComparisonClause(cleaned));
-  continue;
-}    
+    if (classified.type === "comparison") {
+      result.comparison.push(normalizeComparisonClause(cleaned));
+      continue;
+    }
 
     if (
       /\bwhy\s+vault\s+is\s+(better|stronger)\b/i.test(cleaned) ||
