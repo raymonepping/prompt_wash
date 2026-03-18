@@ -89,10 +89,7 @@ const CONTEXT_PATTERNS = [
   /\bfor engineers?\b/i,
 ];
 
-const ROLE_PATTERNS = [
-  /^you are\b/i,
-  /^act as\b/i,
-];
+const ROLE_PATTERNS = [/^you are\b/i, /^act as\b/i];
 
 const DESIRE_PATTERNS = [
   /^i want to know\b/i,
@@ -111,10 +108,7 @@ export function looksLikeStep(clause) {
 function normalizeToneClause(clause) {
   const lower = clause.toLowerCase();
 
-  if (
-    lower.includes("brutal truth") ||
-    lower.includes("brutally honest")
-  ) {
+  if (lower.includes("brutal truth") || lower.includes("brutally honest")) {
     return "brutally honest";
   }
 

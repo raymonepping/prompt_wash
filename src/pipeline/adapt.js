@@ -17,10 +17,7 @@ function normalizeTone(tone) {
     return "";
   }
 
-  if (
-    value.includes("brutal truth") ||
-    value.includes("brutally honest")
-  ) {
+  if (value.includes("brutal truth") || value.includes("brutally honest")) {
     return "brutally honest";
   }
 

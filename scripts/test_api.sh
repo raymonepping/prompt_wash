@@ -61,7 +61,7 @@ init_log() {
     echo
     echo "---"
     echo
-  } > "$OUTPUT_FILE"
+  } >"$OUTPUT_FILE"
 }
 
 log_section() {
@@ -69,7 +69,7 @@ log_section() {
   {
     echo "## $title"
     echo
-  } >> "$OUTPUT_FILE"
+  } >>"$OUTPUT_FILE"
 }
 
 record_result() {
@@ -94,7 +94,7 @@ record_result() {
     echo
     echo "---"
     echo
-  } >> "$OUTPUT_FILE"
+  } >>"$OUTPUT_FILE"
 }
 
 run_test() {
@@ -148,7 +148,7 @@ write_summary() {
     echo "- Passed: **$PASS_COUNT**"
     echo "- Failed: **$FAIL_COUNT**"
     echo
-  } >> "$OUTPUT_FILE"
+  } >>"$OUTPUT_FILE"
 }
 
 # -------------------------------------------------------------------
@@ -212,7 +212,7 @@ test_runs() {
       echo
       echo "---"
       echo
-    } >> "$OUTPUT_FILE"
+    } >>"$OUTPUT_FILE"
   fi
 }
 
@@ -242,21 +242,21 @@ RUN_ID=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    -o|--output)
-      OUTPUT_FILE="${2:-}"
-      shift 2
-      ;;
-    --base-url)
-      BASE_URL="${2:-}"
-      shift 2
-      ;;
-    --run-id)
-      RUN_ID="${2:-}"
-      shift 2
-      ;;
-    *)
-      usage
-      ;;
+  -o | --output)
+    OUTPUT_FILE="${2:-}"
+    shift 2
+    ;;
+  --base-url)
+    BASE_URL="${2:-}"
+    shift 2
+    ;;
+  --run-id)
+    RUN_ID="${2:-}"
+    shift 2
+    ;;
+  *)
+    usage
+    ;;
   esac
 done
 
@@ -264,31 +264,31 @@ require_tools
 init_log "$CATEGORY"
 
 case "$CATEGORY" in
-  health)
-    test_health
-    ;;
-  workspace)
-    test_workspace
-    ;;
-  runs)
-    test_runs
-    ;;
-  experiments)
-    test_experiments
-    ;;
-  intelligence|intel)
-    test_intelligence
-    ;;
-  all)
-    test_health
-    test_workspace
-    test_runs
-    test_experiments
-    test_intelligence
-    ;;
-  *)
-    usage
-    ;;
+health)
+  test_health
+  ;;
+workspace)
+  test_workspace
+  ;;
+runs)
+  test_runs
+  ;;
+experiments)
+  test_experiments
+  ;;
+intelligence | intel)
+  test_intelligence
+  ;;
+all)
+  test_health
+  test_workspace
+  test_runs
+  test_experiments
+  test_intelligence
+  ;;
+*)
+  usage
+  ;;
 esac
 
 write_summary
