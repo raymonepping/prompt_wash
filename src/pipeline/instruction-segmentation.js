@@ -145,6 +145,28 @@ function cleanClause(clause) {
     .trim();
 }
 
+function normalizeComparisonClause(clause) {
+  const lower = clause.toLowerCase();
+
+  if (
+    lower.includes("differences") &&
+    lower.includes("vault") &&
+    lower.includes("openbao")
+  ) {
+    return "Tell me the differences between hashicorp vault and openbao";
+  }
+
+  if (lower.includes("why vault is better")) {
+    return "Explain why Vault is considered better";
+  }
+
+  if (lower.includes("why vault is stronger")) {
+    return "Explain why Vault is considered stronger";
+  }
+
+  return clause;
+}
+
 function trimGoalClause(clause) {
   return cleanClause(
     clause
@@ -305,6 +327,11 @@ export function classifyInstructions(text) {
     if (/\b(favor|prefer|recommend)\b/i.test(cleaned)) {
       result.biasSignals.push("outcome_steering");
     }
+
+if (classified.type === "comparison") {
+  result.comparison.push(normalizeComparisonClause(cleaned));
+  continue;
+}    
 
     if (
       /\bwhy\s+vault\s+is\s+(better|stronger)\b/i.test(cleaned) ||
