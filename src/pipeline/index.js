@@ -30,13 +30,14 @@ function resolveAudience(cleaned, instructionClassification) {
   const audienceClauses = instructionClassification.audience ?? [];
   const constraintClauses = instructionClassification.constraints ?? [];
 
-  const joined = [...audienceClauses, ...constraintClauses].join(" ").toLowerCase();
+  const joined = [...audienceClauses, ...constraintClauses]
+    .join(" ")
+    .toLowerCase();
 
   const hasExecutiveSignals =
     /\bceo\b|\bcxo\b|\bexecutive\b|\bleadership\b/.test(joined);
 
-  const hasDeveloperSignals =
-    /\bengineer\b|\bdeveloper\b/.test(joined);
+  const hasDeveloperSignals = /\bengineer\b|\bdeveloper\b/.test(joined);
 
   if (hasExecutiveSignals && hasDeveloperSignals) {
     return "mixed";
