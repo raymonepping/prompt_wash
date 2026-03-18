@@ -206,36 +206,6 @@ function cleanClause(clause) {
     .trim();
 }
 
-function normalizeComparisonClause(clause) {
-  const lower = clause.toLowerCase();
-
-  if (
-    lower.includes("differences") &&
-    lower.includes("vault") &&
-    lower.includes("openbao")
-  ) {
-    return "Explain the differences between Vault and OpenBao";
-  }
-
-  if (lower.includes("why vault is better")) {
-    return "Explain why Vault is considered better";
-  }
-
-  if (lower.includes("why vault is stronger")) {
-    return "Explain why Vault is considered stronger";
-  }
-
-  if (lower === "vault is better") {
-    return "Explain why Vault is considered better";
-  }
-
-  if (lower === "vault is stronger") {
-    return "Explain why Vault is considered stronger";
-  }
-
-  return clause;
-}
-
 function trimGoalClause(clause) {
   return cleanClause(
     clause
