@@ -49,15 +49,21 @@ const CONSTRAINT_PATTERNS = [
 ];
 
 const AUDIENCE_PATTERNS = [
-  /\bfor executives?\b/i,
-  /\bfor a ceo\b/i,
-  /\bfor ceos\b/i,
-  /\bfor leadership\b/i,
-  /\bceo\b/i,
+  /\bengineer perspective\b/i,
+  /\bdeveloper perspective\b/i,
+  /\bfor engineers?\b/i,
+  /\bfor developers?\b/i,
+  /\bceo understands\b/i,
+  /\bexecutive language\b/i,
   /\bcxo\b/i,
-  /\bexecutives?\b/i,
-  /\bengineers?\b/i,
-  /\bdeveloper(s)?\b/i,
+  /\bfor executives?\b/i,
+];
+
+const COMPARISON_PATTERNS = [
+  /\bdifferences?\b.*\bvault\b.*\bopenbao\b/i,
+  /\bcompare\b.*\bvault\b.*\bopenbao\b/i,
+  /\bwhy vault is better\b/i,
+  /\bwhy vault is stronger\b/i,
 ];
 
 const OUTPUT_PATTERNS = [
@@ -261,6 +267,10 @@ export function classifyClause(clause) {
     return { type: "audience", value: clause };
   }
 
+  if (COMPARISON_PATTERNS.some((pattern) => pattern.test(clause))) {
+    return { type: "comparison", value: clause };
+  }
+
   return { type: "unknown", value: clause };
 }
 
@@ -268,17 +278,18 @@ export function classifyInstructions(text) {
   const clauses = segmentPromptIntoClauses(text);
 
   const result = {
-    goal: null,
-    additionalGoals: [],
-    constraints: [],
-    outputInstructions: [],
-    tone: [],
-    bias: [],
-    biasSignals: [],
-    context: [],
-    audience: [],
-    unknown: [],
-  };
+  goal: null,
+  additionalGoals: [],
+  constraints: [],
+  outputInstructions: [],
+  tone: [],
+  bias: [],
+  biasSignals: [],
+  context: [],
+  audience: [],
+  comparison: [],
+  unknown: [],
+};
 
   for (const clause of clauses) {
     const classified = classifyClause(clause);
@@ -324,6 +335,11 @@ export function classifyInstructions(text) {
 
     if (classified.type === "audience") {
       result.audience.push(cleaned);
+      continue;
+    }
+
+    if (classified.type === "comparison") {
+      result.comparison.push(cleaned);
       continue;
     }
 

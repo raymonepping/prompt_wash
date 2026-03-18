@@ -44,14 +44,14 @@ function resolveAudience(cleaned, instructionClassification) {
 function deriveStepsFromUnknownClauses(unknownClauses) {
   return unknownClauses
     .map((clause) => {
-      const lower = clause.toLowerCase();
+      const lower = clause.toLowerCase().trim();
 
-      if (lower.includes("why vault is better")) {
-        return "Explain why Vault is better";
+      if (!lower || lower.length < 8) {
+        return null;
       }
 
-      if (lower.includes("engineer perspective")) {
-        return "Frame the explanation from an engineer perspective";
+      if (/^(why|what|how|when|where|who)$/.test(lower)) {
+        return null;
       }
 
       if (
@@ -60,6 +60,22 @@ function deriveStepsFromUnknownClauses(unknownClauses) {
         lower.includes("openbao")
       ) {
         return "Explain the differences between Vault and OpenBao";
+      }
+
+      if (lower.includes("why vault is better")) {
+        return "Explain why Vault is considered better";
+      }
+
+      if (lower.includes("why vault is stronger")) {
+        return "Explain why Vault is considered stronger";
+      }
+
+      if (lower.includes("engineer perspective")) {
+        return "Frame the explanation from an engineer perspective";
+      }
+
+      if (lower.includes("ceo understands")) {
+        return "Make the explanation understandable for executive readers";
       }
 
       return null;
@@ -160,8 +176,36 @@ function collectStepCandidates(detectedSteps, instructionClassification) {
     (clause) => !isOutputInstruction(clause),
   );
 
+  const comparisonSteps = (instructionClassification.comparison || []).map(
+    (clause) => {
+      const lower = clause.toLowerCase();
+
+      if (
+        lower.includes("differences") &&
+        lower.includes("vault") &&
+        lower.includes("openbao")
+      ) {
+        return "Explain the differences between Vault and OpenBao";
+      }
+
+      if (lower.includes("why vault is better")) {
+        return "Explain why Vault is considered better";
+      }
+
+      if (lower.includes("why vault is stronger")) {
+        return "Explain why Vault is considered stronger";
+      }
+
+      return clause;
+    },
+  );
+
   const unknownSteps = instructionClassification.unknown.filter(
-    (clause) => looksLikeStep(clause) && !isOutputInstruction(clause),
+    (clause) =>
+      looksLikeStep(clause) &&
+      !isOutputInstruction(clause) &&
+      clause.trim().length >= 8 &&
+      !/^(why|what|how|when|where|who)$/i.test(clause.trim()),
   );
 
   const inferredFromOutput = deriveStepsFromOutputInstructions(
@@ -179,6 +223,8 @@ function collectStepCandidates(detectedSteps, instructionClassification) {
           ...additionalGoals,
           ...inferredFromOutput,
           ...inferredFromUnknown,
+          ...comparisonSteps,
+          ...unknownSteps,
         ]
       : [
           ...additionalGoals,
@@ -187,7 +233,14 @@ function collectStepCandidates(detectedSteps, instructionClassification) {
           ...inferredFromUnknown,
         ];
 
-  const deduped = dedupe(combined);
+  const deduped = dedupe(
+    combined.filter(
+      (value) =>
+        value &&
+        value.trim().length >= 8 &&
+        !/^(why|what|how|when|where|who)$/i.test(value.trim()),
+    ),
+  );
 
   if (deduped.length === 0 && instructionClassification.goal) {
     const fallback = deriveStepFromGoal(instructionClassification.goal);

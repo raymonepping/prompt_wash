@@ -9,9 +9,11 @@ export const DEFAULT_BIAS_RULES = {
         "show why",
         "demonstrate why",
         "make the case that",
+        "explain why",
         "justify why",
-        "favor",
-        "prefer",
+        "why x is better",
+        "why x is stronger",
+        "why x is worse",
       ],
     },
     vendor_bias: {
@@ -30,6 +32,7 @@ export const DEFAULT_BIAS_RULES = {
       weight: 20,
       enabled: true,
       patterns: [
+        "clearly",
         "obviously",
         "best by far",
         "far superior",
