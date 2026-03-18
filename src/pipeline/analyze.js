@@ -302,7 +302,6 @@ export function detectGoal(text) {
     return classification.tasks[0];
   }
 
-  const firstSentence = splitSentences(text)[0];
   const firstSentence = splitSentences(text)[0] ?? text.trim();
 
   return firstSentence
