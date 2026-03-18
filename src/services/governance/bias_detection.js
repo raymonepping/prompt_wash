@@ -214,7 +214,9 @@ export async function analyzePromptBias(promptObject) {
       outcome_steering: [...new Set(results.outcome_steering.matches)],
       vendor_bias: [...new Set(results.vendor_bias.matches)],
       advocacy_language: [...new Set(results.advocacy_language.matches)],
-      forced_recommendation: [...new Set(results.forced_recommendation.matches)],
+      forced_recommendation: [
+        ...new Set(results.forced_recommendation.matches),
+      ],
     },
     recommendations: [],
     rules_version: rules.version,
