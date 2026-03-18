@@ -320,7 +320,7 @@ test_workspace() {
     '.data.structured_prompt.output_format == "bullet_list"' "Embedded output instruction is parsed as bullet_list" \
     '.data.bias.signals.outcome_steering == true' "Vendor preference language triggers outcome steering" \
     '.data.variants.generic | contains("Output format:")' "Rendered generic variant includes output format" \
-    '.data.structured_prompt.goal | test("return a list of bullets"; "i") | not' "Goal no longer includes embedded output instruction"    
+    '.data.structured_prompt.goal | test("return a list of bullets"; "i") | not' "Goal no longer includes embedded output instruction"
 
 }
 
@@ -414,21 +414,21 @@ RUN_ID=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    -o|--output)
-      OUTPUT_FILE="${2:-}"
-      shift 2
-      ;;
-    --base-url)
-      BASE_URL="${2:-}"
-      shift 2
-      ;;
-    --run-id)
-      RUN_ID="${2:-}"
-      shift 2
-      ;;
-    *)
-      usage
-      ;;
+  -o | --output)
+    OUTPUT_FILE="${2:-}"
+    shift 2
+    ;;
+  --base-url)
+    BASE_URL="${2:-}"
+    shift 2
+    ;;
+  --run-id)
+    RUN_ID="${2:-}"
+    shift 2
+    ;;
+  *)
+    usage
+    ;;
   esac
 done
 
@@ -436,31 +436,31 @@ require_tools
 init_log "$CATEGORY"
 
 case "$CATEGORY" in
-  health)
-    test_health
-    ;;
-  workspace)
-    test_workspace
-    ;;
-  runs)
-    test_runs
-    ;;
-  experiments)
-    test_experiments
-    ;;
-  intelligence|intel)
-    test_intelligence
-    ;;
-  all)
-    test_health
-    test_workspace
-    test_runs
-    test_experiments
-    test_intelligence
-    ;;
-  *)
-    usage
-    ;;
+health)
+  test_health
+  ;;
+workspace)
+  test_workspace
+  ;;
+runs)
+  test_runs
+  ;;
+experiments)
+  test_experiments
+  ;;
+intelligence | intel)
+  test_intelligence
+  ;;
+all)
+  test_health
+  test_workspace
+  test_runs
+  test_experiments
+  test_intelligence
+  ;;
+*)
+  usage
+  ;;
 esac
 
 write_summary

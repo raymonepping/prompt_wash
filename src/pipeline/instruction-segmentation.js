@@ -45,7 +45,7 @@ const CONSTRAINT_PATTERNS = [
   /for an engineer perspective/i,
   /for a ceo/i,
   /for executives?/i,
-  /for leadership/i,  
+  /for leadership/i,
 ];
 
 const AUDIENCE_PATTERNS = [
@@ -186,7 +186,7 @@ function injectSplitMarkers(text) {
     .replace(/\bdo this from\b/gi, " | do this from")
     .replace(/\buse language that\b/gi, " | use language that")
     .replace(/\bwhy vault is better\b/gi, " | why vault is better")
-    .replace(/\bvault is better\b/gi, " | vault is better");    
+    .replace(/\bvault is better\b/gi, " | vault is better");
 }
 
 function normalizeStepClause(clause) {
@@ -196,7 +196,11 @@ function normalizeStepClause(clause) {
     return "Explain why Vault is better";
   }
 
-  if (lower.includes("differences") && lower.includes("vault") && lower.includes("openbao")) {
+  if (
+    lower.includes("differences") &&
+    lower.includes("vault") &&
+    lower.includes("openbao")
+  ) {
     return "Explain the differences between Vault and OpenBao";
   }
 
@@ -321,7 +325,7 @@ export function classifyInstructions(text) {
     if (classified.type === "audience") {
       result.audience.push(cleaned);
       continue;
-    }    
+    }
 
     result.unknown.push(normalizeStepClause(cleaned));
   }

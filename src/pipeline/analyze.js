@@ -99,8 +99,9 @@ export function detectAudience(text) {
   const hasExecutiveSignals =
     /\bexecutives?\b|\bcxo\b|\bleadership\b|\bceo\b/.test(lower);
 
-  const hasDeveloperSignals =
-    /\bdevelopers?\b|\bengineers?\b|\bdevops\b/.test(lower);
+  const hasDeveloperSignals = /\bdevelopers?\b|\bengineers?\b|\bdevops\b/.test(
+    lower,
+  );
 
   if (hasExecutiveSignals && hasDeveloperSignals) {
     return "mixed";

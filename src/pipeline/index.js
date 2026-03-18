@@ -229,8 +229,9 @@ function buildDeterministicPromptObject(raw, cleaned, options = {}) {
       : "";
 
   const detectedConstraints = detectConstraints(cleaned);
-  const derivedConstraints =
-    deriveConstraintsFromAudienceSignals(instructionClassification);
+  const derivedConstraints = deriveConstraintsFromAudienceSignals(
+    instructionClassification,
+  );
 
   ir.constraints =
     instructionClassification.constraints.length > 0
