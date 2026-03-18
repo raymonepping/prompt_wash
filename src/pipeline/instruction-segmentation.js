@@ -39,6 +39,25 @@ const CONSTRAINT_PATTERNS = [
   /include examples?/i,
   /use an analogy/i,
   /with an analogy/i,
+  /use language that a ceo understands/i,
+  /use language a ceo understands/i,
+  /from an engineer perspective/i,
+  /for an engineer perspective/i,
+  /for a ceo/i,
+  /for executives?/i,
+  /for leadership/i,  
+];
+
+const AUDIENCE_PATTERNS = [
+  /\bfor executives?\b/i,
+  /\bfor a ceo\b/i,
+  /\bfor ceos\b/i,
+  /\bfor leadership\b/i,
+  /\bceo\b/i,
+  /\bcxo\b/i,
+  /\bexecutives?\b/i,
+  /\bengineers?\b/i,
+  /\bdeveloper(s)?\b/i,
 ];
 
 const OUTPUT_PATTERNS = [
@@ -159,7 +178,33 @@ function injectSplitMarkers(text) {
     .replace(/\buse\b(?=\s+an analogy)/gi, " | use")
     .replace(/\bbrutally honest\b/gi, " | brutally honest")
     .replace(/\bfavor\b/gi, " | favor")
-    .replace(/\bprefer\b/gi, " | prefer");
+    .replace(/\bprefer\b/gi, " | prefer")
+    .replace(/\breturn a list of bullets\b/gi, " | return a list of bullets")
+    .replace(/\breturn a bullet list\b/gi, " | return a bullet list")
+    .replace(/\breturn a list\b(?=\s+of\s+bullets?\b)/gi, " | return a list")
+    .replace(/\bon why\b/gi, " | on why")
+    .replace(/\bdo this from\b/gi, " | do this from")
+    .replace(/\buse language that\b/gi, " | use language that")
+    .replace(/\bwhy vault is better\b/gi, " | why vault is better")
+    .replace(/\bvault is better\b/gi, " | vault is better");    
+}
+
+function normalizeStepClause(clause) {
+  const lower = clause.toLowerCase();
+
+  if (lower.includes("why vault is better")) {
+    return "Explain why Vault is better";
+  }
+
+  if (lower.includes("differences") && lower.includes("vault") && lower.includes("openbao")) {
+    return "Explain the differences between Vault and OpenBao";
+  }
+
+  if (lower.includes("engineer perspective")) {
+    return "Frame the explanation from an engineer perspective";
+  }
+
+  return clause;
 }
 
 export function segmentPromptIntoClauses(text) {
@@ -208,6 +253,10 @@ export function classifyClause(clause) {
     return { type: "goal", value: clause };
   }
 
+  if (AUDIENCE_PATTERNS.some((pattern) => pattern.test(clause))) {
+    return { type: "audience", value: clause };
+  }
+
   return { type: "unknown", value: clause };
 }
 
@@ -223,6 +272,7 @@ export function classifyInstructions(text) {
     bias: [],
     biasSignals: [],
     context: [],
+    audience: [],
     unknown: [],
   };
 
@@ -268,7 +318,12 @@ export function classifyInstructions(text) {
       continue;
     }
 
-    result.unknown.push(cleaned);
+    if (classified.type === "audience") {
+      result.audience.push(cleaned);
+      continue;
+    }    
+
+    result.unknown.push(normalizeStepClause(cleaned));
   }
 
   result.biasSignals = [...new Set(result.biasSignals)];

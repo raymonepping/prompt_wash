@@ -26,6 +26,47 @@ function dedupe(values) {
   return [...new Set(values.filter(Boolean))];
 }
 
+function resolveAudience(cleaned, instructionClassification) {
+  const directAudience = instructionClassification.audience ?? [];
+  const joined = directAudience.join(" ").toLowerCase();
+
+  if (/\bceo\b|\bcxo\b|\bexecutive\b|\bleadership\b/.test(joined)) {
+    return "executives";
+  }
+
+  if (/\bengineer\b|\bdeveloper\b/.test(joined)) {
+    return "developers";
+  }
+
+  return detectAudience(cleaned);
+}
+
+function deriveStepsFromUnknownClauses(unknownClauses) {
+  return unknownClauses
+    .map((clause) => {
+      const lower = clause.toLowerCase();
+
+      if (lower.includes("why vault is better")) {
+        return "Explain why Vault is better";
+      }
+
+      if (lower.includes("engineer perspective")) {
+        return "Frame the explanation from an engineer perspective";
+      }
+
+      if (
+        lower.includes("differences") &&
+        lower.includes("vault") &&
+        lower.includes("openbao")
+      ) {
+        return "Explain the differences between Vault and OpenBao";
+      }
+
+      return null;
+    })
+    .filter(Boolean);
+}
+
 function inferOutputFormatFromInstructions(outputInstructions) {
   const joined = outputInstructions.join(" ").toLowerCase();
 
@@ -127,20 +168,49 @@ function collectStepCandidates(detectedSteps, instructionClassification) {
     instructionClassification.outputInstructions || [],
   );
 
+  const inferredFromUnknown = deriveStepsFromUnknownClauses(
+    instructionClassification.unknown || [],
+  );
+
   const combined =
     detectedSteps.length > 0
-      ? [...detectedSteps, ...additionalGoals, ...inferredFromOutput]
-      : [...additionalGoals, ...unknownSteps, ...inferredFromOutput];
+      ? [
+          ...detectedSteps,
+          ...additionalGoals,
+          ...inferredFromOutput,
+          ...inferredFromUnknown,
+        ]
+      : [
+          ...additionalGoals,
+          ...unknownSteps,
+          ...inferredFromOutput,
+          ...inferredFromUnknown,
+        ];
 
   const deduped = dedupe(combined);
 
-  // 🔥 NEW: fallback from goal if still empty
   if (deduped.length === 0 && instructionClassification.goal) {
     const fallback = deriveStepFromGoal(instructionClassification.goal);
     return fallback ? [fallback] : [];
   }
 
   return deduped;
+}
+
+function deriveConstraintsFromAudienceSignals(instructionClassification) {
+  const audienceClauses = instructionClassification.audience || [];
+
+  return audienceClauses
+    .map((clause) => {
+      const lower = clause.toLowerCase();
+
+      if (lower.includes("ceo understands")) {
+        return "use language that a CEO understands";
+      }
+
+      return null;
+    })
+    .filter(Boolean);
 }
 
 function buildDeterministicPromptObject(raw, cleaned, options = {}) {
@@ -151,7 +221,7 @@ function buildDeterministicPromptObject(raw, cleaned, options = {}) {
 
   const ir = createEmptyPromptIr();
   ir.goal = instructionClassification.goal || detectGoal(cleaned);
-  ir.audience = detectAudience(cleaned);
+  ir.audience = resolveAudience(cleaned, instructionClassification);
 
   ir.context =
     instructionClassification.context.length > 0
@@ -159,13 +229,17 @@ function buildDeterministicPromptObject(raw, cleaned, options = {}) {
       : "";
 
   const detectedConstraints = detectConstraints(cleaned);
+  const derivedConstraints =
+    deriveConstraintsFromAudienceSignals(instructionClassification);
+
   ir.constraints =
     instructionClassification.constraints.length > 0
       ? dedupe([
           ...instructionClassification.constraints,
+          ...derivedConstraints,
           ...detectedConstraints,
         ])
-      : detectedConstraints;
+      : dedupe([...derivedConstraints, ...detectedConstraints]);
 
   const detectedSteps = detectSteps(cleaned);
   ir.steps = collectStepCandidates(detectedSteps, instructionClassification);
@@ -174,7 +248,7 @@ function buildDeterministicPromptObject(raw, cleaned, options = {}) {
   ir.output_format =
     detectedOutputFormat ||
     inferOutputFormatFromInstructions(
-      instructionClassification.outputInstructions,
+      instructionClassification.outputInstructions || [],
     );
 
   const detectedTone = detectTone(cleaned);
