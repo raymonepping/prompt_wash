@@ -11,14 +11,23 @@ function normalizePatternEntry(entry) {
   if (
     entry &&
     typeof entry === "object" &&
-    entry.type === "regex" &&
+    typeof entry.type === "string" &&
     typeof entry.value === "string"
   ) {
-    return {
-      type: "regex",
-      value: entry.value,
-      flags: typeof entry.flags === "string" ? entry.flags : "i",
-    };
+    if (entry.type === "literal") {
+      return {
+        type: "literal",
+        value: entry.value.toLowerCase(),
+      };
+    }
+
+    if (entry.type === "regex") {
+      return {
+        type: "regex",
+        value: entry.value,
+        flags: typeof entry.flags === "string" ? entry.flags : "i",
+      };
+    }
   }
 
   return null;
@@ -87,22 +96,10 @@ function evaluatePatternCategory(text, category) {
 }
 
 function scoreToLevel(score, thresholds) {
-  if (score <= thresholds.very_low) {
-    return "very_low";
-  }
-
-  if (score <= thresholds.low) {
-    return "low";
-  }
-
-  if (score <= thresholds.medium) {
-    return "medium";
-  }
-
-  if (score <= thresholds.high) {
-    return "high";
-  }
-
+  if (score <= thresholds.very_low) return "very_low";
+  if (score <= thresholds.low) return "low";
+  if (score <= thresholds.medium) return "medium";
+  if (score <= thresholds.high) return "high";
   return "critical";
 }
 

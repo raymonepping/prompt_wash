@@ -75,7 +75,9 @@ function looksLikeAudienceSentence(text) {
     /\bfor engineers?\b/i.test(text) ||
     /\bfor beginners?\b/i.test(text) ||
     /\bfor students?\b/i.test(text) ||
-    /\baudience\b/i.test(text)
+    /\baudience\b/i.test(text) ||
+    /\bceo\b/i.test(text) ||
+    /\bcxo\b/i.test(text)
   );
 }
 
@@ -165,13 +167,8 @@ export function detectOutputFormat(text) {
 
   const lower = text.toLowerCase();
 
-  if (/\bjson\b/.test(lower)) {
-    return "json";
-  }
-
-  if (/\bmarkdown\b/.test(lower)) {
-    return "markdown";
-  }
+  if (/\bjson\b/.test(lower)) return "json";
+  if (/\bmarkdown\b/.test(lower)) return "markdown";
 
   if (
     /\bbullet(?:ed)? list\b/.test(lower) ||
@@ -183,17 +180,9 @@ export function detectOutputFormat(text) {
     return "bullet_list";
   }
 
-  if (/\bnumbered list\b/.test(lower)) {
-    return "numbered_list";
-  }
-
-  if (/\btable\b/.test(lower)) {
-    return "table";
-  }
-
-  if (/\bsummary\b/.test(lower)) {
-    return "summary";
-  }
+  if (/\bnumbered list\b/.test(lower)) return "numbered_list";
+  if (/\btable\b/.test(lower)) return "table";
+  if (/\bsummary\b/.test(lower)) return "summary";
 
   return "";
 }

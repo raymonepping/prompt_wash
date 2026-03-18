@@ -6,7 +6,7 @@ import { cloneDefaultBiasRules } from "./bias_defaults.js";
 export const PROJECT_BIAS_RULES_PATH = ".promptwash/bias-rules.json";
 
 function isObject(value) {
-  return value && typeof value === "object" && !Array.isArray(value);
+  return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
 async function fileExists(pathValue) {
@@ -30,6 +30,48 @@ async function readJsonFile(pathValue) {
   }
 }
 
+function isValidRegexFlags(flags) {
+  return typeof flags === "string" && /^[dgimsuvy]*$/.test(flags);
+}
+
+function validatePatternEntry(categoryName, index, pattern, errors) {
+  const prefix = `categories.${categoryName}.patterns[${index}]`;
+
+  if (typeof pattern === "string") {
+    if (!pattern.trim()) {
+      errors.push(`${prefix} must be a non-empty string`);
+    }
+    return;
+  }
+
+  if (!isObject(pattern)) {
+    errors.push(`${prefix} must be a string or pattern object`);
+    return;
+  }
+
+  if (pattern.type !== "literal" && pattern.type !== "regex") {
+    errors.push(`${prefix}.type must be "literal" or "regex"`);
+  }
+
+  if (typeof pattern.value !== "string" || !pattern.value.trim()) {
+    errors.push(`${prefix}.value must be a non-empty string`);
+  }
+
+  if (pattern.type === "regex") {
+    if (pattern.flags !== undefined && !isValidRegexFlags(pattern.flags)) {
+      errors.push(`${prefix}.flags must contain only valid regex flags`);
+    }
+
+    if (typeof pattern.value === "string" && pattern.value.trim()) {
+      try {
+        new RegExp(pattern.value, pattern.flags ?? "i");
+      } catch (error) {
+        errors.push(`${prefix} contains an invalid regex: ${error.message}`);
+      }
+    }
+  }
+}
+
 function validateCategoryShape(name, category, errors) {
   if (!isObject(category)) {
     errors.push(`categories.${name} must be an object`);
@@ -46,14 +88,11 @@ function validateCategoryShape(name, category, errors) {
 
   if (!Array.isArray(category.patterns)) {
     errors.push(`categories.${name}.patterns must be an array`);
-  } else {
-    for (const [index, pattern] of category.patterns.entries()) {
-      if (typeof pattern !== "string" || !pattern.trim()) {
-        errors.push(
-          `categories.${name}.patterns[${index}] must be a non-empty string`,
-        );
-      }
-    }
+    return;
+  }
+
+  for (const [index, pattern] of category.patterns.entries()) {
+    validatePatternEntry(name, index, pattern, errors);
   }
 }
 

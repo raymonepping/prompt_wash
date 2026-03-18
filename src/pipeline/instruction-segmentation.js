@@ -43,7 +43,6 @@ const CONSTRAINT_PATTERNS = [
   /use language a ceo understands/i,
   /from an engineer perspective/i,
   /for an engineer perspective/i,
-  /for a ceo/i,
   /for executives?/i,
   /for leadership/i,
 ];
@@ -57,6 +56,7 @@ const AUDIENCE_PATTERNS = [
   /\bexecutive language\b/i,
   /\bcxo\b/i,
   /\bfor executives?\b/i,
+  /\bleadership\b/i,
 ];
 
 const COMPARISON_PATTERNS = [
@@ -64,6 +64,8 @@ const COMPARISON_PATTERNS = [
   /\bcompare\b.*\bvault\b.*\bopenbao\b/i,
   /\bwhy vault is better\b/i,
   /\bwhy vault is stronger\b/i,
+  /\bvault is better\b/i,
+  /\bvault is stronger\b/i,
 ];
 
 const OUTPUT_PATTERNS = [
@@ -102,16 +104,11 @@ const BIAS_PATTERNS = [
 ];
 
 const CONTEXT_PATTERNS = [
-  /\bfor a\b/i,
-  /\bfor an\b/i,
-  /\bin a\b/i,
-  /\bwithin a\b/i,
   /\bfor use in\b/i,
   /\bfor a presentation\b/i,
   /\bfor a report\b/i,
-  /\bfor a beginner\b/i,
-  /\bfor executives?\b/i,
-  /\bfor engineers?\b/i,
+  /\bin the context of\b/i,
+  /\bwithin the context of\b/i,
 ];
 
 const ROLE_PATTERNS = [/^you are\b/i, /^act as\b/i];
@@ -192,14 +189,20 @@ function injectSplitMarkers(text) {
     .replace(/\bdo this from\b/gi, " | do this from")
     .replace(/\buse language that\b/gi, " | use language that")
     .replace(/\bwhy vault is better\b/gi, " | why vault is better")
-    .replace(/\bvault is better\b/gi, " | vault is better");
+    .replace(/\bwhy vault is stronger\b/gi, " | why vault is stronger")
+    .replace(/\bvault is better\b/gi, " | vault is better")
+    .replace(/\bvault is stronger\b/gi, " | vault is stronger");
 }
 
 function normalizeStepClause(clause) {
   const lower = clause.toLowerCase();
 
   if (lower.includes("why vault is better")) {
-    return "Explain why Vault is better";
+    return "Explain why Vault is considered better";
+  }
+
+  if (lower.includes("why vault is stronger")) {
+    return "Explain why Vault is considered stronger";
   }
 
   if (
@@ -212,6 +215,10 @@ function normalizeStepClause(clause) {
 
   if (lower.includes("engineer perspective")) {
     return "Frame the explanation from an engineer perspective";
+  }
+
+  if (lower.includes("ceo understands")) {
+    return "Make the explanation understandable for executive readers";
   }
 
   return clause;
@@ -239,6 +246,14 @@ export function classifyClause(clause) {
     return { type: "bias", value: clause };
   }
 
+  if (AUDIENCE_PATTERNS.some((pattern) => pattern.test(clause))) {
+    return { type: "audience", value: clause };
+  }
+
+  if (COMPARISON_PATTERNS.some((pattern) => pattern.test(clause))) {
+    return { type: "comparison", value: clause };
+  }
+
   if (OUTPUT_PATTERNS.some((pattern) => pattern.test(clause))) {
     return { type: "output", value: clause };
   }
@@ -255,20 +270,12 @@ export function classifyClause(clause) {
     return { type: "goal", value: clause };
   }
 
-  if (CONTEXT_PATTERNS.some((pattern) => pattern.test(clause))) {
-    return { type: "context", value: clause };
-  }
-
   if (GOAL_VERBS.some((verb) => lower.startsWith(verb))) {
     return { type: "goal", value: clause };
   }
 
-  if (AUDIENCE_PATTERNS.some((pattern) => pattern.test(clause))) {
-    return { type: "audience", value: clause };
-  }
-
-  if (COMPARISON_PATTERNS.some((pattern) => pattern.test(clause))) {
-    return { type: "comparison", value: clause };
+  if (CONTEXT_PATTERNS.some((pattern) => pattern.test(clause))) {
+    return { type: "context", value: clause };
   }
 
   return { type: "unknown", value: clause };
@@ -296,6 +303,13 @@ export function classifyInstructions(text) {
     const cleaned = cleanClause(classified.value);
 
     if (/\b(favor|prefer|recommend)\b/i.test(cleaned)) {
+      result.biasSignals.push("outcome_steering");
+    }
+
+    if (
+      /\bwhy\s+vault\s+is\s+(better|stronger)\b/i.test(cleaned) ||
+      /\bvault\s+is\s+(better|stronger)\b/i.test(cleaned)
+    ) {
       result.biasSignals.push("outcome_steering");
     }
 
