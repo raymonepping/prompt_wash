@@ -54,6 +54,38 @@ function resolveAudience(cleaned, instructionClassification) {
   return detectAudience(cleaned);
 }
 
+function normalizeComparisonStep(clause) {
+  const normalized = clause?.trim();
+
+  if (!normalized) {
+    return null;
+  }
+
+  let match = normalized.match(
+    /\bdifferences?\s+between\s+(.+?)\s+and\s+(.+?)$/i,
+  );
+  if (match) {
+    return `Explain the differences between ${match[1].trim()} and ${match[2].trim()}`;
+  }
+
+  match = normalized.match(/\bcompare\s+(.+?)\s+and\s+(.+?)$/i);
+  if (match) {
+    return `Compare ${match[1].trim()} and ${match[2].trim()}`;
+  }
+
+  match = normalized.match(/\bwhy\s+(.+?)\s+is\s+(better|stronger|worse)\b/i);
+  if (match) {
+    return `Explain why ${match[1].trim()} is considered ${match[2].toLowerCase()}`;
+  }
+
+  match = normalized.match(/\b(.+?)\s+is\s+(better|stronger|worse)\b/i);
+  if (match) {
+    return `Explain why ${match[1].trim()} is considered ${match[2].toLowerCase()}`;
+  }
+
+  return normalized;
+}
+
 function deriveStepsFromUnknownClauses(unknownClauses) {
   return unknownClauses
     .map((clause) => {
@@ -63,24 +95,13 @@ function deriveStepsFromUnknownClauses(unknownClauses) {
         return null;
       }
 
-      if (/^(why|what|how|when|where|who)$/.test(lower)) {
+      if (/^(why|what|how|when|where|who)$/i.test(lower)) {
         return null;
       }
 
-      if (
-        lower.includes("differences") &&
-        lower.includes("vault") &&
-        lower.includes("openbao")
-      ) {
-        return "Explain the differences between Vault and OpenBao";
-      }
-
-      if (lower.includes("why vault is better")) {
-        return "Explain why Vault is considered better";
-      }
-
-      if (lower.includes("why vault is stronger")) {
-        return "Explain why Vault is considered stronger";
+      const comparisonStep = normalizeComparisonStep(clause);
+      if (comparisonStep && comparisonStep !== clause.trim()) {
+        return comparisonStep;
       }
 
       if (lower.includes("engineer perspective")) {
@@ -168,7 +189,14 @@ function deriveStepsFromOutputInstructions(outputInstructions) {
 }
 
 function deriveStepFromGoal(goal) {
-  if (!goal) return null;
+  if (!goal) {
+    return null;
+  }
+
+  const normalizedComparison = normalizeComparisonStep(goal);
+  if (normalizedComparison && normalizedComparison !== goal.trim()) {
+    return normalizedComparison;
+  }
 
   const lower = goal.toLowerCase();
 
@@ -185,19 +213,23 @@ function deriveStepFromGoal(goal) {
 }
 
 function collectStepCandidates(detectedSteps, instructionClassification) {
-  const additionalGoals = instructionClassification.additionalGoals.filter(
-    (clause) => !isOutputInstruction(clause),
+  const additionalGoals = (instructionClassification.additionalGoals ?? [])
+    .filter((clause) => !isOutputInstruction(clause))
+    .map((clause) => normalizeComparisonStep(clause) ?? clause);
+
+  const comparisonSteps = (instructionClassification.comparison ?? []).map(
+    (clause) => normalizeComparisonStep(clause) ?? clause,
   );
 
-  const comparisonSteps = instructionClassification.comparison || [];
-
-  const unknownSteps = instructionClassification.unknown.filter(
-    (clause) =>
-      looksLikeStep(clause) &&
-      !isOutputInstruction(clause) &&
-      clause.trim().length >= 8 &&
-      !/^(why|what|how|when|where|who)$/i.test(clause.trim()),
-  );
+  const unknownSteps = (instructionClassification.unknown ?? [])
+    .filter(
+      (clause) =>
+        looksLikeStep(clause) &&
+        !isOutputInstruction(clause) &&
+        clause.trim().length >= 8 &&
+        !/^(why|what|how|when|where|who)$/i.test(clause.trim()),
+    )
+    .map((clause) => normalizeComparisonStep(clause) ?? clause);
 
   const inferredFromOutput = deriveStepsFromOutputInstructions(
     instructionClassification.outputInstructions || [],
@@ -210,7 +242,9 @@ function collectStepCandidates(detectedSteps, instructionClassification) {
   const combined =
     detectedSteps.length > 0
       ? [
-          ...detectedSteps,
+          ...detectedSteps.map(
+            (clause) => normalizeComparisonStep(clause) ?? clause,
+          ),
           ...additionalGoals,
           ...comparisonSteps,
           ...inferredFromOutput,
@@ -258,28 +292,28 @@ function deriveConstraintsFromAudienceSignals(instructionClassification) {
     .filter(Boolean);
 }
 
+function deriveGoalFromClassification(instructionClassification, cleaned) {
+  if (instructionClassification.goal) {
+    return instructionClassification.goal;
+  }
+
+  if ((instructionClassification.comparison?.length ?? 0) > 0) {
+    return instructionClassification.comparison[0];
+  }
+
+  if ((instructionClassification.additionalGoals?.length ?? 0) > 0) {
+    return instructionClassification.additionalGoals[0];
+  }
+
+  return detectGoal(cleaned);
+}
+
 function buildDeterministicPromptObject(raw, cleaned, options = {}) {
   const documentSignals = detectDocumentSignals(cleaned);
   const sentenceClassification = classifySentences(cleaned);
-
   const instructionClassification = classifyInstructions(cleaned);
 
   const ir = createEmptyPromptIr();
-  function deriveGoalFromClassification(instructionClassification, cleaned) {
-    if (instructionClassification.goal) {
-      return instructionClassification.goal;
-    }
-
-    if (instructionClassification.comparison?.length > 0) {
-      return instructionClassification.comparison[0];
-    }
-
-    if (instructionClassification.additionalGoals?.length > 0) {
-      return instructionClassification.additionalGoals[0];
-    }
-
-    return detectGoal(cleaned);
-  }
   ir.goal = deriveGoalFromClassification(instructionClassification, cleaned);
   ir.audience = resolveAudience(cleaned, instructionClassification);
 

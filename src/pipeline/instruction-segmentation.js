@@ -60,12 +60,10 @@ const AUDIENCE_PATTERNS = [
 ];
 
 const COMPARISON_PATTERNS = [
-  /\bdifferences?\b.*\bvault\b.*\bopenbao\b/i,
-  /\bcompare\b.*\bvault\b.*\bopenbao\b/i,
-  /\bwhy vault is better\b/i,
-  /\bwhy vault is stronger\b/i,
-  /\bvault is better\b/i,
-  /\bvault is stronger\b/i,
+  /\bdifferences?\s+between\s+.+\s+and\s+.+/i,
+  /\bcompare\s+.+\s+and\s+.+/i,
+  /\bwhy\s+.+\s+is\s+(better|stronger|worse)\b/i,
+  /\b.+\s+is\s+(better|stronger|worse)\b/i,
 ];
 
 const OUTPUT_PATTERNS = [
@@ -125,6 +123,69 @@ const STEP_LIKE_PATTERNS = [
 
 export function looksLikeStep(clause) {
   return STEP_LIKE_PATTERNS.some((pattern) => pattern.test(clause));
+}
+
+function extractComparedEntities(clause) {
+  const lower = clause.toLowerCase();
+
+  let match = clause.match(/\bdifferences?\s+between\s+(.+?)\s+and\s+(.+?)$/i);
+  if (match) {
+    return [match[1].trim(), match[2].trim()];
+  }
+
+  match = clause.match(/\bcompare\s+(.+?)\s+and\s+(.+?)$/i);
+  if (match) {
+    return [match[1].trim(), match[2].trim()];
+  }
+
+  return null;
+}
+
+function normalizeComparisonClause(clause) {
+  const entities = extractComparedEntities(clause);
+
+  if (entities) {
+    const [left, right] = entities;
+    return `Explain the differences between ${left} and ${right}`;
+  }
+
+  let match = clause.match(/\bwhy\s+(.+?)\s+is\s+(better|stronger|worse)\b/i);
+  if (match) {
+    const subject = match[1].trim();
+    const quality = match[2].toLowerCase();
+
+    if (quality === "better") {
+      return `Explain why ${subject} is considered better`;
+    }
+
+    if (quality === "stronger") {
+      return `Explain why ${subject} is considered stronger`;
+    }
+
+    if (quality === "worse") {
+      return `Explain why ${subject} is considered worse`;
+    }
+  }
+
+  match = clause.match(/\b(.+?)\s+is\s+(better|stronger|worse)\b/i);
+  if (match) {
+    const subject = match[1].trim();
+    const quality = match[2].toLowerCase();
+
+    if (quality === "better") {
+      return `Explain why ${subject} is considered better`;
+    }
+
+    if (quality === "stronger") {
+      return `Explain why ${subject} is considered stronger`;
+    }
+
+    if (quality === "worse") {
+      return `Explain why ${subject} is considered worse`;
+    }
+  }
+
+  return clause;
 }
 
 function normalizeToneClause(clause) {
@@ -276,6 +337,14 @@ export function classifyClause(clause) {
     return { type: "bias", value: clause };
   }
 
+  if (DESIRE_PATTERNS.some((pattern) => pattern.test(clause))) {
+    return { type: "goal", value: clause };
+  }
+
+  if (GOAL_VERBS.some((verb) => lower.startsWith(verb))) {
+    return { type: "goal", value: clause };
+  }
+
   if (COMPARISON_PATTERNS.some((pattern) => pattern.test(clause))) {
     return { type: "comparison", value: clause };
   }
@@ -294,14 +363,6 @@ export function classifyClause(clause) {
 
   if (TONE_PATTERNS.some((pattern) => pattern.test(clause))) {
     return { type: "tone", value: clause };
-  }
-
-  if (DESIRE_PATTERNS.some((pattern) => pattern.test(clause))) {
-    return { type: "goal", value: clause };
-  }
-
-  if (GOAL_VERBS.some((verb) => lower.startsWith(verb))) {
-    return { type: "goal", value: clause };
   }
 
   if (CONTEXT_PATTERNS.some((pattern) => pattern.test(clause))) {
@@ -384,11 +445,6 @@ export function classifyInstructions(text) {
 
     if (classified.type === "audience") {
       result.audience.push(cleaned);
-      continue;
-    }
-
-    if (classified.type === "comparison") {
-      result.comparison.push(cleaned);
       continue;
     }
 
