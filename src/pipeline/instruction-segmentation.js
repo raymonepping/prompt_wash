@@ -9,7 +9,6 @@ const GOAL_VERBS = [
   "list",
   "outline",
   "show",
-  "give",
   "write",
   "create",
   "generate",
@@ -60,8 +59,8 @@ const AUDIENCE_PATTERNS = [
 ];
 
 const COMPARISON_PATTERNS = [
-  /\bdifferences?\s+between\s+.+\s+and\s+.+/i,
-  /\bcompare\s+.+\s+and\s+.+/i,
+  /\bdifferences?\b.*\bbetween\b.*\band\b/i,
+  /\bcompare\b.*\band\b/i,
   /\bwhy\s+.+\s+is\s+(better|stronger|worse)\b/i,
   /\b.+\s+is\s+(better|stronger|worse)\b/i,
 ];
@@ -77,6 +76,7 @@ const OUTPUT_PATTERNS = [
   /\b\d+\s+bullets?\b/i,
   /\b\d+\s+bullet points?\b/i,
   /\bgive me \d+\s+bullets?\b/i,
+  /\bgive \d+\s+bullets?\b/i,
   /\breturn .*bullets?\b/i,
   /\bnumbered list\b/i,
   /\blist of \d+\b/i,
@@ -128,69 +128,6 @@ export function looksLikeStep(clause) {
   return STEP_LIKE_PATTERNS.some((pattern) => pattern.test(clause));
 }
 
-function extractComparedEntities(clause) {
-  const lower = clause.toLowerCase();
-
-  let match = clause.match(/\bdifferences?\s+between\s+(.+?)\s+and\s+(.+?)$/i);
-  if (match) {
-    return [match[1].trim(), match[2].trim()];
-  }
-
-  match = clause.match(/\bcompare\s+(.+?)\s+and\s+(.+?)$/i);
-  if (match) {
-    return [match[1].trim(), match[2].trim()];
-  }
-
-  return null;
-}
-
-function normalizeComparisonClause(clause) {
-  const entities = extractComparedEntities(clause);
-
-  if (entities) {
-    const [left, right] = entities;
-    return `Explain the differences between ${left} and ${right}`;
-  }
-
-  let match = clause.match(/\bwhy\s+(.+?)\s+is\s+(better|stronger|worse)\b/i);
-  if (match) {
-    const subject = match[1].trim();
-    const quality = match[2].toLowerCase();
-
-    if (quality === "better") {
-      return `Explain why ${subject} is considered better`;
-    }
-
-    if (quality === "stronger") {
-      return `Explain why ${subject} is considered stronger`;
-    }
-
-    if (quality === "worse") {
-      return `Explain why ${subject} is considered worse`;
-    }
-  }
-
-  match = clause.match(/\b(.+?)\s+is\s+(better|stronger|worse)\b/i);
-  if (match) {
-    const subject = match[1].trim();
-    const quality = match[2].toLowerCase();
-
-    if (quality === "better") {
-      return `Explain why ${subject} is considered better`;
-    }
-
-    if (quality === "stronger") {
-      return `Explain why ${subject} is considered stronger`;
-    }
-
-    if (quality === "worse") {
-      return `Explain why ${subject} is considered worse`;
-    }
-  }
-
-  return clause;
-}
-
 function normalizeToneClause(clause) {
   const lower = clause.toLowerCase();
 
@@ -211,6 +148,43 @@ function cleanClause(clause) {
     .replace(/[.,;]+$/g, "")
     .replace(/\b(and|but|also)\s*$/i, "")
     .trim();
+}
+
+function normalizeComparisonClause(clause) {
+  const normalized = cleanClause(clause);
+  const lower = normalized.toLowerCase();
+
+  let match = normalized.match(
+    /\bdifferences?\s+(?:especially\s+)?between\s+(.+?)\s+and\s+(.+?)$/i,
+  );
+  if (match) {
+    return `Explain the differences between ${match[1].trim()} and ${match[2].trim()}`;
+  }
+
+  match = normalized.match(/\bcompare\s+(.+?)\s+and\s+(.+?)$/i);
+  if (match) {
+    return `Compare ${match[1].trim()} and ${match[2].trim()}`;
+  }
+
+  match = normalized.match(/\bwhy\s+(.+?)\s+is\s+(better|stronger|worse)\b/i);
+  if (match) {
+    return `Explain why ${match[1].trim()} is considered ${match[2].toLowerCase()}`;
+  }
+
+  match = normalized.match(/\b(.+?)\s+is\s+(better|stronger|worse)\b/i);
+  if (match) {
+    return `Explain why ${match[1].trim()} is considered ${match[2].toLowerCase()}`;
+  }
+
+  if (
+    lower.includes("differences") &&
+    lower.includes("vault") &&
+    lower.includes("openbao")
+  ) {
+    return "Explain the differences between vault and openbao";
+  }
+
+  return normalized;
 }
 
 function trimGoalClause(clause) {
@@ -248,6 +222,7 @@ function injectSplitMarkers(text) {
     .replace(/\binclude\b/gi, " | include")
     .replace(/\buse\b(?=\s+an analogy)/gi, " | use")
     .replace(/\bbrutally honest\b/gi, " | brutally honest")
+    .replace(/\bgive me the brutal truth\b/gi, " | give me the brutal truth")
     .replace(/\bfavor\b/gi, " | favor")
     .replace(/\bprefer\b/gi, " | prefer")
     .replace(/\breturn a list of bullets\b/gi, " | return a list of bullets")
@@ -256,30 +231,17 @@ function injectSplitMarkers(text) {
     .replace(/\bon why\b/gi, " | on why")
     .replace(/\bdo this from\b/gi, " | do this from")
     .replace(/\buse language that\b/gi, " | use language that")
-    .replace(/\bwhy vault is better\b/gi, " | why vault is better")
-    .replace(/\bwhy vault is stronger\b/gi, " | why vault is stronger")
-    .replace(/\bvault is better\b/gi, " | vault is better")
-    .replace(/\bvault is stronger\b/gi, " | vault is stronger");
+    .replace(/\bwhy\s+.+?\s+is\s+(better|stronger|worse)\b/gi, (match) => ` | ${match}`)
+    .replace(/\b[a-z0-9_-]+\s+is\s+(better|stronger|worse)\b/gi, (match) => ` | ${match}`);
 }
 
 function normalizeStepClause(clause) {
+  const normalizedComparison = normalizeComparisonClause(clause);
+  if (normalizedComparison && normalizedComparison !== cleanClause(clause)) {
+    return normalizedComparison;
+  }
+
   const lower = clause.toLowerCase();
-
-  if (lower.includes("why vault is better")) {
-    return "Explain why Vault is considered better";
-  }
-
-  if (lower.includes("why vault is stronger")) {
-    return "Explain why Vault is considered stronger";
-  }
-
-  if (
-    lower.includes("differences") &&
-    lower.includes("vault") &&
-    lower.includes("openbao")
-  ) {
-    return "Explain the differences between Vault and OpenBao";
-  }
 
   if (lower.includes("engineer perspective")) {
     return "Frame the explanation from an engineer perspective";
@@ -314,14 +276,6 @@ export function classifyClause(clause) {
     return { type: "bias", value: clause };
   }
 
-  if (DESIRE_PATTERNS.some((pattern) => pattern.test(clause))) {
-    return { type: "goal", value: clause };
-  }
-
-  if (GOAL_VERBS.some((verb) => lower.startsWith(verb))) {
-    return { type: "goal", value: clause };
-  }
-
   if (COMPARISON_PATTERNS.some((pattern) => pattern.test(clause))) {
     return { type: "comparison", value: clause };
   }
@@ -340,6 +294,14 @@ export function classifyClause(clause) {
 
   if (TONE_PATTERNS.some((pattern) => pattern.test(clause))) {
     return { type: "tone", value: clause };
+  }
+
+  if (DESIRE_PATTERNS.some((pattern) => pattern.test(clause))) {
+    return { type: "goal", value: clause };
+  }
+
+  if (GOAL_VERBS.some((verb) => lower.startsWith(verb))) {
+    return { type: "goal", value: clause };
   }
 
   if (CONTEXT_PATTERNS.some((pattern) => pattern.test(clause))) {
@@ -374,16 +336,16 @@ export function classifyInstructions(text) {
       result.biasSignals.push("outcome_steering");
     }
 
+    if (
+      /\bwhy\s+.+\s+is\s+(better|stronger|worse)\b/i.test(cleaned) ||
+      /\b.+\s+is\s+(better|stronger|worse)\b/i.test(cleaned)
+    ) {
+      result.biasSignals.push("outcome_steering");
+    }
+
     if (classified.type === "comparison") {
       result.comparison.push(normalizeComparisonClause(cleaned));
       continue;
-    }
-
-    if (
-      /\bwhy\s+vault\s+is\s+(better|stronger)\b/i.test(cleaned) ||
-      /\bvault\s+is\s+(better|stronger)\b/i.test(cleaned)
-    ) {
-      result.biasSignals.push("outcome_steering");
     }
 
     if (classified.type === "goal") {
@@ -429,6 +391,7 @@ export function classifyInstructions(text) {
   }
 
   result.biasSignals = [...new Set(result.biasSignals)];
+  result.tone = [...new Set(result.tone)];
 
   return result;
 }
