@@ -231,8 +231,14 @@ function injectSplitMarkers(text) {
     .replace(/\bon why\b/gi, " | on why")
     .replace(/\bdo this from\b/gi, " | do this from")
     .replace(/\buse language that\b/gi, " | use language that")
-    .replace(/\bwhy\s+.+?\s+is\s+(better|stronger|worse)\b/gi, (match) => ` | ${match}`)
-    .replace(/\b[a-z0-9_-]+\s+is\s+(better|stronger|worse)\b/gi, (match) => ` | ${match}`);
+    .replace(
+      /\bwhy\s+.+?\s+is\s+(better|stronger|worse)\b/gi,
+      (match) => ` | ${match}`,
+    )
+    .replace(
+      /\b[a-z0-9_-]+\s+is\s+(better|stronger|worse)\b/gi,
+      (match) => ` | ${match}`,
+    );
 }
 
 function normalizeStepClause(clause) {
