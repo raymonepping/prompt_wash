@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { useWorkspaceStore } from "../../store/workspaceStore";
 
@@ -49,12 +49,14 @@ function OllamaStatus() {
 }
 
 export function TopNavigation() {
+  const [copied, setCopied] = useState(false);
   const promptId = useWorkspaceStore((state) => state.promptId);
   const activeVariant = useWorkspaceStore((state) => state.activeVariant);
   const tokens = useWorkspaceStore((state) => state.tokens);
   const variants = useWorkspaceStore((state) => state.variants);
   const analysisStatus = useWorkspaceStore((state) => state.analysisStatus);
-  const analyzePrompt = useWorkspaceStore((state) => state.analyzePrompt);
+  const isRunning = useWorkspaceStore((state) => state.isRunning);
+  const runPrompt = useWorkspaceStore((state) => state.runPrompt);
 
   const statusLabel = useMemo(() => {
     switch (analysisStatus) {
@@ -88,6 +90,8 @@ export function TopNavigation() {
     }
 
     await navigator.clipboard.writeText(activeText);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1000);
   }
 
   return (
@@ -121,17 +125,19 @@ export function TopNavigation() {
           <button
             type="button"
             onClick={() => void handleCopy()}
-            className="inline-flex h-9 items-center rounded-lg border border-white/10 bg-white/[0.03] px-3 text-sm text-zinc-200 transition hover:border-white/20 hover:bg-white/[0.06]"
+            disabled={!variants[activeVariant]}
+            className="inline-flex h-9 items-center rounded-lg border border-white/10 bg-white/[0.03] px-3 text-sm text-zinc-200 transition hover:border-white/20 hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Copy
+            {copied ? "Copied" : "Copy"}
           </button>
 
           <button
             type="button"
-            onClick={() => void analyzePrompt()}
-            className="inline-flex h-9 items-center rounded-lg bg-sky-500 px-3 text-sm font-medium text-white shadow-[0_8px_24px_rgba(14,165,233,0.28)] transition hover:bg-sky-400"
+            onClick={() => void runPrompt(activeVariant)}
+            disabled={!variants[activeVariant] || isRunning}
+            className="inline-flex h-9 items-center rounded-lg bg-sky-500 px-3 text-sm font-medium text-white shadow-[0_8px_24px_rgba(14,165,233,0.28)] transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-sky-500/50"
           >
-            Run
+            {isRunning ? "Running..." : "Run"}
           </button>
         </div>
       </div>

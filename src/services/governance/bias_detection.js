@@ -11,7 +11,9 @@ function normalizeText(promptObject) {
     promptObject?.intent ?? "",
     promptObject?.ir?.goal ?? "",
     ...(promptObject?.constraints ?? []),
-    ...(promptObject?.ir?.steps ?? []),
+    // Intentionally exclude derived IR steps from bias scanning.
+    // They may contain normalization language like "clearly"
+    // that should not trigger governance rules.
   ];
 
   return parts.join("\n").toLowerCase();
@@ -94,8 +96,9 @@ export async function analyzePromptBias(promptObject) {
   const rules = await resolveBiasRules();
   const categories = rules.categories ?? {};
   const text = normalizeText(promptObject);
+  const biasRequest = promptObject?.metadata?.bias_request ?? {};
 
-  const results = {
+  const patternResults = {
     outcome_steering: evaluatePatternCategory(
       text,
       categories.outcome_steering,
@@ -109,6 +112,33 @@ export async function analyzePromptBias(promptObject) {
       text,
       categories.forced_recommendation,
     ),
+  };
+
+  const metadataOutcomeSteering =
+    Array.isArray(biasRequest.signals) &&
+    biasRequest.signals.includes("outcome_steering");
+
+  const metadataBiasMatches = Array.isArray(biasRequest.directives)
+    ? biasRequest.directives
+    : [];
+
+  const results = {
+    outcome_steering: {
+      matched:
+        patternResults.outcome_steering.matched || metadataOutcomeSteering,
+      matches: [
+        ...patternResults.outcome_steering.matches,
+        ...metadataBiasMatches,
+      ],
+      score:
+        patternResults.outcome_steering.score ||
+        (metadataOutcomeSteering
+          ? (categories.outcome_steering?.weight ?? 0)
+          : 0),
+    },
+    vendor_bias: patternResults.vendor_bias,
+    advocacy_language: patternResults.advocacy_language,
+    forced_recommendation: patternResults.forced_recommendation,
   };
 
   const totalScore = Object.values(results).reduce(
@@ -128,7 +158,7 @@ export async function analyzePromptBias(promptObject) {
       forced_recommendation: results.forced_recommendation.matched,
     },
     matches: {
-      outcome_steering: results.outcome_steering.matches,
+      outcome_steering: [...new Set(results.outcome_steering.matches)],
       vendor_bias: results.vendor_bias.matches,
       advocacy_language: results.advocacy_language.matches,
       forced_recommendation: results.forced_recommendation.matches,

@@ -102,6 +102,7 @@ function deriveStepFromGoal(goal) {
 
   const lower = goal.toLowerCase();
 
+  if (/^teach\b/.test(lower)) return "Teach the topic clearly";
   if (/^tell\b/.test(lower)) return "Provide explanation";
   if (/^explain\b/.test(lower)) return "Explain the topic clearly";
   if (/^compare\b/.test(lower)) return "Compare key aspects";

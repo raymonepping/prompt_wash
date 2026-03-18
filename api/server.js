@@ -5,6 +5,7 @@ import workspaceRoutes from "./routes/workspace.js";
 import experimentsRoutes from "./routes/experiments.js";
 import intelligenceRoutes from "./routes/intelligence.js";
 import governanceRoutes from "./routes/governance.js";
+import runsRoutes from "./routes/runs.js";
 import { notFoundHandler } from "./middleware/not-found.js";
 import { errorHandler } from "./middleware/error-handler.js";
 
@@ -30,6 +31,7 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.use("/api/workspace", workspaceRoutes);
+app.use("/api/runs", runsRoutes);
 app.use("/api/experiments", experimentsRoutes);
 app.use("/api/intelligence", intelligenceRoutes);
 app.use("/api/governance", governanceRoutes);

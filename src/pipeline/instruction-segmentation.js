@@ -1,5 +1,6 @@
 const GOAL_VERBS = [
   "tell",
+  "teach",
   "explain",
   "compare",
   "describe",
@@ -56,6 +57,7 @@ const OUTPUT_PATTERNS = [
 
 const TONE_PATTERNS = [
   /brutally honest/i,
+  /brutal truth/i,
   /honest/i,
   /professional/i,
   /casual/i,
@@ -87,12 +89,36 @@ const CONTEXT_PATTERNS = [
   /\bfor engineers?\b/i,
 ];
 
+const ROLE_PATTERNS = [
+  /^you are\b/i,
+  /^act as\b/i,
+];
+
+const DESIRE_PATTERNS = [
+  /^i want to know\b/i,
+  /^i want\b/i,
+  /^i need to know\b/i,
+];
+
 const STEP_LIKE_PATTERNS = [
-  /^(explain|describe|compare|list|summarize|analyze|show|include|use|provide|write|create|generate|review|refactor|translate|return|what|how|why|when|where|who)\b/i,
+  /^(teach|explain|describe|compare|list|summarize|analyze|show|include|use|provide|write|create|generate|review|refactor|translate|return|what|how|why|when|where|who)\b/i,
 ];
 
 export function looksLikeStep(clause) {
   return STEP_LIKE_PATTERNS.some((pattern) => pattern.test(clause));
+}
+
+function normalizeToneClause(clause) {
+  const lower = clause.toLowerCase();
+
+  if (
+    lower.includes("brutal truth") ||
+    lower.includes("brutally honest")
+  ) {
+    return "brutally honest";
+  }
+
+  return clause;
 }
 
 function cleanClause(clause) {
@@ -106,8 +132,12 @@ function cleanClause(clause) {
 function trimGoalClause(clause) {
   return cleanClause(
     clause
+      .replace(/^i want to know\b\s*/i, "")
+      .replace(/^i need to know\b\s*/i, "")
       .replace(/\bprovide me as much detail as possible\b.*$/i, "")
       .replace(/\bbe as specific as possible\b.*$/i, "")
+      .replace(/\bgive me the brutal truth\b.*$/i, "")
+      .replace(/\bbrutal truth\b.*$/i, "")
       .replace(/\bbrutally honest\b.*$/i, "")
       .replace(/\bhonest\b.*$/i, "")
       .replace(/\bfavor\b.*$/i, ""),
@@ -152,6 +182,10 @@ export function segmentPromptIntoClauses(text) {
 export function classifyClause(clause) {
   const lower = clause.toLowerCase();
 
+  if (ROLE_PATTERNS.some((pattern) => pattern.test(clause))) {
+    return { type: "context", value: clause };
+  }
+
   if (BIAS_PATTERNS.some((pattern) => pattern.test(clause))) {
     return { type: "bias", value: clause };
   }
@@ -166,6 +200,10 @@ export function classifyClause(clause) {
 
   if (TONE_PATTERNS.some((pattern) => pattern.test(clause))) {
     return { type: "tone", value: clause };
+  }
+
+  if (DESIRE_PATTERNS.some((pattern) => pattern.test(clause))) {
+    return { type: "goal", value: clause };
   }
 
   if (CONTEXT_PATTERNS.some((pattern) => pattern.test(clause))) {
@@ -222,7 +260,7 @@ export function classifyInstructions(text) {
     }
 
     if (classified.type === "tone") {
-      result.tone.push(cleaned);
+      result.tone.push(normalizeToneClause(cleaned));
       continue;
     }
 

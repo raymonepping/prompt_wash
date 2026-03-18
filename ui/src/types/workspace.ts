@@ -74,6 +74,13 @@ export interface AnalyzePromptRequest {
   raw_input: string;
 }
 
+export interface RunPromptRequest {
+  prompt: string;
+  provider?: string;
+  model?: string | null;
+  render_mode: VariantKey;
+}
+
 export interface WorkspaceStateData {
   rawInput: string;
   normalizedPrompt: string;
@@ -88,6 +95,7 @@ export interface WorkspaceStateData {
   metadata: Record<string, unknown>;
   activeVariant: VariantKey;
   analysisStatus: AnalysisStatus;
+  isRunning: boolean;
   errorMessage: string | null;
   lastAnalyzedAt: string | null;
   promptId: string;
@@ -97,6 +105,7 @@ export interface WorkspaceStore extends WorkspaceStateData {
   setRawInput: (value: string) => void;
   setActiveVariant: (variant: VariantKey) => void;
   analyzePrompt: (rawInputOverride?: string) => Promise<void>;
+  runPrompt: (variantOverride?: VariantKey) => Promise<void>;
   clearError: () => void;
 }
 

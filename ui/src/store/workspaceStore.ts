@@ -26,6 +26,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
   metadata: {},
   activeVariant: "generic",
   analysisStatus: "idle",
+  isRunning: false,
   errorMessage: null,
   lastAnalyzedAt: null,
   promptId: createPromptId(),
@@ -61,6 +62,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
         execution: null,
         metadata: {},
         analysisStatus: "idle",
+        isRunning: false,
         errorMessage: null,
       });
       return;
@@ -76,10 +78,6 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
         raw_input: rawInput,
       });
 
-      if (response.status !== "success") {
-        throw new Error(response.error || "Unknown analyze error");
-      }
-
       set({
         rawInput: response.data.raw_input,
         normalizedPrompt: response.data.normalized_prompt,
@@ -90,6 +88,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
         execution: response.data.execution,
         metadata: response.data.metadata,
         analysisStatus: "parsed",
+        isRunning: false,
         errorMessage: null,
         lastAnalyzedAt: new Date().toISOString(),
       });
@@ -97,6 +96,61 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => ({
       set({
         analysisStatus: "error",
         errorMessage: error instanceof Error ? error.message : "Analyze failed",
+      });
+    }
+  },
+
+  runPrompt: async (variantOverride) => {
+    const state = get();
+    const rawInput = state.rawInput;
+    const variant = variantOverride ?? state.activeVariant;
+
+    if (!rawInput.trim()) {
+      set({
+        errorMessage: "Enter a prompt before running a variant.",
+      });
+      return;
+    }
+
+    if (!state.variants[variant]) {
+      await get().analyzePrompt(rawInput);
+    }
+
+    const nextState = get();
+    const renderedPrompt = nextState.variants[variant];
+
+    if (!renderedPrompt) {
+      set({
+        errorMessage: "Analyze the prompt before running a variant.",
+      });
+      return;
+    }
+
+    set({
+      isRunning: true,
+      errorMessage: null,
+    });
+
+    try {
+      const response = await workspaceApi.runPrompt({
+        prompt: rawInput,
+        provider: "ollama",
+        model: null,
+        render_mode: variant,
+      });
+
+      set({
+        execution: response.data,
+        isRunning: false,
+        errorMessage: null,
+      });
+    } catch (error) {
+      set({
+        isRunning: false,
+        errorMessage:
+          error instanceof Error
+            ? error.message
+            : "Run failed",
       });
     }
   },

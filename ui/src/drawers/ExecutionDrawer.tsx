@@ -3,8 +3,9 @@ import { useWorkspaceStore } from "../store/workspaceStore";
 export function ExecutionDrawer() {
   const execution = useWorkspaceStore((state) => state.execution);
   const activeVariant = useWorkspaceStore((state) => state.activeVariant);
-  const analysisStatus = useWorkspaceStore((state) => state.analysisStatus);
-  const analyzePrompt = useWorkspaceStore((state) => state.analyzePrompt);
+  const variants = useWorkspaceStore((state) => state.variants);
+  const isRunning = useWorkspaceStore((state) => state.isRunning);
+  const runPrompt = useWorkspaceStore((state) => state.runPrompt);
 
   return (
     <div className="flex h-full flex-col">
@@ -13,10 +14,11 @@ export function ExecutionDrawer() {
 
         <button
           type="button"
-          onClick={() => void analyzePrompt()}
-          className="inline-flex h-8 items-center rounded-md bg-sky-500 px-3 text-xs font-medium text-white transition hover:bg-sky-400"
+          onClick={() => void runPrompt(activeVariant)}
+          disabled={!variants[activeVariant] || isRunning}
+          className="inline-flex h-8 items-center rounded-md bg-sky-500 px-3 text-xs font-medium text-white transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-sky-500/50"
         >
-          {analysisStatus === "analyzing" ? "Running..." : `Run ${activeVariant}`}
+          {isRunning ? "Running..." : `Run ${activeVariant}`}
         </button>
       </div>
 

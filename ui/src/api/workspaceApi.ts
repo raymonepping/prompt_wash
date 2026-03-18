@@ -1,325 +1,292 @@
+import { getEnvelope, postEnvelope } from "./client";
+import type { ApiEnvelope } from "../types/api";
 import type {
   AnalyzePromptRequest,
-  ApiEnvelope,
   PromptIR,
+  RunPromptRequest,
   VariantKey,
   WorkspaceAnalysis,
+  WorkspaceExecution,
   WorkspaceInsights,
 } from "../types/workspace";
+import { EMPTY_INSIGHTS, EMPTY_PROMPT_IR, EMPTY_VARIANTS } from "../types/workspace";
 
-const ANALYZE_ENDPOINT = "/api/workspace/analyze";
+type UnknownRecord = Record<string, unknown>;
 
-function normalizePrompt(input: string): string {
-  return input.replace(/\s+/g, " ").trim();
+function isRecord(value: unknown): value is UnknownRecord {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
-function estimateTokens(input: string): number {
-  if (!input.trim()) {
-    return 0;
-  }
-
-  return Math.max(1, Math.ceil(input.trim().split(/\s+/).length * 1.3));
+function toStringValue(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : fallback;
 }
 
-function detectLanguage(input: string): string {
-  const hasDutchSignals = /\b(ik|wat|kun|graag|schrijf|maak|voor)\b/i.test(input);
-  return hasDutchSignals ? "nl" : "en";
+function toNullableString(value: unknown): string | null {
+  return typeof value === "string" ? value : null;
 }
 
-function detectTone(input: string): string {
-  if (/brutally honest/i.test(input)) {
-    return "brutally honest";
-  }
-
-  if (/professional/i.test(input)) {
-    return "professional";
-  }
-
-  if (/casual/i.test(input)) {
-    return "casual";
-  }
-
-  return "neutral";
+function toNumberValue(value: unknown, fallback = 0): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
-function detectOutputFormat(input: string): string {
-  if (/\bjson\b/i.test(input)) {
-    return "json";
-  }
-
-  if (/\btable\b/i.test(input)) {
-    return "table";
-  }
-
-  if (/\bmarkdown\b/i.test(input)) {
-    return "markdown";
-  }
-
-  if (/\bbullet\b|\blist\b/i.test(input)) {
-    return "bullet list";
-  }
-
-  if (/\bcode\b|\bscript\b/i.test(input)) {
-    return "code";
-  }
-
-  return "";
+function toStringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 }
 
-function detectAudience(input: string): string {
-  if (/\bbeginner\b/i.test(input)) {
-    return "beginner";
+function normalizePromptIr(value: unknown): PromptIR {
+  if (!isRecord(value)) {
+    return EMPTY_PROMPT_IR;
   }
-
-  if (/\bexecutive\b|\bcxo\b/i.test(input)) {
-    return "executive";
-  }
-
-  if (/\bdeveloper\b|\bengineer\b/i.test(input)) {
-    return "developer";
-  }
-
-  return "general";
-}
-
-function detectConstraints(input: string): string[] {
-  const constraints = new Set<string>();
-
-  if (/simple language/i.test(input)) {
-    constraints.add("use simple language");
-  }
-
-  if (/include examples/i.test(input)) {
-    constraints.add("include examples");
-  }
-
-  if (/avoid jargon/i.test(input)) {
-    constraints.add("avoid jargon");
-  }
-
-  if (/concise|brief/i.test(input)) {
-    constraints.add("be concise");
-  }
-
-  return [...constraints];
-}
-
-function detectSteps(input: string): string[] {
-  return input
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => /^\d+[.)-]\s+/.test(line))
-    .map((line) => line.replace(/^\d+[.)-]\s+/, ""));
-}
-
-function detectGoal(input: string): string {
-  const cleaned = normalizePrompt(input);
-
-  if (!cleaned) {
-    return "";
-  }
-
-  const sentences = cleaned.split(/[.!?]\s+/).filter(Boolean);
-  return sentences[0] ?? cleaned;
-}
-
-function buildPromptIR(rawInput: string, normalizedPrompt: string): PromptIR {
-  const inputTokens = estimateTokens(normalizedPrompt);
 
   return {
-    goal: detectGoal(rawInput),
-    audience: detectAudience(rawInput),
-    context: "",
-    constraints: detectConstraints(rawInput),
-    steps: detectSteps(rawInput),
-    output_format: detectOutputFormat(rawInput),
-    tone: detectTone(rawInput),
-    language: detectLanguage(rawInput),
+    goal: toStringValue(value.goal),
+    audience: toStringValue(value.audience),
+    context: toStringValue(value.context),
+    constraints: toStringArray(value.constraints),
+    steps: toStringArray(value.steps),
+    output_format: toStringValue(value.output_format),
+    tone: toStringValue(value.tone),
+    language: toStringValue(value.language),
     tokens: {
-      input: inputTokens,
+      input: toNumberValue(isRecord(value.tokens) ? value.tokens.input : undefined),
     },
-    metadata: {
-      parser: "local-mock",
-      fingerprint_seed: normalizedPrompt.slice(0, 24),
-    },
+    metadata: isRecord(value.metadata) ? value.metadata : {},
   };
 }
 
-function renderSections(label: string, values: string[]): string {
-  if (values.length === 0) {
-    return "";
+function normalizeVariants(value: unknown): Record<VariantKey, string> {
+  if (!isRecord(value)) {
+    return EMPTY_VARIANTS;
   }
-
-  return `${label}:\n${values.map((value) => `- ${value}`).join("\n")}`;
-}
-
-function renderSteps(values: string[]): string {
-  if (values.length === 0) {
-    return "";
-  }
-
-  return `Steps:\n${values.map((value, index) => `${index + 1}. ${value}`).join("\n")}`;
-}
-
-function renderVariant(ir: PromptIR, variant: VariantKey): string {
-  const orderedSections: string[] = [];
-
-  if (variant === "claude") {
-    orderedSections.push("You are a careful assistant.");
-  }
-
-  if (ir.context) {
-    orderedSections.push(`Context:\n${ir.context}`);
-  }
-
-  orderedSections.push(
-    `${variant === "claude" ? "Request" : "Task"}:\n${ir.goal || "Describe the user intent clearly."}`,
-  );
-
-  if (ir.audience) {
-    orderedSections.push(`Audience:\n${ir.audience}`);
-  }
-
-  const constraintBlock = renderSections("Constraints", ir.constraints);
-  if (constraintBlock) {
-    orderedSections.push(constraintBlock);
-  }
-
-  const stepsBlock = renderSteps(ir.steps);
-  if (stepsBlock) {
-    orderedSections.push(stepsBlock);
-  }
-
-  if (ir.output_format) {
-    orderedSections.push(`Output Format:\n${ir.output_format}`);
-  }
-
-  if (ir.tone) {
-    orderedSections.push(`Tone:\n${ir.tone}`);
-  }
-
-  if (ir.language) {
-    orderedSections.push(`Language:\n${ir.language}`);
-  }
-
-  const generic = orderedSections.filter(Boolean).join("\n\n");
-
-  if (variant === "generic" || variant === "openai" || variant === "claude") {
-    return generic;
-  }
-
-  const compactParts = [
-    ir.context ? `Context: ${ir.context}` : "",
-    ir.goal,
-    ir.audience ? `Audience: ${ir.audience}` : "",
-    ir.constraints.length > 0 ? `Constraints: ${ir.constraints.join("; ")}` : "",
-    ir.steps.length > 0 ? `Steps: ${ir.steps.join("; ")}` : "",
-    ir.output_format ? `Output: ${ir.output_format}` : "",
-    ir.tone ? `Tone: ${ir.tone}` : "",
-    ir.language ? `Language: ${ir.language}` : "",
-  ].filter(Boolean);
-
-  return compactParts.join(". ");
-}
-
-function buildInsights(rawInput: string, normalizedPrompt: string, compactVariant: string): WorkspaceInsights {
-  const lint: string[] = [];
-
-  if (rawInput.trim().length < 20) {
-    lint.push("Prompt is very short. Intent may be underspecified.");
-  }
-
-  if (!/[.!?]$/.test(normalizedPrompt) && normalizedPrompt.length > 0) {
-    lint.push("Prompt has no terminal punctuation. This is fine, but structure may improve with clearer sentence boundaries.");
-  }
-
-  const inputTokens = estimateTokens(normalizedPrompt);
-  const compactTokens = estimateTokens(compactVariant);
-  const savings = Math.max(0, inputTokens - compactTokens);
 
   return {
-    lint,
-    risk: {
-      score: rawInput.toLowerCase().includes("favor") ? 42 : 18,
-      level: rawInput.toLowerCase().includes("favor") ? "medium" : "low",
-      notes: rawInput.toLowerCase().includes("favor")
-        ? ["Prompt may contain directional bias requests."]
-        : ["No major risk signals detected."],
-    },
-    bias: {
-      score: rawInput.toLowerCase().includes("favor") ? 58 : 8,
-      detected: rawInput.toLowerCase().includes("favor"),
-      notes: rawInput.toLowerCase().includes("favor")
-        ? ["Biasing language detected."]
-        : ["No explicit bias signal detected."],
-    },
-    complexity: {
-      score: Math.min(100, Math.max(8, Math.round(inputTokens / 2))),
-      level: inputTokens > 80 ? "high" : inputTokens > 35 ? "medium" : "low",
-    },
-    optimization: {
-      suggestions: [
-        "Clarify the target audience if the response needs a specific reading level.",
-        "Convert multiple goals into explicit ordered steps when exact output control matters.",
-        "Use the compact variant only after verifying that structure is still clear.",
-      ],
-      token_savings_estimate: savings,
-      semantic_drift_risk: savings > 20 ? "medium" : "low",
-    },
+    generic: toStringValue(value.generic),
+    compact: toStringValue(value.compact),
+    openai: toStringValue(value.openai),
+    claude: toStringValue(value.claude),
   };
 }
 
-function createMockAnalysis(rawInput: string): WorkspaceAnalysis {
-  const normalizedPrompt = normalizePrompt(rawInput);
-  const structuredPrompt = buildPromptIR(rawInput, normalizedPrompt);
+function normalizeRisk(rawRisk: unknown): WorkspaceInsights["risk"] {
+  if (!rawRisk || typeof rawRisk !== "object") {
+    return {
+      score: 0,
+      level: "low",
+      notes: [],
+    };
+  }
 
-  const variants = {
-    generic: renderVariant(structuredPrompt, "generic"),
-    compact: renderVariant(structuredPrompt, "compact"),
-    openai: renderVariant(structuredPrompt, "openai"),
-    claude: renderVariant(structuredPrompt, "claude"),
+  const value = rawRisk as Record<string, unknown>;
+
+  return {
+    score: Number(value.score ?? value.risk_score ?? 0),
+    level: (value.level ?? value.risk_level ?? "low") as
+      | "low"
+      | "medium"
+      | "high",
+    notes: Array.isArray(value.notes)
+      ? (value.notes as string[])
+      : Array.isArray(value.recommendations)
+        ? (value.recommendations as string[])
+        : [],
+  };
+}
+
+function normalizeBias(rawBias: unknown): WorkspaceInsights["bias"] {
+  if (!rawBias || typeof rawBias !== "object") {
+    return {
+      score: 0,
+      detected: false,
+      notes: [],
+    };
+  }
+
+  const value = rawBias as Record<string, unknown>;
+  const signals =
+    value.signals && typeof value.signals === "object"
+      ? (value.signals as Record<string, unknown>)
+      : {};
+
+  return {
+    score: Number(value.score ?? value.bias_score ?? 0),
+    detected:
+      typeof value.detected === "boolean"
+        ? value.detected
+        : Object.values(signals).some(Boolean),
+    notes: Array.isArray(value.notes)
+      ? (value.notes as string[])
+      : Array.isArray(value.recommendations)
+        ? (value.recommendations as string[])
+        : [],
+  };
+}
+
+function normalizeComplexity(
+  rawComplexity: unknown,
+): WorkspaceInsights["complexity"] {
+  if (!rawComplexity || typeof rawComplexity !== "object") {
+    return {
+      score: 0,
+      level: "low",
+    };
+  }
+
+  const value = rawComplexity as Record<string, unknown>;
+
+  return {
+    score: Number(value.score ?? 0),
+    level: (value.level ?? "low") as "low" | "medium" | "high",
+  };
+}
+
+function normalizeOptimization(
+  rawOptimization: unknown,
+): WorkspaceInsights["optimization"] {
+  if (!rawOptimization || typeof rawOptimization !== "object") {
+    return {
+      suggestions: [],
+      token_savings_estimate: 0,
+      semantic_drift_risk: "low",
+    };
+  }
+
+  const value = rawOptimization as Record<string, unknown>;
+  const nested =
+    value.optimization && typeof value.optimization === "object"
+      ? (value.optimization as Record<string, unknown>)
+      : null;
+
+  const suggestions = Array.isArray(value.suggestions)
+    ? (value.suggestions as string[])
+    : Array.isArray(nested?.recommendations)
+      ? (nested.recommendations as string[])
+      : Array.isArray(value.recommendations)
+        ? (value.recommendations as string[])
+        : [];
+
+  const tokenComparison =
+    nested?.token_comparison && typeof nested.token_comparison === "object"
+      ? (nested.token_comparison as Record<string, unknown>)
+      : null;
+
+  return {
+    suggestions,
+    token_savings_estimate: Number(
+      value.token_savings_estimate ??
+        nested?.token_savings_estimate ??
+        tokenComparison?.saved_tokens ??
+        0,
+    ),
+    semantic_drift_risk: (value.semantic_drift_risk ??
+      nested?.semantic_drift_risk ??
+      "low") as "low" | "medium" | "high",
+  };
+}
+
+function normalizeAnalysisPayload(payload: Record<string, unknown>): WorkspaceAnalysis {
+  const structuredPrompt = normalizePromptIr(payload.structured_prompt);
+  const variants = normalizeVariants(payload.variants);
+  const rawTokens = isRecord(payload.tokens) ? payload.tokens : {};
+  const insights: WorkspaceInsights = {
+    ...EMPTY_INSIGHTS,
+    lint: toStringArray(payload.lint),
+    risk: normalizeRisk(payload.risk),
+    bias: normalizeBias(payload.bias),
+    complexity: normalizeComplexity(payload.complexity),
+    optimization: normalizeOptimization(payload.optimization),
   };
 
   return {
-    raw_input: rawInput,
-    normalized_prompt: normalizedPrompt,
+    raw_input: String(payload.raw_input ?? ""),
+    normalized_prompt: String(payload.normalized_prompt ?? ""),
     structured_prompt: structuredPrompt,
     variants,
-    insights: buildInsights(rawInput, normalizedPrompt, variants.compact),
+    insights,
     tokens: {
-      input: structuredPrompt.tokens.input,
-      compact: estimateTokens(variants.compact),
+      input: toNumberValue(rawTokens.input, structuredPrompt.tokens.input),
+      compact: toNumberValue(rawTokens.compact, 0),
     },
-    execution: null,
-    metadata: {
-      source: "mock-local-analysis",
-    },
+    execution: normalizeExecutionPayload(payload.execution),
+    metadata: (payload.metadata ?? {}) as Record<string, unknown>,
   };
+}
+
+function normalizeExecutionPayload(payload: unknown): WorkspaceExecution | null {
+  if (!isRecord(payload)) {
+    return null;
+  }
+
+  const artifact = isRecord(payload.artifact) ? payload.artifact : null;
+  const artifactExecution = artifact && isRecord(artifact.execution) ? artifact.execution : null;
+  const payloadExecution = isRecord(payload.execution) ? payload.execution : null;
+  const execution = artifactExecution ?? payloadExecution;
+
+  const artifactOutput = artifact && isRecord(artifact.output) ? artifact.output : null;
+  const payloadOutput = isRecord(payload.output) ? payload.output : null;
+  const output = artifactOutput ?? payloadOutput;
+
+  return {
+    model: toStringValue(execution?.model, "unknown"),
+    provider: toStringValue(execution?.provider, "unknown"),
+    input_tokens: toNumberValue(payload.input_tokens),
+    output_tokens: toNumberValue(payload.output_tokens),
+    latency_ms: toNumberValue(execution?.latency_ms ?? payload.latency_ms),
+    result: toStringValue(output?.text ?? payload.result),
+    timestamp:
+      toNullableString(artifact?.created_at) ??
+      toNullableString(payload.created_at) ??
+      undefined,
+  };
+}
+
+function normalizeRequiredExecutionPayload(payload: unknown): WorkspaceExecution {
+  return (
+    normalizeExecutionPayload(payload) ?? {
+      model: "unknown",
+      provider: "unknown",
+      input_tokens: 0,
+      output_tokens: 0,
+      latency_ms: 0,
+      result: "",
+    }
+  );
 }
 
 export const workspaceApi = {
   async analyzePrompt(
     payload: AnalyzePromptRequest,
   ): Promise<ApiEnvelope<WorkspaceAnalysis>> {
-    try {
-      const response = await fetch(ANALYZE_ENDPOINT, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+    const envelope = await postEnvelope<UnknownRecord, AnalyzePromptRequest>(
+      "/workspace/analyze",
+      payload,
+    );
 
-      if (!response.ok) {
-        throw new Error(`Analyze request failed with status ${response.status}`);
-      }
+    return {
+      ...envelope,
+      data: normalizeAnalysisPayload(envelope.data),
+    };
+  },
 
-      return (await response.json()) as ApiEnvelope<WorkspaceAnalysis>;
-    } catch {
-      return {
-        status: "success",
-        data: createMockAnalysis(payload.raw_input),
-      };
-    }
+  async fetchWorkspaceState(): Promise<ApiEnvelope<WorkspaceAnalysis>> {
+    const envelope = await getEnvelope<UnknownRecord>("/workspace/state");
+
+    return {
+      ...envelope,
+      data: normalizeAnalysisPayload(envelope.data),
+    };
+  },
+
+  async runPrompt(
+    payload: RunPromptRequest,
+  ): Promise<ApiEnvelope<WorkspaceExecution>> {
+    const envelope = await postEnvelope<UnknownRecord, RunPromptRequest>(
+      "/workspace/run",
+      payload,
+    );
+
+    return {
+      ...envelope,
+      data: normalizeRequiredExecutionPayload(envelope.data),
+    };
   },
 };

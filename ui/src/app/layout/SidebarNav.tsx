@@ -49,9 +49,9 @@ export function SidebarNav() {
 
       <nav className="space-y-1">
         <NavItem to="/" label="Prompt Workspace" icon={<DotIcon />} />
-        <NavItem to="/runs" label="Runs" icon={<DotIcon />} disabled />
-        <NavItem to="/library" label="Library" icon={<DotIcon />} disabled />
-        <NavItem to="/experiments" label="Experiments" icon={<DotIcon />} disabled />
+        <NavItem to="/runs" label="Runs" icon={<DotIcon />} />
+        <NavItem to="/library" label="Library" icon={<DotIcon />} />
+        <NavItem to="/experiments" label="Experiments" icon={<DotIcon />} />
       </nav>
 
       <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
