@@ -76,6 +76,8 @@ const OUTPUT_PATTERNS = [
   /\bbullets?\b/i,
   /\b\d+\s+bullets?\b/i,
   /\b\d+\s+bullet points?\b/i,
+  /\bgive me \d+\s+bullets?\b/i,
+  /\breturn .*bullets?\b/i,
   /\bnumbered list\b/i,
   /\blist of \d+\b/i,
 ];
@@ -83,6 +85,7 @@ const OUTPUT_PATTERNS = [
 const TONE_PATTERNS = [
   /brutally honest/i,
   /brutal truth/i,
+  /give me the brutal truth/i,
   /honest/i,
   /professional/i,
   /casual/i,
@@ -191,7 +194,11 @@ function normalizeComparisonClause(clause) {
 function normalizeToneClause(clause) {
   const lower = clause.toLowerCase();
 
-  if (lower.includes("brutal truth") || lower.includes("brutally honest")) {
+  if (
+    lower.includes("brutal truth") ||
+    lower.includes("brutally honest") ||
+    lower.includes("give me the brutal truth")
+  ) {
     return "brutally honest";
   }
 

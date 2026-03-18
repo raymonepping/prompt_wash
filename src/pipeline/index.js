@@ -162,7 +162,9 @@ function deriveStepsFromOutputInstructions(outputInstructions) {
     .map((clause) => {
       const lower = clause.toLowerCase();
 
-      const numericMatch = lower.match(/\b(\d+)\s+bullets?\b/);
+      const numericMatch = lower.match(
+        /\b(\d+)\s+(?:bullets?|bullet points?|key points?)\b/,
+      );
       if (numericMatch) {
         return `Provide ${numericMatch[1]} key points`;
       }
