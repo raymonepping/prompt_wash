@@ -282,6 +282,14 @@ export function classifyClause(clause) {
     return { type: "bias", value: clause };
   }
 
+  if (DESIRE_PATTERNS.some((pattern) => pattern.test(clause))) {
+    return { type: "goal", value: clause };
+  }  
+
+  if (GOAL_VERBS.some((verb) => lower.startsWith(verb))) {
+    return { type: "goal", value: clause };
+  }
+
   if (COMPARISON_PATTERNS.some((pattern) => pattern.test(clause))) {
     return { type: "comparison", value: clause };
   }
@@ -300,14 +308,6 @@ export function classifyClause(clause) {
 
   if (TONE_PATTERNS.some((pattern) => pattern.test(clause))) {
     return { type: "tone", value: clause };
-  }
-
-  if (DESIRE_PATTERNS.some((pattern) => pattern.test(clause))) {
-    return { type: "goal", value: clause };
-  }
-
-  if (GOAL_VERBS.some((verb) => lower.startsWith(verb))) {
-    return { type: "goal", value: clause };
   }
 
   if (CONTEXT_PATTERNS.some((pattern) => pattern.test(clause))) {

@@ -316,7 +316,7 @@ test_workspace() {
     "Analyze Mixed Audience Embedded Output Preference Prompt" \
     "POST" \
     "/workspace/analyze" \
-    '{"raw_input":"tell me everything you know about vault and openbao return a list of bullets on why vault is better do this from an engineer perspective and use language that a ceo understands"}' \
+    '{"raw_input":"Tell me everything you know about vault and openbao. Return a list of bullets on why vault is better. Do this from an engineer perspective. Use language that a ceo understands."}' \
     '.data.structured_prompt.output_format == "bullet_list"' "Embedded output instruction is parsed as bullet_list" \
     '.data.bias.signals.outcome_steering == true' "Vendor preference language triggers outcome steering" \
     '.data.variants.generic | contains("Output format:")' "Rendered generic variant includes output format" \
