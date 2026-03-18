@@ -284,7 +284,7 @@ export function classifyClause(clause) {
 
   if (DESIRE_PATTERNS.some((pattern) => pattern.test(clause))) {
     return { type: "goal", value: clause };
-  }  
+  }
 
   if (GOAL_VERBS.some((verb) => lower.startsWith(verb))) {
     return { type: "goal", value: clause };
